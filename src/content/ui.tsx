@@ -1,4 +1,4 @@
-import { h } from 'preact';
+import { h, type ComponentChildren } from 'preact';
 import { useState } from 'preact/hooks';
 
 type ActionButtonProps = {
@@ -8,6 +8,18 @@ type ActionButtonProps = {
   iconUrl: string;
   tooltipText: string;
   onClick: () => void;
+};
+
+type PopupActionsProps = {
+  svgEnabled: boolean;
+  pngEnabled: boolean;
+  openEnabled: boolean;
+  onSvg: () => void;
+  onPng: () => void;
+  onOpen: () => void;
+  onClose: () => void;
+  openIconUrl: string;
+  closeIconUrl: string;
 };
 
 type TooltipProps = {
@@ -52,6 +64,76 @@ export function Tooltip(props: TooltipProps) {
   );
 }
 
+type TooltipButtonProps = {
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ComponentChildren;
+  variant?: 'standard' | 'icon';
+};
+
+function TooltipButton(props: TooltipButtonProps) {
+  const [isHover, setIsHover] = useState(false);
+  const isDisabled = props.disabled ?? false;
+  const variant = props.variant ?? 'standard';
+
+  const wrapperStyle = {
+    position: 'relative',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as const;
+
+  const buttonStyle = {
+    height: '28px',
+    border: '1px solid #222',
+    borderRadius: '6px',
+    background: '#fff',
+    color: '#111',
+    cursor: isDisabled ? 'not-allowed' : 'pointer',
+    padding: variant === 'icon' ? '0 6px' : '0 8px',
+    opacity: isDisabled ? 0.5 : 1,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+  } as const;
+
+  return (
+    <div
+      style={wrapperStyle}
+      onMouseEnter={() => {
+        setIsHover(true);
+      }}
+      onMouseLeave={() => {
+        setIsHover(false);
+      }}
+    >
+      <button
+        type="button"
+        aria-label={props.label}
+        style={buttonStyle}
+        disabled={isDisabled}
+        onPointerDown={(event) => {
+          event.preventDefault();
+        }}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
+        onClick={() => {
+          if (isDisabled) {
+            return;
+          }
+          props.onClick();
+        }}
+      >
+        {props.children}
+      </button>
+      <Tooltip text={props.label} visible={isHover && !isDisabled} />
+    </div>
+  );
+}
+
 export function ActionButton(props: ActionButtonProps) {
   const [isHover, setIsHover] = useState(false);
 
@@ -67,8 +149,8 @@ export function ActionButton(props: ActionButtonProps) {
   } as const;
 
   const style = {
-    width: '28px',
-    height: '28px',
+    width: '35px',
+    height: '35px',
     borderRadius: '6px',
     border: '1px solid #222',
     background: '#fff',
@@ -84,8 +166,8 @@ export function ActionButton(props: ActionButtonProps) {
 
   const iconStyle = {
     display: 'block',
-    width: '16px',
-    height: '16px',
+    width: '22px',
+    height: '22px',
     margin: '0 auto',
   } as const;
 
@@ -115,6 +197,67 @@ export function ActionButton(props: ActionButtonProps) {
         <img alt="" src={props.iconUrl} style={iconStyle} />
       </button>
       <Tooltip text={props.tooltipText} visible={isHover} />
+    </div>
+  );
+}
+
+export function PopupActions(props: PopupActionsProps) {
+  const barStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+  } as const;
+
+  const groupStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  } as const;
+
+  const iconStyle = {
+    display: 'block',
+    width: '14px',
+    height: '14px',
+  } as const;
+
+  const closeStyle = {
+    display: 'block',
+    width: '14px',
+    height: '14px',
+  } as const;
+
+  return (
+    <div style={barStyle}>
+      <div style={groupStyle}>
+        <TooltipButton
+          label="Save as SVG"
+          disabled={!props.svgEnabled}
+          onClick={props.onSvg}
+        >
+          <span>SVG</span>
+        </TooltipButton>
+        <TooltipButton
+          label="Save as PNG"
+          disabled={!props.pngEnabled}
+          onClick={props.onPng}
+        >
+          <span>PNG</span>
+        </TooltipButton>
+        <TooltipButton
+          label="Open in new tab"
+          disabled={!props.openEnabled}
+          onClick={props.onOpen}
+          variant="icon"
+        >
+          <img alt="" src={props.openIconUrl} style={iconStyle} />
+        </TooltipButton>
+      </div>
+      <div style={groupStyle}>
+        <TooltipButton label="Close" onClick={props.onClose} variant="icon">
+          <img alt="" src={props.closeIconUrl} style={closeStyle} />
+        </TooltipButton>
+      </div>
     </div>
   );
 }

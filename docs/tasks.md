@@ -56,6 +56,9 @@
 - [x] ポップアップ右上に閉じるボタンを追加する。`spec: 004-popup-lifecycle`
 - [x] 閉じるボタンにツールチップを付ける。`spec: 004-popup-lifecycle`
 - [x] ポップアップが画面外に出ないように位置を補正する。`spec: 004-popup-lifecycle`
+- [x] 閉じるボタンをアクションバー内に移し、右寄せ配置にする。`spec: 004-popup-lifecycle`
+- [x] ポップアップ上部のボタン群の高さを統一する。`spec: 004-popup-lifecycle`
+- [x] 閉じるボタンのアイコンに `public/close.svg` を使用する。`spec: 004-popup-lifecycle`
 
 - [x] Mermaid テキストを SVG へレンダリングし、拡張機能のコンテナ内に表示する処理を追加する。`spec: 005-mermaid-render`
 - [x] 初回レンダリング時のみ Mermaid ライブラリを遅延読み込みする。`spec: 005-mermaid-render`
@@ -70,6 +73,7 @@
 
 - [x] 再利用可能なツールチップUIを追加する（矢印とアニメーションを含む）。`spec: 006-tooltip-ui`
 - [x] アクションボタンにツールチップ「View Mermaid diagram」を表示する。`spec: 006-tooltip-ui`
+- [x] ポップアップのアクションボタンにもツールチップを適用する。`spec: 006-tooltip-ui`
 
 - [x] ポップアップ内に SVG/PNG の保存アクションを追加する。`spec: 009-export-rendered-image`
 - [x] SVG をそのままダウンロードできるようにする。`spec: 009-export-rendered-image`

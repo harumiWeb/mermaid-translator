@@ -30,3 +30,4 @@ Provide a lightweight, reusable tooltip for extension UI elements.
 
 - Tooltip can be used by the action button
 - Tooltip shows text "View Mermaid diagram" for the action button
+- Tooltip is used on popup action buttons

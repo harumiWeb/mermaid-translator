@@ -13,6 +13,7 @@ const iconPath = fileURLToPath(new URL('public/mermaid-icon.svg', rootUrl));
 const externalIconPath = fileURLToPath(
   new URL('public/external-link-icon.svg', rootUrl)
 );
+const closeIconPath = fileURLToPath(new URL('public/close.svg', rootUrl));
 const contentScriptPath = fileURLToPath(
   new URL('dist/content/main.js', rootUrl)
 );
@@ -39,6 +40,10 @@ function copyStaticFiles() {
       await copyFile(
         externalIconPath,
         fileURLToPath(new URL('dist/external-link-icon.svg', rootUrl))
+      );
+      await copyFile(
+        closeIconPath,
+        fileURLToPath(new URL('dist/close.svg', rootUrl))
       );
 
       const raw = await readFile(contentScriptPath);
