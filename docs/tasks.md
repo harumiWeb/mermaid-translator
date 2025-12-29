@@ -70,3 +70,8 @@
 - [x] SVG をそのままダウンロードできるようにする。`spec: 009-export-rendered-image`
 - [x] SVG を PNG に変換してダウンロードできるようにする。`spec: 009-export-rendered-image`
 - [x] エクスポート失敗時はポップアップ内に短いエラーメッセージを表示する。`spec: 009-export-rendered-image`
+
+- [x] ポップアップ内に新規タブ表示ボタンを追加する。`spec: 010-open-in-new-tab`
+- [x] SVG を新規タブで開く。`spec: 010-open-in-new-tab`
+- [x] 新規タブは doctype 付きのHTMLで表示する。`spec: 010-open-in-new-tab`
+- [x] レンダリング完了まで新規タブボタンを無効化する。`spec: 010-open-in-new-tab`

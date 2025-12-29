@@ -12,7 +12,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["mermaid-icon.svg"],
+      "resources": ["mermaid-icon.svg", "external-link-icon.svg"],
       "matches": ["<all_urls>"]
     }
   ]

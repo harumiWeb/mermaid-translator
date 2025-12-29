@@ -14,6 +14,7 @@ only after explicit user interaction.
 - Render inside extension-owned container
 - Load the Mermaid library lazily on the first render trigger
   via `src/content/mermaidRenderer.ts`
+- Use legacy MathML to avoid KaTeX warnings on pages without doctype
 
 ## Out of Scope
 

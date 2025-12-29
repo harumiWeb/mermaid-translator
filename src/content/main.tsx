@@ -19,6 +19,11 @@ let popupRoot: HTMLElement | null = null;
 let popupSelectionText: string | null = null;
 let popupMessage: HTMLElement | null = null;
 let popupSvg: string | null = null;
+let popupActions: {
+  svgButton: HTMLButtonElement;
+  pngButton: HTMLButtonElement;
+  openButton: HTMLButtonElement;
+} | null = null;
 let outsidePointerHandler: ((event: PointerEvent) => void) | null = null;
 let beforeUnloadBound = false;
 
@@ -31,6 +36,7 @@ function resolveIconUrl(): string {
 }
 
 const iconUrl = resolveIconUrl();
+const externalIconUrl = chrome.runtime.getURL('external-link-icon.svg');
 const tooltipText = 'View Mermaid diagram';
 const renderErrorMessage = 'Unable to render Mermaid diagram.';
 
@@ -170,6 +176,19 @@ function setPopupMessage(message: string | null): void {
   popupMessage.style.display = message ? 'block' : 'none';
 }
 
+function setActionsEnabled(enabled: boolean): void {
+  if (!popupActions) {
+    return;
+  }
+
+  popupActions.svgButton.disabled = !enabled;
+  popupActions.pngButton.disabled = !enabled;
+  popupActions.openButton.disabled = !enabled;
+  popupActions.svgButton.style.opacity = enabled ? '1' : '0.5';
+  popupActions.pngButton.style.opacity = enabled ? '1' : '0.5';
+  popupActions.openButton.style.opacity = enabled ? '1' : '0.5';
+}
+
 function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -177,6 +196,32 @@ function downloadBlob(blob: Blob, filename: string): void {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function openSvgInNewTab(svgText: string): void {
+  const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Mermaid Diagram</title>
+    <style>
+      html, body { margin: 0; padding: 0; background: #fff; }
+      svg { display: block; max-width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>${svgText}</body>
+</html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.click();
+
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 60000);
 }
 
 function normalizeSvg(svgText: string): {
@@ -275,6 +320,7 @@ function dismissPopup(): void {
   popupSelectionText = null;
   popupMessage = null;
   popupSvg = null;
+  popupActions = null;
 
   if (outsidePointerHandler) {
     document.removeEventListener('pointerdown', outsidePointerHandler, true);
@@ -355,6 +401,8 @@ function showPopup(
   svgButton.style.color = '#111';
   svgButton.style.cursor = 'pointer';
   svgButton.style.padding = '4px 8px';
+  svgButton.disabled = true;
+  svgButton.style.opacity = '0.5';
   svgButton.addEventListener('click', () => {
     if (!popupSvg) {
       setPopupMessage(renderErrorMessage);
@@ -375,6 +423,8 @@ function showPopup(
   pngButton.style.color = '#111';
   pngButton.style.cursor = 'pointer';
   pngButton.style.padding = '4px 8px';
+  pngButton.disabled = true;
+  pngButton.style.opacity = '0.5';
   pngButton.addEventListener('click', () => {
     void (async () => {
       if (!popupSvg) {
@@ -392,8 +442,42 @@ function showPopup(
     })();
   });
 
+  const openButton = document.createElement('button');
+  openButton.type = 'button';
+  openButton.title = 'Open in new tab';
+  openButton.setAttribute('aria-label', 'Open in new tab');
+  openButton.style.border = '1px solid #222';
+  openButton.style.borderRadius = '6px';
+  openButton.style.background = '#fff';
+  openButton.style.color = '#111';
+  openButton.style.cursor = 'pointer';
+  openButton.style.padding = '4px 6px';
+  openButton.style.display = 'flex';
+  openButton.style.alignItems = 'center';
+  openButton.style.justifyContent = 'center';
+  openButton.disabled = true;
+  openButton.style.opacity = '0.5';
+
+  const openIcon = document.createElement('img');
+  openIcon.alt = '';
+  openIcon.src = externalIconUrl;
+  openIcon.style.width = '14px';
+  openIcon.style.height = '14px';
+  openButton.appendChild(openIcon);
+
+  openButton.addEventListener('click', () => {
+    setPopupMessage(null);
+    if (!popupSvg) {
+      setPopupMessage(renderErrorMessage);
+      return;
+    }
+
+    openSvgInNewTab(popupSvg);
+  });
+
   actions.appendChild(svgButton);
   actions.appendChild(pngButton);
+  actions.appendChild(openButton);
 
   const message = document.createElement('div');
   message.style.marginTop = '8px';
@@ -417,6 +501,8 @@ function showPopup(
   popupSelectionText = selectionText;
   popupMessage = message;
   popupSvg = null;
+  popupActions = { svgButton, pngButton, openButton };
+  setActionsEnabled(false);
 
   outsidePointerHandler = (event: PointerEvent) => {
     if (!popupRoot) {
@@ -465,11 +551,13 @@ function handleActionClick(): void {
     if (!svg) {
       popupSvg = null;
       setPopupMessage(renderErrorMessage);
+      setActionsEnabled(false);
       return;
     }
 
     popupSvg = svg;
     setPopupMessage(null);
+    setActionsEnabled(true);
   });
 }
 

@@ -10,6 +10,9 @@ const contentEntry = fileURLToPath(new URL('src/content/main.tsx', rootUrl));
 const manifestPath = fileURLToPath(new URL('manifest.json', rootUrl));
 const stylePath = fileURLToPath(new URL('src/content/style.css', rootUrl));
 const iconPath = fileURLToPath(new URL('public/mermaid-icon.svg', rootUrl));
+const externalIconPath = fileURLToPath(
+  new URL('public/external-link-icon.svg', rootUrl)
+);
 const contentScriptPath = fileURLToPath(
   new URL('dist/content/main.js', rootUrl)
 );
@@ -32,6 +35,10 @@ function copyStaticFiles() {
       await copyFile(
         iconPath,
         fileURLToPath(new URL('dist/mermaid-icon.svg', rootUrl))
+      );
+      await copyFile(
+        externalIconPath,
+        fileURLToPath(new URL('dist/external-link-icon.svg', rootUrl))
       );
 
       const raw = await readFile(contentScriptPath);
