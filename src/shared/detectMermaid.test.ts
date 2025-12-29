@@ -27,9 +27,35 @@ describe('extractMermaidCode', () => {
     expect(extractMermaidCode(input)).toBe('flowchart TD\n  A --> B');
   });
 
+  it('extracts fenced mermaid blocks with mixed casing', () => {
+    const input = [
+      '```Mermaid',
+      'sequenceDiagram',
+      '  A->>B: hello',
+      '```',
+    ].join('\n');
+    expect(extractMermaidCode(input)).toBe('sequenceDiagram\n  A->>B: hello');
+  });
+
+  it('prefers fenced mermaid blocks even when other keywords exist', () => {
+    const input = [
+      'graph LR',
+      '```mermaid',
+      'flowchart TD',
+      '  A --> B',
+      '```',
+    ].join('\n');
+    expect(extractMermaidCode(input)).toBe('flowchart TD\n  A --> B');
+  });
+
   it('extracts from the first Mermaid keyword line when unfenced', () => {
     const input = ['not related', 'flowchart TD', '  A --> B'].join('\n');
     expect(extractMermaidCode(input)).toBe('flowchart TD\n  A --> B');
+  });
+
+  it('keeps unfenced trailing fences as text', () => {
+    const input = ['flowchart TD', '  A --> B', '```'].join('\n');
+    expect(extractMermaidCode(input)).toBe('flowchart TD\n  A --> B\n```');
   });
 
   it('returns trimmed input when nothing matches', () => {
