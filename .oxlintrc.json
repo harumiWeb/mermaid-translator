@@ -1,0 +1,79 @@
+{
+  "$schema": "https://oxc-project.github.io/oxlint/schema.json",
+
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+
+  "globals": {
+    "chrome": "readonly"
+  },
+
+  "rules": {
+    "no-undef": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "no-shadow": "error",
+    "no-redeclare": "error",
+    "no-fallthrough": "error",
+    "no-implicit-globals": "error",
+
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      {
+        "prefer": "type-imports"
+      }
+    ],
+
+    "curly": ["error", "all"],
+    "eqeqeq": ["error", "always"],
+    "no-nested-ternary": "error",
+    "no-else-return": "error",
+
+    "no-alert": "error",
+    "no-eval": "error",
+    "no-implied-eval": "error",
+
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "react",
+            "message": "React is forbidden. Use Preact only."
+          },
+          {
+            "name": "react-dom",
+            "message": "ReactDOM is forbidden. Use Preact."
+          },
+          {
+            "name": "fs",
+            "message": "Node.js APIs are forbidden in content scripts."
+          },
+          {
+            "name": "path",
+            "message": "Node.js APIs are forbidden in content scripts."
+          }
+        ]
+      }
+    ],
+
+    "no-empty-function": "error",
+    "no-useless-constructor": "error",
+    "no-extra-bind": "error",
+
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ]
+  }
+}

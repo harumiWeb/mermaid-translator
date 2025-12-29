@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Mermaid Selection Renderer",
+  "version": "0.1.0",
+  "description": "Render Mermaid diagram from selected text",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/main.js"],
+      "css": ["content/style.css"]
+    }
+  ]
+}

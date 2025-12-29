@@ -1,0 +1,29 @@
+{
+  "name": "mermaid-selection-renderer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "oxlint --tsconfig ./tsconfig.json --type-aware ./src",
+    "format": "oxfmt --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.18.2",
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.2",
+    "oxfmt": "^0.20.0",
+    "oxlint": "^1.35.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0",
+    "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "preact": "^10.28.1"
+  }
+}
