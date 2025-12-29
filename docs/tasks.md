@@ -46,10 +46,13 @@
 - [x] ボタンクリック時に現在の選択テキストを取得し、レンダラーへ渡すトリガー処理を追加する。`spec: 003-mermaid-render-trigger`
 - [x] クリック以外の経路でレンダリングが起きないことを担保する。`spec: 003-mermaid-render-trigger`
 
-- [ ] レンダー結果を表示する拡張機能専用ポップアップコンテナをオンデマンドで作成する。`spec: 004-popup-lifecycle`
-- [ ] ポップアップを Shadow DOM 内に描画し、ホストページのスタイルに影響しないことを担保する。`spec: 004-popup-lifecycle`
-- [ ] ポップアップを以下の条件で確実に破棄する：選択解除、選択変更、ポップアップ外クリック、ページ遷移/再読み込み。`spec: 004-popup-lifecycle`
-- [ ] ポップアップ破棄処理を複数回呼べる安全な実装にする。`spec: 004-popup-lifecycle`
+- [x] レンダー結果を表示する拡張機能専用ポップアップコンテナをオンデマンドで作成する。`spec: 004-popup-lifecycle`
+- [x] ポップアップを Shadow DOM 内に描画し、ホストページのスタイルに影響しないことを担保する。`spec: 004-popup-lifecycle`
+- [x] ポップアップを以下の条件で確実に破棄する：選択解除、選択変更、ポップアップ外クリック、ページ遷移/再読み込み。`spec: 004-popup-lifecycle`
+- [x] ポップアップ破棄処理を複数回呼べる安全な実装にする。`spec: 004-popup-lifecycle`
+- [x] ポップアップの最小幅を 550px、最大幅をウィンドウ幅の 50% に設定する。`spec: 004-popup-lifecycle`
+- [x] ポップアップ右上に閉じるボタンを追加する。`spec: 004-popup-lifecycle`
+- [x] 閉じるボタンにツールチップを付ける。`spec: 004-popup-lifecycle`
 
 - [ ] Mermaid テキストを SVG へレンダリングし、拡張機能のコンテナ内に表示する処理を追加する。`spec: 005-mermaid-render`
 - [x] 初回レンダリング時のみ Mermaid ライブラリを遅延読み込みする。`spec: 005-mermaid-render`
