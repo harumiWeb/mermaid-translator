@@ -18,6 +18,9 @@ importers:
       '@preact/preset-vite':
         specifier: ^2.10.2
         version: 2.10.2(@babel/core@7.28.5)(preact@10.28.1)(vite@7.3.0(yaml@2.8.2))
+      cross-env:
+        specifier: ^10.1.0
+        version: 10.1.0
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -29,7 +32,10 @@ importers:
         version: 0.20.0
       oxlint:
         specifier: ^1.35.0
-        version: 1.35.0
+        version: 1.35.0(oxlint-tsgolint@0.1.6)
+      oxlint-tsgolint:
+        specifier: ^0.1.3
+        version: 0.1.6
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -155,6 +161,9 @@ packages:
 
   '@chevrotain/utils@11.0.3':
     resolution: {integrity: sha512-YslZMgtJUyuMbZ+aKvfF3x1f5liK4mWNxghFRv7jqRR9C3R3fAOGTTKvxXDa2Y1s9zSbcpuO0cAxDYsc9SrXoQ==}
+
+  '@epic-web/invariant@1.0.0':
+    resolution: {integrity: sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA==}
 
   '@esbuild/aix-ppc64@0.27.2':
     resolution: {integrity: sha512-GZMB+a0mOMZs4MpDbj8RJp4cw+w1WV5NYD6xzgvzUJ5Ek2jerwfO2eADyI6ExDSUED+1X8aMbegahsJi+8mgpw==}
@@ -374,6 +383,36 @@ packages:
 
   '@oxfmt/win32-x64@0.20.0':
     resolution: {integrity: sha512-fkJqHbJaoOMRmrjHSljyb4/7BgXO3xPLBsJSFGtm3mpfW0HHFbAKvd4/6njhqJz9KY+b3RWP1WssjFshcqQQ4w==}
+    cpu: [x64]
+    os: [win32]
+
+  '@oxlint-tsgolint/darwin-arm64@0.1.6':
+    resolution: {integrity: sha512-KxA6MQjHnVBNPi4K3o7HHNSKyTxwbm4elKmkgys/oxxeQ1Y5g4bB95AhpwRVzaq8MZ/Dt9EblQY5g6c5t6eoPg==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@oxlint-tsgolint/darwin-x64@0.1.6':
+    resolution: {integrity: sha512-rcl3yhOei95Mcozud1RgqR2DZ8j0JNYgQgtmj1EhpY2f/qSxsny4DDGQFtCk4An6nt4vXOAXG9Q/0gzjifbQgQ==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@oxlint-tsgolint/linux-arm64@0.1.6':
+    resolution: {integrity: sha512-DeI8EtXX/5PtHlj9gOfuxsL/pMgl9z1b9XZnGZaBmrEZkIUD7A+KYZo8DUGYpdf5ZiFZPR9Vl5wtOZVXYZJ/bQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxlint-tsgolint/linux-x64@0.1.6':
+    resolution: {integrity: sha512-0J3kxkRwauJPqAqirmB9arOXkQrjxQL4Rc72ev15vTxLwQf6yc0bwBCgeCT9xPZUfWesolBoePP+eOaLf8ebTg==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxlint-tsgolint/win32-arm64@0.1.6':
+    resolution: {integrity: sha512-4Yw33pCVovRo9Mdf9FTwwJWeIc9NG8fkd3VCNSSrO+/owlmx7SIKW13ezadoiKOx1/ycIrT0uUYnovSRv56uDg==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@oxlint-tsgolint/win32-x64@0.1.6':
+    resolution: {integrity: sha512-SSG6OYhxrR+Ar2sERqKQ0e/vEEuu/0favPmrbV8/qFAlNfVcipQAlxi/ZDd+m4ft6mTYHfiAg0OS1oGNgliIwA==}
     cpu: [x64]
     os: [win32]
 
@@ -786,6 +825,15 @@ packages:
   cose-base@2.2.0:
     resolution: {integrity: sha512-AzlgcsCbUMymkADOJtQm3wO9S3ltPfYOFD5033keQn9NJzIbtnZj+UdBJe7DYml/8TdbtHJW3j58SOnKhWY/5g==}
 
+  cross-env@10.1.0:
+    resolution: {integrity: sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  cross-spawn@7.0.6:
+    resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
+    engines: {node: '>= 8'}
+
   css-select@5.2.2:
     resolution: {integrity: sha512-TizTzUddG/xYLA3NXodFM0fSbNizXjOKhqiQQwvhlspadZokn1KDy0NZFS0wuEubIYAV5/c1/lAr0TaaFXEXzw==}
 
@@ -1076,6 +1124,9 @@ packages:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
     engines: {node: '>=0.12.0'}
 
+  isexe@2.0.0:
+    resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -1186,6 +1237,10 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
+  oxlint-tsgolint@0.1.6:
+    resolution: {integrity: sha512-o2Fx5rw1HxA/sbXMKGpKpqaEl7LSDOwS2zblXqedUWav0jFa08M+A/nE6KeQkpwdvmT7iNqZfRDCGEfIE6wQoA==}
+    hasBin: true
+
   oxlint@1.35.0:
     resolution: {integrity: sha512-QDX1aUgaiqznkGfTM2qHwva2wtKqhVoqPSVXrnPz+yLUhlNadikD3QRuRtppHl7WGuy3wG6nKAuR8lash3aWSg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -1201,6 +1256,10 @@ packages:
 
   path-data-parser@0.1.0:
     resolution: {integrity: sha512-NOnmBpt5Y2RWbuv0LMzsayp3lVylAHLPUTut412ZA3l+C4uw4ZVkQbjShYCQ8TCpUMdPapr4YjUqLYD6v68j+w==}
+
+  path-key@3.1.1:
+    resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
+    engines: {node: '>=8'}
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
@@ -1264,6 +1323,14 @@ packages:
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
+
+  shebang-command@2.0.0:
+    resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
+    engines: {node: '>=8'}
+
+  shebang-regex@3.0.0:
+    resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
+    engines: {node: '>=8'}
 
   siginfo@2.0.0:
     resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
@@ -1460,6 +1527,11 @@ packages:
   vscode-uri@3.0.8:
     resolution: {integrity: sha512-AyFQ0EVmsOZOlAnxoFOGOq1SQDWAB7C6aqMGS23svWAllfOaxbuFvcT8D1i8z3Gyn8fraVeZNNmN6e9bxxXkKw==}
 
+  which@2.0.2:
+    resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
+    engines: {node: '>= 8'}
+    hasBin: true
+
   why-is-node-running@2.3.0:
     resolution: {integrity: sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==}
     engines: {node: '>=8'}
@@ -1632,6 +1704,8 @@ snapshots:
 
   '@chevrotain/utils@11.0.3': {}
 
+  '@epic-web/invariant@1.0.0': {}
+
   '@esbuild/aix-ppc64@0.27.2':
     optional: true
 
@@ -1763,6 +1837,24 @@ snapshots:
     optional: true
 
   '@oxfmt/win32-x64@0.20.0':
+    optional: true
+
+  '@oxlint-tsgolint/darwin-arm64@0.1.6':
+    optional: true
+
+  '@oxlint-tsgolint/darwin-x64@0.1.6':
+    optional: true
+
+  '@oxlint-tsgolint/linux-arm64@0.1.6':
+    optional: true
+
+  '@oxlint-tsgolint/linux-x64@0.1.6':
+    optional: true
+
+  '@oxlint-tsgolint/win32-arm64@0.1.6':
+    optional: true
+
+  '@oxlint-tsgolint/win32-x64@0.1.6':
     optional: true
 
   '@oxlint/darwin-arm64@1.35.0':
@@ -2147,6 +2239,17 @@ snapshots:
     dependencies:
       layout-base: 2.0.1
 
+  cross-env@10.1.0:
+    dependencies:
+      '@epic-web/invariant': 1.0.0
+      cross-spawn: 7.0.6
+
+  cross-spawn@7.0.6:
+    dependencies:
+      path-key: 3.1.1
+      shebang-command: 2.0.0
+      which: 2.0.2
+
   css-select@5.2.2:
     dependencies:
       boolbase: 1.0.0
@@ -2459,6 +2562,8 @@ snapshots:
 
   is-number@7.0.0: {}
 
+  isexe@2.0.0: {}
+
   js-tokens@4.0.0: {}
 
   jsesc@3.1.0: {}
@@ -2599,7 +2704,16 @@ snapshots:
       '@oxfmt/win32-arm64': 0.20.0
       '@oxfmt/win32-x64': 0.20.0
 
-  oxlint@1.35.0:
+  oxlint-tsgolint@0.1.6:
+    optionalDependencies:
+      '@oxlint-tsgolint/darwin-arm64': 0.1.6
+      '@oxlint-tsgolint/darwin-x64': 0.1.6
+      '@oxlint-tsgolint/linux-arm64': 0.1.6
+      '@oxlint-tsgolint/linux-x64': 0.1.6
+      '@oxlint-tsgolint/win32-arm64': 0.1.6
+      '@oxlint-tsgolint/win32-x64': 0.1.6
+
+  oxlint@1.35.0(oxlint-tsgolint@0.1.6):
     optionalDependencies:
       '@oxlint/darwin-arm64': 1.35.0
       '@oxlint/darwin-x64': 1.35.0
@@ -2609,10 +2723,13 @@ snapshots:
       '@oxlint/linux-x64-musl': 1.35.0
       '@oxlint/win32-arm64': 1.35.0
       '@oxlint/win32-x64': 1.35.0
+      oxlint-tsgolint: 0.1.6
 
   package-manager-detector@1.6.0: {}
 
   path-data-parser@0.1.0: {}
+
+  path-key@3.1.1: {}
 
   pathe@2.0.3: {}
 
@@ -2694,6 +2811,12 @@ snapshots:
   safer-buffer@2.1.2: {}
 
   semver@6.3.1: {}
+
+  shebang-command@2.0.0:
+    dependencies:
+      shebang-regex: 3.0.0
+
+  shebang-regex@3.0.0: {}
 
   siginfo@2.0.0: {}
 
@@ -2841,6 +2964,10 @@ snapshots:
       vscode-languageserver-protocol: 3.17.5
 
   vscode-uri@3.0.8: {}
+
+  which@2.0.2:
+    dependencies:
+      isexe: 2.0.0
 
   why-is-node-running@2.3.0:
     dependencies:

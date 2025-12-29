@@ -30,9 +30,9 @@
 
 ## タスク
 
-- [ ] 選択テキストの取得と更新を行う処理を追加する（空・空白のみは無視し、前回と異なる場合のみ内部状態を更新する）。`spec: 001-selection-detection`
-- [ ] 選択取得処理の失敗を握りつぶし、ユーザー体験に影響しないようにする。`spec: 001-selection-detection`
-- [ ] 開発環境のみで選択テキストを内部ログできるようにする。`spec: 001-selection-detection`
+- [x] 選択テキストの取得と更新を行う処理を追加する（空・空白のみは無視し、前回と異なる場合のみ内部状態を更新する）。`spec: 001-selection-detection`
+- [x] 選択取得処理の失敗を握りつぶし、ユーザー体験に影響しないようにする。`spec: 001-selection-detection`
+- [x] 開発環境のみで選択テキストを内部ログできるようにする。`spec: 001-selection-detection`
 
 - [ ] Mermaid 判定を行う純粋関数を追加し、選択文字列内に Mermaid 図形キーワードが含まれる場合のみ Mermaid-like と判定する。`spec: 002-action-button-ui`
 
@@ -53,3 +53,27 @@
 - [ ] 初回レンダリング時のみ Mermaid ライブラリを遅延読み込みする。`spec: 005-mermaid-render`
 - [ ] 不正な Mermaid コードの場合は表示を行わず静かに失敗する。`spec: 005-mermaid-render`
 - [ ] レンダリング処理中のエラーを外部に漏らさず、ユーザーに影響しないことを担保する。`spec: 005-mermaid-render`
+
+- [x] ビルド時に `manifest.json` を `dist/manifest.json` に出力する。`spec: 006-build-output`
+- [x] ビルド時に `src/content/style.css` を `dist/content/style.css` に出力する。`spec: 006-build-output`
+- [x] ビルド時にコンテンツスクリプトを `dist/content/main.js` に出力する。`spec: 006-build-output`
+
+- [x] ビルド時フラグで production でもログを出せるようにする。`spec: 007-dev-logging-flag`
+- [x] フラグ未指定時は production でログが出ないことを担保する。`spec: 007-dev-logging-flag`
+
+- [x] `cross-env` を使った `build:dev` スクリプトを追加する。`spec: 008-dev-build-script`
+
+- [x] `oxlint-tsgolint` を devDependencies に追加する。`spec: 009-oxlint-tsgolint`
+
+- [x] `tsconfig.json` の include を明示的な globs に更新する。`spec: 010-tsconfig-include-globs`
+
+- [x] 型解決用に `tsconfig.lint.json` を追加し、lint スクリプトから参照する。`spec: 011-lint-tsconfig`
+
+- [x] `lint` を oxlint（非 type-aware）に変更する。`spec: 012-lint-split`
+- [x] `lint:types` を追加し、tsgolint を `tsconfig.lint.json` で実行する。`spec: 012-lint-split`
+
+- [x] `import.meta.env` の型定義を追加する。`spec: 013-vite-env-types`
+
+- [x] 空ファイルとして扱われないよう `src/shared/detectMermaid.ts` と `src/content/ui.tsx` を非空モジュールにする。`spec: 014-lint-cleanup`
+- [x] `import()` 型注釈を type-only import に置き換える。`spec: 014-lint-cleanup`
+- [x] `if` の単文 return をブロック形式に直す。`spec: 014-lint-cleanup`
