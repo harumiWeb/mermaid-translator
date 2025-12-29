@@ -54,12 +54,11 @@
 - [x] ポップアップ右上に閉じるボタンを追加する。`spec: 004-popup-lifecycle`
 - [x] 閉じるボタンにツールチップを付ける。`spec: 004-popup-lifecycle`
 
-- [ ] Mermaid テキストを SVG へレンダリングし、拡張機能のコンテナ内に表示する処理を追加する。`spec: 005-mermaid-render`
+- [x] Mermaid テキストを SVG へレンダリングし、拡張機能のコンテナ内に表示する処理を追加する。`spec: 005-mermaid-render`
 - [x] 初回レンダリング時のみ Mermaid ライブラリを遅延読み込みする。`spec: 005-mermaid-render`
 - [x] 選択文字列から Mermaid コードブロックがあれば抽出する。`spec: 005-mermaid-render`
 - [x] 不正な Mermaid コードの場合はポップアップ内にエラーメッセージを表示する。`spec: 005-mermaid-render`
 - [x] Mermaid キーワードが出現する行以前のテキストを破棄する。`spec: 005-mermaid-render`
-- [ ] レンダリング処理中のエラーを外部に漏らさず、ユーザーに影響しないことを担保する。`spec: 005-mermaid-render`
 
 - [x] `dist/content/main.js` を UTF-8 (BOMなし) に正規化する。`spec: 007-output-encoding`
 - [x] `dist/content/main.js` が ASCII 互換になるようにビルド出力を調整する。`spec: 007-output-encoding`
