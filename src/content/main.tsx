@@ -6,6 +6,23 @@ const isDev = import.meta.env.DEV;
 const isLoggingEnabled =
   isDev || import.meta.env.VITE_ENABLE_LOGGING === 'true';
 
+const kaTeXWarningSnippet = "KaTeX doesn't work in quirks mode.";
+
+function suppressKaTeXQuirksWarning(): void {
+  const originalWarn = console.warn.bind(console);
+  console.warn = (...args: unknown[]) => {
+    const hasKaTeXWarning = args.some(
+      (arg) => typeof arg === 'string' && arg.includes(kaTeXWarningSnippet)
+    );
+    if (hasKaTeXWarning) {
+      return;
+    }
+    originalWarn(...args);
+  };
+}
+
+suppressKaTeXQuirksWarning();
+
 type ButtonPosition = {
   top: number;
   left: number;

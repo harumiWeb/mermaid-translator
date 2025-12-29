@@ -15,6 +15,29 @@ only after explicit user interaction.
 - Load the Mermaid library lazily on the first render trigger
   via `src/content/mermaidRenderer.ts`
 - Use legacy MathML to avoid KaTeX warnings on pages without doctype
+- Suppress only the KaTeX quirks-mode warning from Mermaid in the content script
+  <<<<<<< ours
+  <<<<<<< ours
+- Trim trailing non-Mermaid lines from unfenced selections using lightweight heuristics
+  <<<<<<< ours
+- Drop stray fence markers (```), when present at the end of unfenced selections
+  <<<<<<< ours
+- When Mermaid render fails, prefer Mermaid's default error rendering inside the popup container
+  <<<<<<< ours
+- If Mermaid inserts a syntax error SVG into the page body, relocate it into the popup container
+  <<<<<<< ours
+- # If Mermaid returns an empty SVG or error SVG, treat it as a render failure and show it in the popup
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > theirs
 
 ## Out of Scope
 

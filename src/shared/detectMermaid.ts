@@ -9,6 +9,11 @@ const mermaidKeywords = [
   'pie',
   'mindmap',
   'timeline',
+  'journey',
+  'gitGraph',
+  'C4Context',
+  'requirementDiagram',
+  'architecture-beta',
 ];
 
 export function isMermaidLike(text: string): boolean {

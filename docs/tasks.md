@@ -59,6 +59,31 @@
 - [x] 選択文字列から Mermaid コードブロックがあれば抽出する。`spec: 005-mermaid-render`
 - [x] 不正な Mermaid コードの場合はポップアップ内にエラーメッセージを表示する。`spec: 005-mermaid-render`
 - [x] Mermaid キーワードが出現する行以前のテキストを破棄する。`spec: 005-mermaid-render`
+- [x] Mermaid レンダリング時のみ KaTeX quirks mode 警告を抑制する。`spec: 005-mermaid-render`
+- [x] Mermaid 由来の KaTeX quirks mode 警告を常に抑制する。`spec: 005-mermaid-render`
+      <<<<<<< ours
+      <<<<<<< ours
+- [x] Mermaid コード末尾の非Mermaid行を軽量ヒューリスティクスで削除する。`spec: 005-mermaid-render`
+      <<<<<<< ours
+- [x] unfencedな選択の末尾にある ``` を除去する。`spec: 005-mermaid-render`
+      <<<<<<< ours
+- [x] Mermaid のデフォルトエラーレンダリングをポップアップ内で優先表示する。`spec: 005-mermaid-render`
+      <<<<<<< ours
+- [x] Mermaid が body 直下に挿入したエラーSVGをポップアップへ移動する。`spec: 005-mermaid-render`
+      <<<<<<< ours
+- [x] # Mermaid が空SVG/エラーSVGを返した場合は失敗扱いにする。`spec: 005-mermaid-render`
+
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > # theirs
+  > > > > > > >
+  > > > > > > > theirs
 
 - [x] `dist/content/main.js` を UTF-8 (BOMなし) に正規化する。`spec: 007-output-encoding`
 - [x] `dist/content/main.js` が ASCII 互換になるようにビルド出力を調整する。`spec: 007-output-encoding`

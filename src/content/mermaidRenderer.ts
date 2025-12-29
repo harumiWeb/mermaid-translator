@@ -18,12 +18,13 @@ export async function renderMermaid(
         startOnLoad: false,
         securityLevel: 'strict',
         theme: 'default',
+        legacyMathML: true,
+        forceLegacyMathML: true,
       });
     }
 
     const id = `mermaid-${crypto.randomUUID()}`;
     const { svg } = await mermaidApi.render(id, code);
-
     container.innerHTML = svg;
     return svg;
   } catch {
