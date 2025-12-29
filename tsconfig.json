@@ -33,7 +33,12 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/vite-env.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/vite-env.d.ts",
+    "src/chrome.d.ts"
+  ],
   "exclude": ["dist", "node_modules"],
   "types": ["vitest"]
 }

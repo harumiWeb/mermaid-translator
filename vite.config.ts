@@ -9,6 +9,7 @@ const distContentDir = fileURLToPath(new URL('dist/content', rootUrl));
 const contentEntry = fileURLToPath(new URL('src/content/main.tsx', rootUrl));
 const manifestPath = fileURLToPath(new URL('manifest.json', rootUrl));
 const stylePath = fileURLToPath(new URL('src/content/style.css', rootUrl));
+const iconPath = fileURLToPath(new URL('public/mermaid-icon.svg', rootUrl));
 
 function copyStaticFiles() {
   return {
@@ -24,6 +25,10 @@ function copyStaticFiles() {
       await copyFile(
         stylePath,
         fileURLToPath(new URL('dist/content/style.css', rootUrl))
+      );
+      await copyFile(
+        iconPath,
+        fileURLToPath(new URL('dist/mermaid-icon.svg', rootUrl))
       );
     },
   };

@@ -34,12 +34,14 @@
 - [x] 選択取得処理の失敗を握りつぶし、ユーザー体験に影響しないようにする。`spec: 001-selection-detection`
 - [x] 開発環境のみで選択テキストを内部ログできるようにする。`spec: 001-selection-detection`
 
-- [ ] Mermaid 判定を行う純粋関数を追加し、選択文字列内に Mermaid 図形キーワードが含まれる場合のみ Mermaid-like と判定する。`spec: 002-action-button-ui`
+- [x] Mermaid 判定を行う純粋関数を追加し、選択文字列内に Mermaid 図形キーワードが含まれる場合のみ Mermaid-like と判定する。`spec: 002-action-button-ui`
 
-- [ ] Mermaid らしい選択時のみ表示されるアクションボタン UI を作成する（非選択・非 Mermaid 時は非表示）。`spec: 002-action-button-ui`
-- [ ] アクションボタンの表示位置を選択範囲の矩形に基づいて決定できるようにする（選択文字列の上書きや重なりは避ける）。`spec: 002-action-button-ui`
-- [ ] ボタン表示・非表示の切り替えが選択変更と同期するようにする。`spec: 002-action-button-ui`
-- [ ] ボタンクリックのハンドラを追加し、他の副作用を持たないことを保証する。`spec: 002-action-button-ui`
+- [x] Mermaid らしい選択時のみ表示されるアクションボタン UI を作成する（非選択・非 Mermaid 時は非表示）。`spec: 002-action-button-ui`
+- [x] アクションボタンの表示位置を選択範囲の矩形に基づいて決定できるようにする（選択文字列の上書きや重なりは避ける）。`spec: 002-action-button-ui`
+- [x] ボタン表示・非表示の切り替えが選択変更と同期するようにする。`spec: 002-action-button-ui`
+- [x] ボタンクリックのハンドラを追加し、他の副作用を持たないことを保証する。`spec: 002-action-button-ui`
+- [x] アクションボタンに `public/mermaid-icon.svg` を表示する。`spec: 002-action-button-ui`
+- [x] `mermaid-icon.svg` を web accessible resources に追加する。`spec: 002-action-button-ui`
 
 - [ ] ボタンクリック時に現在の選択テキストを取得し、レンダラーへ渡すトリガー処理を追加する。`spec: 003-mermaid-render-trigger`
 - [ ] クリック以外の経路でレンダリングが起きないことを担保する。`spec: 003-mermaid-render-trigger`
@@ -53,3 +55,6 @@
 - [ ] 初回レンダリング時のみ Mermaid ライブラリを遅延読み込みする。`spec: 005-mermaid-render`
 - [ ] 不正な Mermaid コードの場合は表示を行わず静かに失敗する。`spec: 005-mermaid-render`
 - [ ] レンダリング処理中のエラーを外部に漏らさず、ユーザーに影響しないことを担保する。`spec: 005-mermaid-render`
+
+- [x] 再利用可能なツールチップUIを追加する（矢印とアニメーションを含む）。`spec: 006-tooltip-ui`
+- [x] アクションボタンにツールチップ「View Mermaid diagram」を表示する。`spec: 006-tooltip-ui`

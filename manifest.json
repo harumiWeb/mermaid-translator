@@ -9,5 +9,11 @@
       "js": ["content/main.js"],
       "css": ["content/style.css"]
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["mermaid-icon.svg"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }
