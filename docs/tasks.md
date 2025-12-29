@@ -82,6 +82,8 @@
 - [x] ポップアップにテーマ選択ドロップダウンを追加する。`spec: 011-theme-selection`
 - [x] テーマ選択を `localStorage` に保存・復元する。`spec: 011-theme-selection`
 - [x] テーマ変更時にポップアップ内の図を再レンダリングする。`spec: 011-theme-selection`
+
+- [x] `detectMermaid` のユニットテストを追加する。`spec: 012-tests-detect-mermaid`
 - [x] ポップアップ内に SVG/PNG の保存アクションを追加する。`spec: 009-export-rendered-image`
 - [x] SVG をそのままダウンロードできるようにする。`spec: 009-export-rendered-image`
 - [x] SVG を PNG に変換してダウンロードできるようにする。`spec: 009-export-rendered-image`
