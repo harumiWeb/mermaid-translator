@@ -60,6 +60,7 @@
 - [x] ポップアップ上部のボタン群の高さを統一する。`spec: 004-popup-lifecycle`
 - [x] 閉じるボタンのアイコンに `public/close.svg` を使用する。`spec: 004-popup-lifecycle`
 - [x] ポップアップの配色をシステム設定に合わせて切り替える。`spec: 004-popup-lifecycle`
+- [x] ポップアップのテーマ切り替えボタンを追加し、設定を保存する。`spec: 004-popup-lifecycle`
 
 - [x] Mermaid テキストを SVG へレンダリングし、拡張機能のコンテナ内に表示する処理を追加する。`spec: 005-mermaid-render`
 - [x] 初回レンダリング時のみ Mermaid ライブラリを遅延読み込みする。`spec: 005-mermaid-render`

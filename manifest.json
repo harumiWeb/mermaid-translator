@@ -16,7 +16,8 @@
         "icons/mermaid-icon.svg",
         "icons/external-link-icon.svg",
         "icons/close.svg",
-        "icons/palette.svg"
+        "icons/sun.svg",
+        "icons/moon.svg"
       ],
       "matches": ["<all_urls>"]
     }

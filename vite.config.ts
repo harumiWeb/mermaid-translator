@@ -16,9 +16,8 @@ const externalIconPath = fileURLToPath(
   new URL('public/icons/external-link-icon.svg', rootUrl)
 );
 const closeIconPath = fileURLToPath(new URL('public/icons/close.svg', rootUrl));
-const paletteIconPath = fileURLToPath(
-  new URL('public/icons/palette.svg', rootUrl)
-);
+const sunIconPath = fileURLToPath(new URL('public/icons/sun.svg', rootUrl));
+const moonIconPath = fileURLToPath(new URL('public/icons/moon.svg', rootUrl));
 const contentScriptPath = fileURLToPath(
   new URL('dist/content/main.js', rootUrl)
 );
@@ -54,8 +53,12 @@ function copyStaticFiles() {
         fileURLToPath(new URL('dist/icons/close.svg', rootUrl))
       );
       await copyFile(
-        paletteIconPath,
-        fileURLToPath(new URL('dist/icons/palette.svg', rootUrl))
+        sunIconPath,
+        fileURLToPath(new URL('dist/icons/sun.svg', rootUrl))
+      );
+      await copyFile(
+        moonIconPath,
+        fileURLToPath(new URL('dist/icons/moon.svg', rootUrl))
       );
 
       const raw = await readFile(contentScriptPath);
