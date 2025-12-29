@@ -33,6 +33,13 @@ when the selected text is detected as Mermaid-like.
 
 ## Behavior
 
+### Mermaid-like Criteria
+
+- The selection is Mermaid-like when the selected text contains
+  at least one Mermaid diagram keyword (e.g. `graph`, `flowchart`,
+  `sequenceDiagram`, `classDiagram`, `stateDiagram`, `erDiagram`,
+  `gantt`, `pie`, `mindmap`, `timeline`).
+
 ### Visibility
 
 - When selection changes:

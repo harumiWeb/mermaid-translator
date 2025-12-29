@@ -10,6 +10,8 @@ only after explicit user interaction.
 - Render Mermaid code into SVG
 - Render only on button click
 - Render inside extension-owned container
+- Load the Mermaid library lazily on the first render trigger
+  via `src/content/mermaidRenderer.ts`
 
 ## Out of Scope
 
