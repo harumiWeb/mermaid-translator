@@ -297,6 +297,15 @@ Skipping this step is considered a process violation.
 
 ---
 
+## Testing Policy
+
+- Vitest is used ONLY for pure, DOM-independent logic
+- Tests MUST NOT rely on jsdom or browser APIs
+- UI behavior is validated via specs, not automated tests
+- Adding tests for content scripts requires explicit approval
+
+---
+
 ## Final Note
 
 This project values **restraint**.
