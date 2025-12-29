@@ -17,6 +17,8 @@ let mountNode: HTMLElement | null = null;
 let shadowRoot: ShadowRoot | null = null;
 let popupRoot: HTMLElement | null = null;
 let popupSelectionText: string | null = null;
+let popupMessage: HTMLElement | null = null;
+let popupSvg: string | null = null;
 let outsidePointerHandler: ((event: PointerEvent) => void) | null = null;
 let beforeUnloadBound = false;
 
@@ -159,6 +161,110 @@ function renderActionButton(
   );
 }
 
+function setPopupMessage(message: string | null): void {
+  if (!popupMessage) {
+    return;
+  }
+
+  popupMessage.textContent = message ?? '';
+  popupMessage.style.display = message ? 'block' : 'none';
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function normalizeSvg(svgText: string): {
+  svg: string;
+  width: number;
+  height: number;
+} {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgText, 'image/svg+xml');
+  const svg = doc.documentElement;
+  const widthAttr = svg.getAttribute('width');
+  const heightAttr = svg.getAttribute('height');
+  const viewBox = svg.getAttribute('viewBox');
+
+  const width = widthAttr ? Number.parseFloat(widthAttr) : NaN;
+  const height = heightAttr ? Number.parseFloat(heightAttr) : NaN;
+
+  let resolvedWidth = width;
+  let resolvedHeight = height;
+
+  if (Number.isNaN(resolvedWidth) || Number.isNaN(resolvedHeight)) {
+    if (viewBox) {
+      const parts = viewBox.split(/\s+/).map((part) => Number.parseFloat(part));
+      if (parts.length === 4 && parts.every((value) => !Number.isNaN(value))) {
+        resolvedWidth = parts[2];
+        resolvedHeight = parts[3];
+      }
+    }
+  }
+
+  if (Number.isNaN(resolvedWidth) || Number.isNaN(resolvedHeight)) {
+    resolvedWidth = 800;
+    resolvedHeight = 600;
+  }
+
+  svg.setAttribute('width', String(resolvedWidth));
+  svg.setAttribute('height', String(resolvedHeight));
+  if (!svg.getAttribute('xmlns')) {
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  }
+
+  const serialized = new XMLSerializer().serializeToString(svg);
+  return { svg: serialized, width: resolvedWidth, height: resolvedHeight };
+}
+
+async function exportPng(svgText: string): Promise<Blob | null> {
+  try {
+    const normalized = normalizeSvg(svgText);
+    const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+      normalized.svg
+    )}`;
+    const image = new Image();
+
+    const loadPromise = new Promise<void>((resolve, reject) => {
+      image.onload = () => {
+        resolve();
+      };
+      image.onerror = () => {
+        reject(new Error('image load failed'));
+      };
+    });
+
+    image.src = svgUrl;
+    await loadPromise;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = normalized.width;
+    canvas.height = normalized.height;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      URL.revokeObjectURL(svgUrl);
+      return null;
+    }
+
+    ctx.drawImage(image, 0, 0, normalized.width, normalized.height);
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob((value) => {
+        resolve(value);
+      }, 'image/png');
+    });
+    return blob;
+  } catch {
+    return null;
+  }
+}
+
 function dismissPopup(): void {
   if (!popupRoot) {
     return;
@@ -167,6 +273,8 @@ function dismissPopup(): void {
   popupRoot.remove();
   popupRoot = null;
   popupSelectionText = null;
+  popupMessage = null;
+  popupSvg = null;
 
   if (outsidePointerHandler) {
     document.removeEventListener('pointerdown', outsidePointerHandler, true);
@@ -232,6 +340,67 @@ function showPopup(
     dismissPopup();
   });
 
+  const actions = document.createElement('div');
+  actions.style.display = 'flex';
+  actions.style.gap = '8px';
+  actions.style.paddingTop = '4px';
+
+  const svgButton = document.createElement('button');
+  svgButton.type = 'button';
+  svgButton.textContent = 'SVG';
+  svgButton.title = 'Save as SVG';
+  svgButton.style.border = '1px solid #222';
+  svgButton.style.borderRadius = '6px';
+  svgButton.style.background = '#fff';
+  svgButton.style.color = '#111';
+  svgButton.style.cursor = 'pointer';
+  svgButton.style.padding = '4px 8px';
+  svgButton.addEventListener('click', () => {
+    if (!popupSvg) {
+      setPopupMessage(renderErrorMessage);
+      return;
+    }
+
+    const blob = new Blob([popupSvg], { type: 'image/svg+xml' });
+    downloadBlob(blob, 'mermaid-diagram.svg');
+  });
+
+  const pngButton = document.createElement('button');
+  pngButton.type = 'button';
+  pngButton.textContent = 'PNG';
+  pngButton.title = 'Save as PNG';
+  pngButton.style.border = '1px solid #222';
+  pngButton.style.borderRadius = '6px';
+  pngButton.style.background = '#fff';
+  pngButton.style.color = '#111';
+  pngButton.style.cursor = 'pointer';
+  pngButton.style.padding = '4px 8px';
+  pngButton.addEventListener('click', () => {
+    void (async () => {
+      if (!popupSvg) {
+        setPopupMessage(renderErrorMessage);
+        return;
+      }
+
+      const blob = await exportPng(popupSvg);
+      if (!blob) {
+        setPopupMessage(renderErrorMessage);
+        return;
+      }
+
+      downloadBlob(blob, 'mermaid-diagram.png');
+    })();
+  });
+
+  actions.appendChild(svgButton);
+  actions.appendChild(pngButton);
+
+  const message = document.createElement('div');
+  message.style.marginTop = '8px';
+  message.style.fontSize = '12px';
+  message.style.color = '#b00020';
+  message.style.display = 'none';
+
   const content = document.createElement('div');
   content.style.maxHeight = '320px';
   content.style.overflow = 'auto';
@@ -239,11 +408,15 @@ function showPopup(
 
   popup.appendChild(arrow);
   popup.appendChild(closeButton);
+  popup.appendChild(actions);
+  popup.appendChild(message);
   popup.appendChild(content);
   shadowRoot.appendChild(popup);
 
   popupRoot = popup;
   popupSelectionText = selectionText;
+  popupMessage = message;
+  popupSvg = null;
 
   outsidePointerHandler = (event: PointerEvent) => {
     if (!popupRoot) {
@@ -288,10 +461,15 @@ function handleActionClick(): void {
   const code = extractMermaidCode(currentSelectionText);
 
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const ok = await renderMermaid(code, content);
-    if (!ok) {
-      content.textContent = renderErrorMessage;
+    const svg = await renderMermaid(code, content);
+    if (!svg) {
+      popupSvg = null;
+      setPopupMessage(renderErrorMessage);
+      return;
     }
+
+    popupSvg = svg;
+    setPopupMessage(null);
   });
 }
 

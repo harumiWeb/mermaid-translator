@@ -20,6 +20,7 @@ only after explicit user interaction.
 - Syntax validation
 - Auto-rendering
 - External resources
+- Exporting rendered output
 
 ## Error Handling
 

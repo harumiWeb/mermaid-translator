@@ -65,3 +65,8 @@
 
 - [x] 再利用可能なツールチップUIを追加する（矢印とアニメーションを含む）。`spec: 006-tooltip-ui`
 - [x] アクションボタンにツールチップ「View Mermaid diagram」を表示する。`spec: 006-tooltip-ui`
+
+- [x] ポップアップ内に SVG/PNG の保存アクションを追加する。`spec: 009-export-rendered-image`
+- [x] SVG をそのままダウンロードできるようにする。`spec: 009-export-rendered-image`
+- [x] SVG を PNG に変換してダウンロードできるようにする。`spec: 009-export-rendered-image`
+- [x] エクスポート失敗時はポップアップ内に短いエラーメッセージを表示する。`spec: 009-export-rendered-image`

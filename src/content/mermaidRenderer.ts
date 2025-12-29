@@ -5,10 +5,10 @@ let mermaidApi: Mermaid | null = null;
 export async function renderMermaid(
   code: string,
   container: HTMLElement
-): Promise<boolean> {
+): Promise<string | null> {
   try {
     if (code.trim().length === 0) {
-      return false;
+      return null;
     }
 
     if (!mermaidApi) {
@@ -25,8 +25,8 @@ export async function renderMermaid(
     const { svg } = await mermaidApi.render(id, code);
 
     container.innerHTML = svg;
-    return true;
+    return svg;
   } catch {
-    return false;
+    return null;
   }
 }
