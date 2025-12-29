@@ -1,10 +1,14 @@
 import type { Mermaid } from 'mermaid';
 
+type MermaidTheme = 'default' | 'dark' | 'forest' | 'neutral' | 'base';
+
 let mermaidApi: Mermaid | null = null;
+let lastTheme: MermaidTheme | null = null;
 
 export async function renderMermaid(
   code: string,
-  container: HTMLElement
+  container: HTMLElement,
+  theme: MermaidTheme
 ): Promise<string | null> {
   try {
     if (code.trim().length === 0) {
@@ -14,13 +18,17 @@ export async function renderMermaid(
     if (!mermaidApi) {
       const mermaidModule = (await import('mermaid')) as { default: Mermaid };
       mermaidApi = mermaidModule.default;
+    }
+
+    if (!lastTheme || lastTheme !== theme) {
       mermaidApi.initialize({
         startOnLoad: false,
         securityLevel: 'strict',
-        theme: 'default',
+        theme,
         legacyMathML: true,
         forceLegacyMathML: true,
       });
+      lastTheme = theme;
     }
 
     const id = `mermaid-${crypto.randomUUID()}`;

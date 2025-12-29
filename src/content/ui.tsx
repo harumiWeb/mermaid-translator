@@ -14,12 +14,16 @@ type PopupActionsProps = {
   svgEnabled: boolean;
   pngEnabled: boolean;
   openEnabled: boolean;
+  themeOptions: ReadonlyArray<{ value: string; label: string }>;
+  themeValue: string;
   onSvg: () => void;
   onPng: () => void;
   onOpen: () => void;
+  onThemeChange: (value: string) => void;
   onClose: () => void;
   openIconUrl: string;
   closeIconUrl: string;
+  paletteIconUrl: string;
 };
 
 type TooltipProps = {
@@ -90,6 +94,7 @@ function TooltipButton(props: TooltipButtonProps) {
     borderRadius: '6px',
     background: '#fff',
     color: '#111',
+    fontSize: '12px',
     cursor: isDisabled ? 'not-allowed' : 'pointer',
     padding: variant === 'icon' ? '0 6px' : '0 8px',
     opacity: isDisabled ? 0.5 : 1,
@@ -227,6 +232,28 @@ export function PopupActions(props: PopupActionsProps) {
     height: '14px',
   } as const;
 
+  const paletteStyle = {
+    display: 'block',
+    width: '14px',
+    height: '14px',
+  } as const;
+
+  const themeGroupStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+  } as const;
+
+  const selectStyle = {
+    height: '28px',
+    border: '1px solid #222',
+    borderRadius: '6px',
+    background: '#fff',
+    color: '#111',
+    fontSize: '12px',
+    padding: '0 8px',
+  } as const;
+
   return (
     <div style={barStyle}>
       <div style={groupStyle}>
@@ -254,6 +281,24 @@ export function PopupActions(props: PopupActionsProps) {
         </TooltipButton>
       </div>
       <div style={groupStyle}>
+        <div style={themeGroupStyle}>
+          <img alt="" src={props.paletteIconUrl} style={paletteStyle} />
+          <select
+            aria-label="Theme"
+            value={props.themeValue}
+            style={selectStyle}
+            onChange={(event) => {
+              const target = event.currentTarget;
+              props.onThemeChange(target.value);
+            }}
+          >
+            {props.themeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <TooltipButton label="Close" onClick={props.onClose} variant="icon">
           <img alt="" src={props.closeIconUrl} style={closeStyle} />
         </TooltipButton>

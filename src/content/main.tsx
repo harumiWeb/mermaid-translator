@@ -41,26 +41,45 @@ let popupActionsState = {
   pngEnabled: false,
   openEnabled: false,
 };
+let popupContent: HTMLElement | null = null;
+let themePreference: ThemePreference | null = null;
 let outsidePointerHandler: ((event: PointerEvent) => void) | null = null;
 let beforeUnloadBound = false;
 
 function resolveIconUrl(): string {
   try {
-    return chrome.runtime.getURL('mermaid-icon.svg');
+    return chrome.runtime.getURL('icons/mermaid-icon.svg');
   } catch {
     return '';
   }
 }
 
 const iconUrl = resolveIconUrl();
-const externalIconUrl = chrome.runtime.getURL('external-link-icon.svg');
-const closeIconUrl = chrome.runtime.getURL('close.svg');
+const externalIconUrl = chrome.runtime.getURL('icons/external-link-icon.svg');
+const closeIconUrl = chrome.runtime.getURL('icons/close.svg');
+const paletteIconUrl = chrome.runtime.getURL('icons/palette.svg');
 const tooltipText = 'View Mermaid diagram';
 const renderErrorMessage = 'Unable to render Mermaid diagram.';
+const themeStorageKey = 'mermaid-selection-renderer:theme';
+const themeOptions = [
+  { value: 'system', label: 'System' },
+  { value: 'default', label: 'Default' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'forest', label: 'Forest' },
+  { value: 'neutral', label: 'Neutral' },
+  { value: 'base', label: 'Base' },
+] as const;
+
+type ThemePreference = (typeof themeOptions)[number]['value'];
+type ThemeName = Exclude<ThemePreference, 'system'>;
 
 function ensureMountNode(): HTMLElement | null {
   if (mountNode) {
     return mountNode;
+  }
+
+  if (!themePreference) {
+    themePreference = loadThemePreference();
   }
 
   const host = document.createElement('div');
@@ -331,6 +350,67 @@ function setActionsEnabled(enabled: boolean): void {
   renderPopupActions();
 }
 
+function loadThemePreference(): ThemePreference {
+  try {
+    const raw = window.localStorage.getItem(themeStorageKey);
+    if (raw && isThemePreference(raw)) {
+      return raw;
+    }
+  } catch {
+    // ignore
+  }
+  return 'system';
+}
+
+function saveThemePreference(value: ThemePreference): void {
+  try {
+    window.localStorage.setItem(themeStorageKey, value);
+  } catch {
+    // ignore
+  }
+}
+
+function resolveTheme(preference: ThemePreference): ThemeName {
+  if (preference !== 'system') {
+    return preference;
+  }
+  const prefersDark =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return prefersDark ? 'dark' : 'default';
+}
+
+function isThemePreference(value: string): value is ThemePreference {
+  return themeOptions.some((option) => option.value === value);
+}
+
+function rerenderPopup(theme: ThemeName): void {
+  if (!popupSelectionText || !popupContent) {
+    return;
+  }
+
+  const code = extractMermaidCode(popupSelectionText);
+  setPopupMessage(null);
+  setActionsEnabled(false);
+
+  void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
+    const svg = await renderMermaid(code, popupContent, theme);
+    if (!svg) {
+      popupSvg = null;
+      setPopupMessage(renderErrorMessage);
+      setActionsEnabled(false);
+      return;
+    }
+
+    popupSvg = svg;
+    setPopupMessage(null);
+    setActionsEnabled(true);
+    if (popupRoot) {
+      clampPopupToViewport(popupRoot);
+    }
+  });
+}
+
 function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -468,6 +548,7 @@ function dismissPopup(): void {
     pngEnabled: false,
     openEnabled: false,
   };
+  popupContent = null;
 
   if (outsidePointerHandler) {
     document.removeEventListener('pointerdown', outsidePointerHandler, true);
@@ -511,6 +592,8 @@ function showPopup(
   arrow.style.borderTop = '1px solid #222';
   arrow.style.transform = 'rotate(45deg)';
 
+  applyPopupTheme(popup, arrow);
+
   const actions = document.createElement('div');
   actions.style.paddingTop = '4px';
 
@@ -538,6 +621,7 @@ function showPopup(
   popupMessage = message;
   popupSvg = null;
   popupActionsMount = actions;
+  popupContent = content;
   popupActionsState = {
     svgEnabled: false,
     pngEnabled: false,
@@ -570,13 +654,18 @@ function renderPopupActions(): void {
     return;
   }
 
+  const currentThemePreference = themePreference ?? 'system';
+
   render(
     <PopupActions
       svgEnabled={popupActionsState.svgEnabled}
       pngEnabled={popupActionsState.pngEnabled}
       openEnabled={popupActionsState.openEnabled}
+      themeOptions={themeOptions}
+      themeValue={currentThemePreference}
       openIconUrl={externalIconUrl}
       closeIconUrl={closeIconUrl}
+      paletteIconUrl={paletteIconUrl}
       onSvg={() => {
         if (!popupSvg) {
           setPopupMessage(renderErrorMessage);
@@ -611,12 +700,45 @@ function renderPopupActions(): void {
 
         openSvgInNewTab(popupSvg);
       }}
+      onThemeChange={(value) => {
+        if (!isThemePreference(value)) {
+          return;
+        }
+        themePreference = value;
+        saveThemePreference(value);
+        renderPopupActions();
+        rerenderPopup(resolveTheme(value));
+      }}
       onClose={() => {
         dismissPopup();
       }}
     />,
     popupActionsMount
   );
+}
+
+function applyPopupTheme(popup: HTMLElement, arrow: HTMLElement): void {
+  const prefersDark =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  if (prefersDark) {
+    popup.style.background = '#1c1c1c';
+    popup.style.color = '#f2f2f2';
+    popup.style.border = '1px solid #3a3a3a';
+    popup.style.boxShadow = '0 6px 18px rgba(0,0,0,0.4)';
+    arrow.style.background = '#1c1c1c';
+    arrow.style.borderLeft = '1px solid #3a3a3a';
+    arrow.style.borderTop = '1px solid #3a3a3a';
+  } else {
+    popup.style.background = '#fff';
+    popup.style.color = '#111';
+    popup.style.border = '1px solid #222';
+    popup.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
+    arrow.style.background = '#fff';
+    arrow.style.borderLeft = '1px solid #222';
+    arrow.style.borderTop = '1px solid #222';
+  }
 }
 
 function clampPopupToViewport(popup: HTMLElement): void {
@@ -651,9 +773,10 @@ function handleActionClick(): void {
   }
 
   const code = extractMermaidCode(selectionInfo.text);
+  const theme = resolveTheme(themePreference ?? 'system');
 
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const svg = await renderMermaid(code, content);
+    const svg = await renderMermaid(code, content, theme);
     if (!svg) {
       popupSvg = null;
       setPopupMessage(renderErrorMessage);

@@ -9,11 +9,16 @@ const distContentDir = fileURLToPath(new URL('dist/content', rootUrl));
 const contentEntry = fileURLToPath(new URL('src/content/main.tsx', rootUrl));
 const manifestPath = fileURLToPath(new URL('manifest.json', rootUrl));
 const stylePath = fileURLToPath(new URL('src/content/style.css', rootUrl));
-const iconPath = fileURLToPath(new URL('public/mermaid-icon.svg', rootUrl));
-const externalIconPath = fileURLToPath(
-  new URL('public/external-link-icon.svg', rootUrl)
+const iconPath = fileURLToPath(
+  new URL('public/icons/mermaid-icon.svg', rootUrl)
 );
-const closeIconPath = fileURLToPath(new URL('public/close.svg', rootUrl));
+const externalIconPath = fileURLToPath(
+  new URL('public/icons/external-link-icon.svg', rootUrl)
+);
+const closeIconPath = fileURLToPath(new URL('public/icons/close.svg', rootUrl));
+const paletteIconPath = fileURLToPath(
+  new URL('public/icons/palette.svg', rootUrl)
+);
 const contentScriptPath = fileURLToPath(
   new URL('dist/content/main.js', rootUrl)
 );
@@ -24,6 +29,9 @@ function copyStaticFiles() {
     async closeBundle() {
       await mkdir(distDir, { recursive: true });
       await mkdir(distContentDir, { recursive: true });
+      await mkdir(fileURLToPath(new URL('dist/icons', rootUrl)), {
+        recursive: true,
+      });
 
       await copyFile(
         manifestPath,
@@ -35,15 +43,19 @@ function copyStaticFiles() {
       );
       await copyFile(
         iconPath,
-        fileURLToPath(new URL('dist/mermaid-icon.svg', rootUrl))
+        fileURLToPath(new URL('dist/icons/mermaid-icon.svg', rootUrl))
       );
       await copyFile(
         externalIconPath,
-        fileURLToPath(new URL('dist/external-link-icon.svg', rootUrl))
+        fileURLToPath(new URL('dist/icons/external-link-icon.svg', rootUrl))
       );
       await copyFile(
         closeIconPath,
-        fileURLToPath(new URL('dist/close.svg', rootUrl))
+        fileURLToPath(new URL('dist/icons/close.svg', rootUrl))
+      );
+      await copyFile(
+        paletteIconPath,
+        fileURLToPath(new URL('dist/icons/palette.svg', rootUrl))
       );
 
       const raw = await readFile(contentScriptPath);

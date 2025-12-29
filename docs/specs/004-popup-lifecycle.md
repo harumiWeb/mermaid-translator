@@ -62,6 +62,7 @@ Popup MUST be dismissed when any of the following occurs:
 - Close button must be placed inside the action button row and right-aligned
 - Popup action buttons should have a consistent height and alignment
 - Close button uses the extension-provided icon asset
+- Popup colors follow system color scheme
 - Popup must not be draggable or resizable
 - Popup minimum width is 550px
 - Popup maximum width is 50% of viewport width
