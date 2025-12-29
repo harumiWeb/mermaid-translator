@@ -73,18 +73,6 @@
       <<<<<<< ours
 - [x] # Mermaid が空SVG/エラーSVGを返した場合は失敗扱いにする。`spec: 005-mermaid-render`
 
-  > > > > > > > # theirs
-  > > > > > > >
-  > > > > > > > # theirs
-  > > > > > > >
-  > > > > > > > # theirs
-  > > > > > > >
-  > > > > > > > # theirs
-  > > > > > > >
-  > > > > > > > # theirs
-  > > > > > > >
-  > > > > > > > theirs
-
 - [x] `dist/content/main.js` を UTF-8 (BOMなし) に正規化する。`spec: 007-output-encoding`
 - [x] `dist/content/main.js` が ASCII 互換になるようにビルド出力を調整する。`spec: 007-output-encoding`
 
