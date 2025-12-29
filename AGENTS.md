@@ -246,6 +246,57 @@ not an implementation detail.
 
 ---
 
+## Spec-to-Task Workflow (Required)
+
+All implementation work MUST follow the Spec-driven workflow below.
+
+### Source of Truth
+
+- Functional requirements are defined ONLY in:
+  - `docs/specs/`
+
+Agents MUST NOT implement features directly from intuition, conversation context,
+or partially remembered requirements.
+
+### Task Definition
+
+Before starting implementation, agents MUST:
+
+1. Read the relevant specification file(s) under `docs/specs/`
+2. Derive concrete, implementation-level tasks from those specs
+3. Document those tasks in:
+   - `docs/tasks.md`
+
+Each task MUST:
+
+- Reference one or more spec IDs (e.g. `002-action-button-ui`)
+- Be small enough to implement in a single focused change
+- Describe _what to implement_, not _how to implement it_
+
+### Implementation Rule
+
+- Agents MUST NOT start coding until the corresponding tasks are written
+  and recorded in `docs/tasks.md`
+- Code changes MUST map clearly to one or more tasks
+- If a task cannot be derived cleanly from existing specs:
+  - STOP
+  - Propose a new or revised spec instead of guessing
+
+### Prohibited Behavior
+
+- Implementing code without a corresponding task
+- Creating tasks that introduce behavior not described in specs
+- Expanding scope while defining tasks
+
+This project treats:
+
+- `docs/specs/` as **intent**
+- `docs/tasks.md` as **execution plan**
+
+Skipping this step is considered a process violation.
+
+---
+
 ## Final Note
 
 This project values **restraint**.
