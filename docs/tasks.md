@@ -93,3 +93,5 @@
 - [x] SVG を新規タブで開く。`spec: 010-open-in-new-tab`
 - [x] 新規タブは doctype 付きのHTMLで表示する。`spec: 010-open-in-new-tab`
 - [x] レンダリング完了まで新規タブボタンを無効化する。`spec: 010-open-in-new-tab`
+- [x] README を作成し、概要・機能・使い方・ビルド/読み込み手順・開発コマンドを記載する。`spec: 013-readme`
+- [x] プロジェクト名を mermaid-translator に統一する。`spec: 014-project-rename`
