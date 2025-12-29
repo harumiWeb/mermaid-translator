@@ -24,6 +24,7 @@
     "vitest": "^4.0.16"
   },
   "dependencies": {
+    "mermaid": "^11.12.2",
     "preact": "^10.28.1"
   }
 }
