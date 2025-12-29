@@ -29,7 +29,6 @@ type ButtonPosition = {
 };
 
 let lastSelectionText: string | null = null;
-let currentSelectionText: string | null = null;
 let mountNode: HTMLElement | null = null;
 let shadowRoot: ShadowRoot | null = null;
 let popupRoot: HTMLElement | null = null;
@@ -109,8 +108,7 @@ function getSelectionRect(selection: Selection): DOMRect | null {
   return rect;
 }
 
-function getButtonPosition(selection: Selection): ButtonPosition | null {
-  const rect = getSelectionRect(selection);
+function getButtonPosition(rect: DOMRect | null): ButtonPosition | null {
   if (!rect) {
     return null;
   }
@@ -134,6 +132,131 @@ function getButtonPosition(selection: Selection): ButtonPosition | null {
     top: Math.round(top),
     left: Math.round(left),
   };
+}
+
+const textMeasureCanvas = document.createElement('canvas');
+const textMeasureContext = textMeasureCanvas.getContext('2d');
+
+function parsePixel(value: string): number {
+  const parsed = Number.parseFloat(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function resolveLineHeight(style: CSSStyleDeclaration): number {
+  const lineHeight = Number.parseFloat(style.lineHeight);
+  if (!Number.isNaN(lineHeight)) {
+    return lineHeight;
+  }
+
+  const fontSize = Number.parseFloat(style.fontSize);
+  if (!Number.isNaN(fontSize)) {
+    return fontSize * 1.2;
+  }
+
+  return 16;
+}
+
+function getFontShorthand(style: CSSStyleDeclaration): string {
+  return `${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} / ${style.lineHeight} ${style.fontFamily}`;
+}
+
+function measureTextWidth(text: string, style: CSSStyleDeclaration): number {
+  if (!textMeasureContext) {
+    return 0;
+  }
+
+  textMeasureContext.font = getFontShorthand(style);
+  return textMeasureContext.measureText(text).width;
+}
+
+function isTextInput(element: HTMLInputElement): boolean {
+  const type = element.type.toLowerCase();
+  return (
+    type === 'text' ||
+    type === 'search' ||
+    type === 'url' ||
+    type === 'email' ||
+    type === 'tel' ||
+    type === ''
+  );
+}
+
+function getInputSelectionText(
+  element: HTMLTextAreaElement | HTMLInputElement
+): string | null {
+  const start = element.selectionStart;
+  const end = element.selectionEnd;
+  if (start === null || end === null || start === end) {
+    return null;
+  }
+
+  return element.value.slice(start, end);
+}
+
+function getInputSelectionRect(
+  element: HTMLTextAreaElement | HTMLInputElement
+): DOMRect | null {
+  const selectionEnd = element.selectionEnd;
+  if (selectionEnd === null) {
+    return null;
+  }
+
+  const valueBefore = element.value.slice(0, selectionEnd);
+  const lines = valueBefore.split(/\r?\n/);
+  const lineIndex = Math.max(0, lines.length - 1);
+  const lineText = lines[lineIndex] ?? '';
+
+  const rect = element.getBoundingClientRect();
+  const style = getComputedStyle(element);
+  const lineHeight = resolveLineHeight(style);
+  const paddingLeft = parsePixel(style.paddingLeft);
+  const paddingTop = parsePixel(style.paddingTop);
+  const borderLeft = parsePixel(style.borderLeftWidth);
+  const borderTop = parsePixel(style.borderTopWidth);
+  const textWidth = measureTextWidth(lineText, style);
+
+  const left =
+    rect.left + borderLeft + paddingLeft + textWidth - element.scrollLeft;
+  const top =
+    rect.top +
+    borderTop +
+    paddingTop +
+    lineIndex * lineHeight -
+    element.scrollTop;
+
+  return new DOMRect(left, top, 1, lineHeight);
+}
+
+function getSelectionInfo(): {
+  text: string;
+  rect: DOMRect | null;
+} | null {
+  const active = document.activeElement;
+  if (active instanceof HTMLTextAreaElement) {
+    const text = getInputSelectionText(active);
+    if (text && text.trim().length > 0) {
+      return { text, rect: getInputSelectionRect(active) };
+    }
+  }
+
+  if (active instanceof HTMLInputElement && isTextInput(active)) {
+    const text = getInputSelectionText(active);
+    if (text && text.trim().length > 0) {
+      return { text, rect: getInputSelectionRect(active) };
+    }
+  }
+
+  const selection = window.getSelection();
+  if (!selection) {
+    return null;
+  }
+
+  const text = selection.toString();
+  if (text.trim().length === 0) {
+    return null;
+  }
+
+  return { text, rect: getSelectionRect(selection) };
 }
 
 function getPopupPosition(rect: DOMRect): ButtonPosition {
@@ -514,6 +637,8 @@ function showPopup(
   popup.appendChild(content);
   shadowRoot.appendChild(popup);
 
+  clampPopupToViewport(popup);
+
   popupRoot = popup;
   popupSelectionText = selectionText;
   popupMessage = message;
@@ -540,28 +665,38 @@ function showPopup(
   return content;
 }
 
+function clampPopupToViewport(popup: HTMLElement): void {
+  const popupRect = popup.getBoundingClientRect();
+  const maxTop = window.innerHeight - popupRect.height - 4;
+  const maxLeft = window.innerWidth - popupRect.width - 4;
+  const clampedTop = Math.max(4, Math.min(popupRect.top, maxTop));
+  const clampedLeft = Math.max(4, Math.min(popupRect.left, maxLeft));
+
+  if (clampedTop !== popupRect.top) {
+    popup.style.top = `${Math.floor(clampedTop)}px`;
+  }
+  if (clampedLeft !== popupRect.left) {
+    popup.style.left = `${Math.floor(clampedLeft)}px`;
+  }
+}
+
 function handleActionClick(): void {
-  if (!currentSelectionText) {
+  const selectionInfo = getSelectionInfo();
+  if (!selectionInfo) {
     return;
   }
 
-  const selection = window.getSelection();
-  if (!selection) {
+  if (!selectionInfo.rect) {
     return;
   }
 
-  const rect = getSelectionRect(selection);
-  if (!rect) {
-    return;
-  }
-
-  const popupPosition = getPopupPosition(rect);
-  const content = showPopup(popupPosition, currentSelectionText);
+  const popupPosition = getPopupPosition(selectionInfo.rect);
+  const content = showPopup(popupPosition, selectionInfo.text);
   if (!content) {
     return;
   }
 
-  const code = extractMermaidCode(currentSelectionText);
+  const code = extractMermaidCode(selectionInfo.text);
 
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
     const svg = await renderMermaid(code, content);
@@ -569,44 +704,38 @@ function handleActionClick(): void {
       popupSvg = null;
       setPopupMessage(renderErrorMessage);
       setActionsEnabled(false);
+      if (popupRoot) {
+        clampPopupToViewport(popupRoot);
+      }
       return;
     }
 
     popupSvg = svg;
     setPopupMessage(null);
     setActionsEnabled(true);
+    if (popupRoot) {
+      clampPopupToViewport(popupRoot);
+    }
   });
 }
 
 function handleSelectionChange(): void {
   try {
-    const selection = window.getSelection();
-    if (!selection) {
-      currentSelectionText = null;
+    const selectionInfo = getSelectionInfo();
+    if (!selectionInfo) {
       renderActionButton(false, null);
       dismissPopup();
       return;
     }
 
-    const text = selection.toString();
-    if (text.trim().length === 0) {
-      currentSelectionText = null;
-      lastSelectionText = null;
-      renderActionButton(false, null);
-      dismissPopup();
-      return;
-    }
-
-    currentSelectionText = text;
-
-    const mermaidLike = isMermaidLike(text);
+    const mermaidLike = isMermaidLike(selectionInfo.text);
     if (!mermaidLike) {
       renderActionButton(false, null);
       if (popupSelectionText) {
         dismissPopup();
       }
     } else {
-      const position = getButtonPosition(selection);
+      const position = getButtonPosition(selectionInfo.rect);
       if (!position) {
         renderActionButton(false, null);
       } else {
@@ -614,14 +743,17 @@ function handleSelectionChange(): void {
       }
     }
 
-    if (popupSelectionText && text !== popupSelectionText) {
+    if (popupSelectionText && selectionInfo.text !== popupSelectionText) {
       dismissPopup();
     }
 
-    if (text !== lastSelectionText) {
-      lastSelectionText = text;
+    if (selectionInfo.text !== lastSelectionText) {
+      lastSelectionText = selectionInfo.text;
       if (isLoggingEnabled) {
-        console.warn('[mermaid-selection-renderer] selection updated', text);
+        console.warn(
+          '[mermaid-selection-renderer] selection updated',
+          selectionInfo.text
+        );
       }
     }
   } catch {

@@ -50,6 +50,7 @@ when the selected text is detected as Mermaid-like.
 ### Positioning
 
 - Button is positioned using selection bounding rectangle
+- If selection comes from input/textarea, use the active element rectangle as fallback
 - Button must not overlap or modify the selected text
 - Button positioning errors must fail silently (no fallback UI)
 

@@ -58,6 +58,7 @@ Popup MUST be dismissed when any of the following occurs:
 - Popup must not trap focus
 - Popup must not block scrolling
 - Popup must not prevent text selection
+- Popup must stay within the viewport when near the edges
 - Popup must not be draggable or resizable
 - Popup minimum width is 550px
 - Popup maximum width is 50% of viewport width

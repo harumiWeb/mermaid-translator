@@ -104,6 +104,12 @@ export function ActionButton(props: ActionButtonProps) {
         tabIndex={-1}
         aria-label="Render Mermaid"
         style={style}
+        onPointerDown={(event) => {
+          event.preventDefault();
+        }}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
         onClick={props.onClick}
       >
         <img alt="" src={props.iconUrl} style={iconStyle} />

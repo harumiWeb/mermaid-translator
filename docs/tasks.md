@@ -33,11 +33,13 @@
 - [x] 選択テキストの取得と更新を行う処理を追加する（空・空白のみは無視し、前回と異なる場合のみ内部状態を更新する）。`spec: 001-selection-detection`
 - [x] 選択取得処理の失敗を握りつぶし、ユーザー体験に影響しないようにする。`spec: 001-selection-detection`
 - [x] 開発環境のみで選択テキストを内部ログできるようにする。`spec: 001-selection-detection`
+- [x] input/textarea の選択文字列も取得できるようにする。`spec: 001-selection-detection`
 
 - [x] Mermaid 判定を行う純粋関数を追加し、選択文字列内に Mermaid 図形キーワードが含まれる場合のみ Mermaid-like と判定する。`spec: 002-action-button-ui`
 
 - [x] Mermaid らしい選択時のみ表示されるアクションボタン UI を作成する（非選択・非 Mermaid 時は非表示）。`spec: 002-action-button-ui`
 - [x] アクションボタンの表示位置を選択範囲の矩形に基づいて決定できるようにする（選択文字列の上書きや重なりは避ける）。`spec: 002-action-button-ui`
+- [x] input/textarea 選択時はアクティブ要素の矩形でボタン位置を決定する。`spec: 002-action-button-ui`
 - [x] ボタン表示・非表示の切り替えが選択変更と同期するようにする。`spec: 002-action-button-ui`
 - [x] ボタンクリックのハンドラを追加し、他の副作用を持たないことを保証する。`spec: 002-action-button-ui`
 - [x] アクションボタンに `public/mermaid-icon.svg` を表示する。`spec: 002-action-button-ui`
@@ -53,6 +55,7 @@
 - [x] ポップアップの最小幅を 550px、最大幅をウィンドウ幅の 50% に設定する。`spec: 004-popup-lifecycle`
 - [x] ポップアップ右上に閉じるボタンを追加する。`spec: 004-popup-lifecycle`
 - [x] 閉じるボタンにツールチップを付ける。`spec: 004-popup-lifecycle`
+- [x] ポップアップが画面外に出ないように位置を補正する。`spec: 004-popup-lifecycle`
 
 - [x] Mermaid テキストを SVG へレンダリングし、拡張機能のコンテナ内に表示する処理を追加する。`spec: 005-mermaid-render`
 - [x] 初回レンダリング時のみ Mermaid ライブラリを遅延読み込みする。`spec: 005-mermaid-render`

@@ -13,6 +13,7 @@ without modifying the host page.
 
 - Listen to selection changes
 - Read selected text via Selection API
+- Read selected text from active input/textarea via selectionStart/selectionEnd
 - Ignore empty or whitespace-only selections
 
 ## Out of Scope
