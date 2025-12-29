@@ -14,6 +14,8 @@ type ButtonPosition = {
 let lastSelectionText: string | null = null;
 let currentSelectionText: string | null = null;
 let mountNode: HTMLElement | null = null;
+let renderNode: HTMLElement | null = null;
+
 function resolveIconUrl(): string {
   try {
     return chrome.runtime.getURL('mermaid-icon.svg');
@@ -41,7 +43,10 @@ function ensureMountNode(): HTMLElement | null {
 
   const shadow = host.attachShadow({ mode: 'open' });
   const container = document.createElement('div');
+  const renderContainer = document.createElement('div');
+  renderContainer.style.display = 'none';
   shadow.appendChild(container);
+  shadow.appendChild(renderContainer);
 
   const parent = document.body ?? document.documentElement;
   if (!parent) {
@@ -50,6 +55,7 @@ function ensureMountNode(): HTMLElement | null {
 
   parent.appendChild(host);
   mountNode = container;
+  renderNode = renderContainer;
   return mountNode;
 }
 
@@ -121,7 +127,14 @@ function handleActionClick(): void {
     return;
   }
 
-  // TODO: wire render trigger (spec: 003-mermaid-render-trigger)
+  const node = ensureMountNode();
+  if (!node || !renderNode) {
+    return;
+  }
+
+  void import('./mermaidRenderer').then(({ renderMermaid }) => {
+    void renderMermaid(currentSelectionText, renderNode);
+  });
 }
 
 function handleSelectionChange(): void {

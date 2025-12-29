@@ -43,8 +43,8 @@
 - [x] アクションボタンに `public/mermaid-icon.svg` を表示する。`spec: 002-action-button-ui`
 - [x] `mermaid-icon.svg` を web accessible resources に追加する。`spec: 002-action-button-ui`
 
-- [ ] ボタンクリック時に現在の選択テキストを取得し、レンダラーへ渡すトリガー処理を追加する。`spec: 003-mermaid-render-trigger`
-- [ ] クリック以外の経路でレンダリングが起きないことを担保する。`spec: 003-mermaid-render-trigger`
+- [x] ボタンクリック時に現在の選択テキストを取得し、レンダラーへ渡すトリガー処理を追加する。`spec: 003-mermaid-render-trigger`
+- [x] クリック以外の経路でレンダリングが起きないことを担保する。`spec: 003-mermaid-render-trigger`
 
 - [ ] レンダー結果を表示する拡張機能専用ポップアップコンテナをオンデマンドで作成する。`spec: 004-popup-lifecycle`
 - [ ] ポップアップを Shadow DOM 内に描画し、ホストページのスタイルに影響しないことを担保する。`spec: 004-popup-lifecycle`
@@ -52,9 +52,12 @@
 - [ ] ポップアップ破棄処理を複数回呼べる安全な実装にする。`spec: 004-popup-lifecycle`
 
 - [ ] Mermaid テキストを SVG へレンダリングし、拡張機能のコンテナ内に表示する処理を追加する。`spec: 005-mermaid-render`
-- [ ] 初回レンダリング時のみ Mermaid ライブラリを遅延読み込みする。`spec: 005-mermaid-render`
+- [x] 初回レンダリング時のみ Mermaid ライブラリを遅延読み込みする。`spec: 005-mermaid-render`
 - [ ] 不正な Mermaid コードの場合は表示を行わず静かに失敗する。`spec: 005-mermaid-render`
 - [ ] レンダリング処理中のエラーを外部に漏らさず、ユーザーに影響しないことを担保する。`spec: 005-mermaid-render`
+
+- [x] `dist/content/main.js` を UTF-8 (BOMなし) に正規化する。`spec: 007-output-encoding`
+- [x] `dist/content/main.js` が ASCII 互換になるようにビルド出力を調整する。`spec: 007-output-encoding`
 
 - [x] 再利用可能なツールチップUIを追加する（矢印とアニメーションを含む）。`spec: 006-tooltip-ui`
 - [x] アクションボタンにツールチップ「View Mermaid diagram」を表示する。`spec: 006-tooltip-ui`
