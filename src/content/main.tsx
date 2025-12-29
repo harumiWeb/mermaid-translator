@@ -1,5 +1,5 @@
 import { render } from 'preact';
-import { isMermaidLike } from '../shared/detectMermaid';
+import { extractMermaidCode, isMermaidLike } from '../shared/detectMermaid';
 import { ActionButton } from './ui';
 
 const isDev = import.meta.env.DEV;
@@ -30,6 +30,7 @@ function resolveIconUrl(): string {
 
 const iconUrl = resolveIconUrl();
 const tooltipText = 'View Mermaid diagram';
+const renderErrorMessage = 'Unable to render Mermaid diagram.';
 
 function ensureMountNode(): HTMLElement | null {
   if (mountNode) {
@@ -213,7 +214,7 @@ function showPopup(
   closeButton.type = 'button';
   closeButton.setAttribute('aria-label', 'Close');
   closeButton.title = 'Close';
-  closeButton.textContent = '×';
+  closeButton.textContent = 'x';
   closeButton.style.position = 'absolute';
   closeButton.style.top = '6px';
   closeButton.style.right = '8px';
@@ -284,8 +285,13 @@ function handleActionClick(): void {
     return;
   }
 
-  void import('./mermaidRenderer').then(({ renderMermaid }) => {
-    void renderMermaid(currentSelectionText, content);
+  const code = extractMermaidCode(currentSelectionText);
+
+  void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
+    const ok = await renderMermaid(code, content);
+    if (!ok) {
+      content.textContent = renderErrorMessage;
+    }
   });
 }
 

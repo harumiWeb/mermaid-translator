@@ -8,6 +8,8 @@ only after explicit user interaction.
 ## In Scope
 
 - Render Mermaid code into SVG
+- Extract Mermaid code blocks from selected text when present
+- When no code block exists, discard any text before the first Mermaid keyword
 - Render only on button click
 - Render inside extension-owned container
 - Load the Mermaid library lazily on the first render trigger
@@ -16,17 +18,16 @@ only after explicit user interaction.
 ## Out of Scope
 
 - Syntax validation
-- Error UI
 - Auto-rendering
 - External resources
 
 ## Error Handling
 
-- Rendering failures must be silent
-- No user-facing error messages
+- Rendering failures must not throw
+- When rendering fails, show a short error message inside the popup container
 
 ## Done When
 
 - Valid Mermaid code produces SVG
-- Invalid code produces no visible output
+- Invalid code produces an error message in the popup
 - Page behavior is unaffected

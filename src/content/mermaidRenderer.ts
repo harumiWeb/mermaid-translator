@@ -5,8 +5,12 @@ let mermaidApi: Mermaid | null = null;
 export async function renderMermaid(
   code: string,
   container: HTMLElement
-): Promise<void> {
+): Promise<boolean> {
   try {
+    if (code.trim().length === 0) {
+      return false;
+    }
+
     if (!mermaidApi) {
       const mermaidModule = (await import('mermaid')) as { default: Mermaid };
       mermaidApi = mermaidModule.default;
@@ -21,7 +25,8 @@ export async function renderMermaid(
     const { svg } = await mermaidApi.render(id, code);
 
     container.innerHTML = svg;
+    return true;
   } catch {
-    // fail silently (AGENTS.md 準拠)
+    return false;
   }
 }
