@@ -15,6 +15,7 @@ only after explicit user interaction.
 - Load the Mermaid library lazily on the first render trigger
   via `src/content/mermaidRenderer.ts`
 - Use legacy MathML to avoid KaTeX warnings on pages without doctype
+- Suppress Mermaid's default error diagram insertion into the page DOM
 
 ## Out of Scope
 

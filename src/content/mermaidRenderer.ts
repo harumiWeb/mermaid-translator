@@ -27,6 +27,7 @@ export async function renderMermaid(
         theme,
         legacyMathML: true,
         forceLegacyMathML: true,
+        suppressErrorRendering: true,
       });
       lastTheme = theme;
     }

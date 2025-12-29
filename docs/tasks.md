@@ -69,6 +69,7 @@
 - [x] Mermaid キーワードが出現する行以前のテキストを破棄する。`spec: 005-mermaid-render`
 - [x] Mermaid レンダリング時のみ KaTeX quirks mode 警告を抑制する。`spec: 005-mermaid-render`
 - [x] Mermaid 由来の KaTeX quirks mode 警告を常に抑制する。`spec: 005-mermaid-render`
+- [x] Mermaid のエラーDOM自動挿入を抑止する。`spec: 005-mermaid-render`
 
 - [x] `dist/content/main.js` を UTF-8 (BOMなし) に正規化する。`spec: 007-output-encoding`
 - [x] `dist/content/main.js` が ASCII 互換になるようにビルド出力を調整する。`spec: 007-output-encoding`
