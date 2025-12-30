@@ -4,3 +4,5 @@ dist/
 .DS_Store
 .vscode/
 *.log
+
+best_mermaid_render.md

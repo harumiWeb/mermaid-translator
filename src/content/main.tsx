@@ -47,6 +47,9 @@ let popupDiagram: HTMLElement | null = null;
 let popupZoomControls: HTMLElement | null = null;
 let popupZoomInButton: HTMLButtonElement | null = null;
 let popupZoomOutButton: HTMLButtonElement | null = null;
+let popupCopyButton: HTMLButtonElement | null = null;
+let popupCopyTooltip: HTMLElement | null = null;
+let popupCopyTooltipTimeout: number | null = null;
 let popupEditorPanel: HTMLElement | null = null;
 let popupEditorTextarea: HTMLTextAreaElement | null = null;
 let popupHeader: HTMLElement | null = null;
@@ -106,6 +109,7 @@ const externalIconUrl = chrome.runtime.getURL('icons/external-link-icon.svg');
 const editIconUrl = chrome.runtime.getURL('icons/edit.svg');
 const zoomInIconUrl = chrome.runtime.getURL('icons/zoom.svg');
 const zoomOutIconUrl = chrome.runtime.getURL('icons/zoom-out.svg');
+const copyIconUrl = chrome.runtime.getURL('icons/copy.svg');
 const closeIconUrl = chrome.runtime.getURL('icons/close.svg');
 const sunIconUrl = chrome.runtime.getURL('icons/sun.svg');
 const moonIconUrl = chrome.runtime.getURL('icons/moon.svg');
@@ -503,6 +507,57 @@ function updateZoomControlsTheme(theme: 'light' | 'dark'): void {
   });
 }
 
+function updateCopyButtonTheme(theme: 'light' | 'dark'): void {
+  if (!popupCopyButton) {
+    return;
+  }
+
+  const isDark = theme === 'dark';
+  popupCopyButton.style.border = `1px solid ${isDark ? '#3a3a3a' : '#222'}`;
+  popupCopyButton.style.background = isDark ? '#2a2a2a' : '#fff';
+  popupCopyButton.style.color = isDark ? '#f2f2f2' : '#111';
+
+  const icon = popupCopyButton.querySelector('img');
+  if (icon instanceof HTMLElement) {
+    icon.style.filter = isDark ? 'invert(1)' : 'none';
+  }
+}
+
+function setCopyTooltip(text: string, visible: boolean): void {
+  if (!popupCopyTooltip) {
+    return;
+  }
+
+  popupCopyTooltip.textContent = text;
+  popupCopyTooltip.style.opacity = visible ? '1' : '0';
+  popupCopyTooltip.style.transform = visible
+    ? 'translate(0, calc(-100% - 6px))'
+    : 'translate(0, calc(-100% - 2px))';
+}
+
+function triggerCopyFeedback(): void {
+  if (!popupCopyButton) {
+    return;
+  }
+
+  if (popupCopyTooltipTimeout !== null) {
+    window.clearTimeout(popupCopyTooltipTimeout);
+  }
+
+  popupCopyButton.style.transform = 'scale(0.92)';
+  window.setTimeout(() => {
+    if (popupCopyButton) {
+      popupCopyButton.style.transform = 'scale(1)';
+    }
+  }, 120);
+
+  setCopyTooltip('Copied', true);
+  popupCopyTooltipTimeout = window.setTimeout(() => {
+    setCopyTooltip('Copy Mermaid code', false);
+    popupCopyTooltipTimeout = null;
+  }, 900);
+}
+
 function stopPan(): void {
   if (!popupPanState) {
     return;
@@ -540,7 +595,8 @@ function startPan(event: PointerEvent): void {
   const target = event.target;
   if (
     target instanceof HTMLElement &&
-    target.closest('[data-zoom-control="true"]')
+    (target.closest('[data-zoom-control="true"]') ||
+      target.closest('[data-pan-ignore="true"]'))
   ) {
     return;
   }
@@ -562,6 +618,16 @@ function startPan(event: PointerEvent): void {
     },
     { once: true }
   );
+}
+
+function updateCopyButtonLayout(): void {
+  if (!popupCopyButton || !popupCopyTooltip) {
+    return;
+  }
+
+  const topOffset = popupEditModeEnabled ? 12 : 8;
+  popupCopyButton.style.top = `${topOffset}px`;
+  popupCopyTooltip.style.top = `${topOffset}px`;
 }
 
 function updateEditLayout(): void {
@@ -601,6 +667,31 @@ function handleWindowResize(): void {
     updateEditLayout();
   }
   clampPopupToViewport(popupRoot);
+  updateCopyButtonLayout();
+}
+
+function updateCopyButtonState(): void {
+  if (!popupCopyButton) {
+    return;
+  }
+
+  if (!popupEditModeEnabled) {
+    popupCopyButton.disabled = true;
+    popupCopyButton.style.opacity = '0.5';
+    setCopyTooltip('Copy Mermaid code', false);
+    return;
+  }
+
+  const text =
+    popupActiveTab === 'editor'
+      ? (popupEditorText ?? '')
+      : (popupSourceText ?? '');
+  const enabled = text.trim().length > 0;
+  popupCopyButton.disabled = !enabled;
+  popupCopyButton.style.opacity = enabled ? '1' : '0.5';
+  if (!enabled) {
+    setCopyTooltip('Copy Mermaid code', false);
+  }
 }
 
 function stopDrag(): void {
@@ -897,6 +988,7 @@ function setActiveTab(tab: 'view' | 'editor'): void {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
         setActionsEnabled(false);
+        updateCopyButtonState();
         return;
       }
 
@@ -905,11 +997,14 @@ function setActiveTab(tab: 'view' | 'editor'): void {
       setPopupMessage(null);
       setActionsEnabled(true);
       setEditEnabled(!popupEditModeEnabled);
+      updateCopyButtonState();
       if (popupRoot) {
         clampPopupToViewport(popupRoot);
       }
     });
   }
+
+  updateCopyButtonState();
 }
 
 function setEditMode(enabled: boolean): void {
@@ -937,6 +1032,10 @@ function setEditMode(enabled: boolean): void {
     popupResizeHandle.style.display = 'block';
     popupRoot.style.height = '';
     setEditEnabled(false);
+    if (popupCopyButton) {
+      popupCopyButton.style.display = 'inline-flex';
+    }
+    updateCopyButtonLayout();
 
     const rect = popupRoot.getBoundingClientRect();
     const centeredTop = Math.max(8, (window.innerHeight - rect.height) / 2);
@@ -955,6 +1054,10 @@ function setEditMode(enabled: boolean): void {
     popupHeader.style.cursor = 'default';
     popupResizeHandle.style.display = 'none';
     setEditEnabled(Boolean(popupSourceText));
+    if (popupCopyButton) {
+      popupCopyButton.style.display = 'none';
+    }
+    updateCopyButtonLayout();
   }
 
   setActiveTab(popupActiveTab);
@@ -1156,6 +1259,12 @@ function dismissPopup(): void {
   popupZoomControls = null;
   popupZoomInButton = null;
   popupZoomOutButton = null;
+  popupCopyButton = null;
+  popupCopyTooltip = null;
+  if (popupCopyTooltipTimeout !== null) {
+    window.clearTimeout(popupCopyTooltipTimeout);
+    popupCopyTooltipTimeout = null;
+  }
   popupEditorPanel = null;
   popupEditorTextarea = null;
   popupHeader = null;
@@ -1267,6 +1376,7 @@ function showPopup(
   message.style.display = 'none';
 
   const contentWrapper = document.createElement('div');
+  contentWrapper.style.position = 'relative';
 
   const content = document.createElement('div');
   content.style.maxHeight = `${popupDefaultMaxHeight}px`;
@@ -1274,6 +1384,7 @@ function showPopup(
   content.style.paddingTop = '8px';
   content.style.position = 'relative';
   content.style.cursor = 'grab';
+  content.style.zIndex = '0';
   content.addEventListener('pointerdown', (event) => {
     startPan(event);
   });
@@ -1282,6 +1393,75 @@ function showPopup(
   diagram.style.transformOrigin = '0 0';
   diagram.style.willChange = 'transform';
   content.appendChild(diagram);
+
+  const copyButton = document.createElement('button');
+  copyButton.type = 'button';
+  copyButton.setAttribute('aria-label', 'Copy Mermaid code');
+  copyButton.style.position = 'absolute';
+  copyButton.style.top = '8px';
+  copyButton.style.right = '8px';
+  copyButton.style.width = '28px';
+  copyButton.style.height = '28px';
+  copyButton.style.borderRadius = '6px';
+  copyButton.style.display = 'none';
+  copyButton.style.alignItems = 'center';
+  copyButton.style.justifyContent = 'center';
+  copyButton.style.cursor = 'pointer';
+  copyButton.style.transition = 'transform 120ms ease, background 120ms ease';
+  copyButton.style.zIndex = '2';
+  copyButton.setAttribute('data-pan-ignore', 'true');
+  copyButton.addEventListener('mouseenter', () => {
+    setCopyTooltip('Copy Mermaid code', true);
+  });
+  copyButton.addEventListener('mouseleave', () => {
+    setCopyTooltip('Copy Mermaid code', false);
+  });
+  copyButton.addEventListener('click', () => {
+    void (async () => {
+      const text =
+        popupActiveTab === 'editor'
+          ? (popupEditorText ?? '')
+          : (popupSourceText ?? '');
+      if (text.trim().length === 0) {
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        triggerCopyFeedback();
+      } catch {
+        // ignore
+      }
+    })();
+  });
+
+  const copyIcon = document.createElement('img');
+  copyIcon.alt = '';
+  copyIcon.src = copyIconUrl;
+  copyIcon.style.width = '14px';
+  copyIcon.style.height = '14px';
+  copyButton.appendChild(copyIcon);
+
+  const copyTooltip = document.createElement('div');
+  copyTooltip.style.position = 'absolute';
+  copyTooltip.style.top = '8px';
+  copyTooltip.style.right = '8px';
+  copyTooltip.style.transform = 'translate(0, calc(-100% - 2px))';
+  copyTooltip.style.opacity = '0';
+  copyTooltip.style.transition = 'opacity 140ms ease, transform 140ms ease';
+  copyTooltip.style.padding = '6px 8px';
+  copyTooltip.style.borderRadius = '6px';
+  copyTooltip.style.background = '#111';
+  copyTooltip.style.color = '#fff';
+  copyTooltip.style.fontSize = '12px';
+  copyTooltip.style.lineHeight = '16px';
+  copyTooltip.style.whiteSpace = 'nowrap';
+  copyTooltip.style.pointerEvents = 'none';
+  copyTooltip.style.zIndex = '3';
+  copyTooltip.setAttribute('data-pan-ignore', 'true');
+  copyTooltip.textContent = 'Copy Mermaid code';
+
+  contentWrapper.appendChild(copyButton);
+  contentWrapper.appendChild(copyTooltip);
 
   const zoomControls = document.createElement('div');
   zoomControls.style.position = 'absolute';
@@ -1342,6 +1522,7 @@ function showPopup(
   editorTextarea.style.boxSizing = 'border-box';
   editorTextarea.addEventListener('input', () => {
     popupEditorText = editorTextarea.value;
+    updateCopyButtonState();
   });
 
   editorPanel.appendChild(editorTextarea);
@@ -1381,6 +1562,8 @@ function showPopup(
   popupZoomControls = zoomControls;
   popupZoomInButton = zoomInButton;
   popupZoomOutButton = zoomOutButton;
+  popupCopyButton = copyButton;
+  popupCopyTooltip = copyTooltip;
   popupEditorPanel = editorPanel;
   popupEditorTextarea = editorTextarea;
   popupHeader = header;
@@ -1403,6 +1586,9 @@ function showPopup(
   updateEditModeStyles(resolvePopupTheme(popupThemePreference));
   resetPanZoom();
   updateZoomControlsTheme(resolvePopupTheme(popupThemePreference));
+  updateCopyButtonTheme(resolvePopupTheme(popupThemePreference));
+  updateCopyButtonState();
+  updateCopyButtonLayout();
   setEditMode(false);
   renderPopupActions();
   setActionsEnabled(false);
@@ -1554,6 +1740,7 @@ function applyPopupTheme(
 
   updateEditModeStyles(theme);
   updateZoomControlsTheme(theme);
+  updateCopyButtonTheme(theme);
 }
 
 function clampPopupToViewport(popup: HTMLElement): void {
@@ -1609,6 +1796,7 @@ function handleActionClick(): void {
     setPopupMessage(null);
     setActionsEnabled(true);
     setEditEnabled(true);
+    updateCopyButtonState();
     if (popupRoot) {
       clampPopupToViewport(popupRoot);
     }
