@@ -6,3 +6,4 @@ dist/
 *.log
 
 best_mermaid_render.md
+dist.zip
