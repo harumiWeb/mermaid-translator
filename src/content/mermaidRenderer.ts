@@ -35,18 +35,20 @@ export async function renderMermaid(
 
     const id = `mermaid-${crypto.randomUUID()}`;
     const { svg } = await mermaidApi.render(id, code);
-    const sanitizedSvg = DOMPurify.sanitize(svg, {
+    const sanitizedFragment = DOMPurify.sanitize(svg, {
       USE_PROFILES: { svg: true, svgFilters: true },
       ADD_TAGS: ['style', 'foreignObject', 'div', 'span', 'p', 'br'],
       ADD_ATTR: ['style', 'class', 'xmlns', 'xmlns:xlink'],
+      RETURN_DOM_FRAGMENT: true,
     });
 
-    if (typeof sanitizedSvg !== 'string' || sanitizedSvg.trim().length === 0) {
+    const svgElement = sanitizedFragment.querySelector('svg');
+    if (!(svgElement instanceof SVGElement)) {
       return null;
     }
 
-    container.innerHTML = sanitizedSvg;
-    return sanitizedSvg;
+    container.replaceChildren(svgElement);
+    return svgElement.outerHTML;
   } catch {
     return null;
   }
