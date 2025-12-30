@@ -4,7 +4,7 @@
   <img src="/assets/icon_full.png" width="200" alt="Centered illustration">
 </p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Vitest](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml/badge.svg)](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml) [![Oxlint](https://github.com/harumiWeb/mermaid-translator/actions/workflows/oxlint.yml/badge.svg)](https://github.com/harumiWeb/mermaid-translator/actions/workflows/oxlint.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Vitest](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml/badge.svg)](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fe084998551b4d978da692e28c818c06)](https://app.codacy.com/gh/harumiWeb/mermaid-translator/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 [日本版README](README.ja.md)
 
