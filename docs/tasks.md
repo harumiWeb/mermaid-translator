@@ -129,3 +129,8 @@
 - [x] CodeQL のGitHub Actionsワークフローを追加する。`spec: 020-ci-workflows`
 - [x] Vitest のGitHub Actionsワークフローを追加する。`spec: 020-ci-workflows`
 - [x] Oxlint のGitHub Actionsワークフローを追加する。`spec: 020-ci-workflows`
+- [ ] Mermaid-like な選択でアクションボタンが表示され、クリックでポップアップが開くことを確認する E2E テストを追加する。`spec: 021-playwright-e2e-smoke`
+- [ ] Mermaid-like な選択のみではポップアップが開かないことを確認する E2E テストを追加する。`spec: 021-playwright-e2e-smoke`
+- [ ] Mermaid ではない選択でアクションボタンが表示されないことを確認する E2E テストを追加する。`spec: 021-playwright-e2e-smoke`
+- [ ] ポップアップが外側クリックまたは選択変更で閉じることを確認する E2E テストを追加する。`spec: 021-playwright-e2e-smoke`
+- [ ] E2E テストで未処理の console/page error を検出したら失敗とする。`spec: 021-playwright-e2e-smoke`

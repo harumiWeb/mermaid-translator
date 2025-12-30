@@ -299,10 +299,60 @@ Skipping this step is considered a process violation.
 
 ## Testing Policy
 
-- Vitest is used ONLY for pure, DOM-independent logic
-- Tests MUST NOT rely on jsdom or browser APIs
-- UI behavior is validated via specs, not automated tests
-- Adding tests for content scripts requires explicit approval
+### 1. Unit Tests (Vitest)
+
+- Vitest is used **ONLY** for pure, DOM-independent logic
+- Tests MUST NOT rely on jsdom, browser APIs, or mocked DOM environments
+- Unit tests should target:
+  - parsing logic
+  - transformation pipelines
+  - configuration resolution
+  - pure utility functions
+- Introducing jsdom-based tests is **explicitly forbidden**
+
+### 2. UI / Integration / E2E Tests (Playwright)
+
+- Browser-level behavior is validated using **Playwright (Chromium only)**
+- Playwright tests are intended for **smoke testing and regression detection**, not exhaustive UI validation
+- Allowed validation scope:
+  - extension loading without errors
+  - content script execution on real pages
+  - critical UI interactions (e.g. render, copy, zoom)
+  - absence of console errors
+- Tests MUST run against a **real browser environment**
+  - No mocked DOM
+  - No simulated browser APIs
+
+### 3. Scope Control
+
+- UI/E2E tests MUST:
+  - avoid pixel-level or layout assertions
+  - avoid snapshot testing unless explicitly justified
+  - focus on "does it work" rather than "does it look perfect"
+- Content script behavior SHOULD NOT be unit-tested
+  - Behavior is validated only through Playwright E2E tests
+
+### 4. Test Addition Policy
+
+- Adding new Playwright tests is allowed **ONLY** when:
+  - introducing user-visible behavior
+  - fixing regressions
+  - validating Chrome Web Store submission safety
+- Large-scale UI test expansion requires explicit maintainer approval
+
+### 5. CI / Execution Policy
+
+- Playwright tests MAY be executed locally
+- CI execution is optional and SHOULD be discussed before introduction
+- Unit tests MUST remain fast and deterministic
+
+### 6. Design Philosophy
+
+- This project prioritizes:
+  - correctness of core logic
+  - long-term maintainability
+  - low test maintenance cost
+- Tests that increase maintenance burden without clear regression value are discouraged
 
 ---
 
