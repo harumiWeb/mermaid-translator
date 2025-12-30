@@ -134,3 +134,5 @@
 - [x] Mermaid ではない選択でアクションボタンが表示されないことを確認する E2E テストを追加する。`spec: 021-playwright-e2e-smoke`
 - [x] ポップアップが外側クリックまたは選択変更で閉じることを確認する E2E テストを追加する。`spec: 021-playwright-e2e-smoke`
 - [x] E2E テストで未処理の console/page error を検出したら失敗とする。`spec: 021-playwright-e2e-smoke`
+- [ ] Mermaid から返る SVG を DOMPurify でサニタイズしてから描画する。`spec: 022-sanitize-mermaid-svg`
+- [ ] サニタイズ失敗時はレンダリング失敗として既存のエラーメッセージを表示する。`spec: 022-sanitize-mermaid-svg`

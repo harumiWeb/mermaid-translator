@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import type { Mermaid } from 'mermaid';
 
 type MermaidTheme = 'default' | 'dark' | 'forest' | 'neutral' | 'base';
@@ -34,8 +35,18 @@ export async function renderMermaid(
 
     const id = `mermaid-${crypto.randomUUID()}`;
     const { svg } = await mermaidApi.render(id, code);
-    container.innerHTML = svg;
-    return svg;
+    const sanitizedSvg = DOMPurify.sanitize(svg, {
+      USE_PROFILES: { svg: true, svgFilters: true },
+      ADD_TAGS: ['style', 'foreignObject', 'div', 'span', 'p', 'br'],
+      ADD_ATTR: ['style', 'class', 'xmlns', 'xmlns:xlink'],
+    });
+
+    if (typeof sanitizedSvg !== 'string' || sanitizedSvg.trim().length === 0) {
+      return null;
+    }
+
+    container.innerHTML = sanitizedSvg;
+    return sanitizedSvg;
   } catch {
     return null;
   }
