@@ -1,7 +1,12 @@
-import { fileURLToPath } from 'url';
 import { defineConfig } from '@playwright/test';
 
-const extensionPath = fileURLToPath(new URL('./dist', import.meta.url));
+const cwd = globalThis.process?.cwd?.() ?? '';
+const normalizedCwd = cwd.replace(/[\\/]+$/, '');
+if (globalThis.process?.env) {
+  globalThis.process.env.PLAYWRIGHT_TS_CONFIG = normalizedCwd
+    ? `${normalizedCwd}/tsconfig.playwright.json`
+    : 'tsconfig.playwright.json';
+}
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -14,12 +19,6 @@ export default defineConfig({
       name: 'chromium-extension',
       use: {
         browserName: 'chromium',
-        launchOptions: {
-          args: [
-            `--disable-extensions-except=${extensionPath}`,
-            `--load-extension=${extensionPath}`,
-          ],
-        },
       },
     },
   ],

@@ -37,4 +37,5 @@ selection flow without relying on DOM assumptions or visual assertions.
   - Mermaid-like selection alone does not open the popup
   - Non-Mermaid selection does not show the action button
   - Popup dismisses on outside click or selection change
+- No uncaught console or page errors occur during test execution
 - Tests run in Chromium only and avoid visual assertions

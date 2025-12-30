@@ -12,6 +12,7 @@
     "format": "oxfmt --write .",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
+    "e2e": "cross-env PLAYWRIGHT_TS_CONFIG=tsconfig.playwright.json playwright test",
     "dev": "vite",
     "build": "vite build",
     "build:dev": "cross-env VITE_ENABLE_LOGGING=true vite build",
@@ -35,7 +36,7 @@
     "vitest": "^4.0.16"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,css,md}": [
+    "*.{ts,tsx,js,jsx,mts,json,css,md}": [
       "oxfmt --write",
       "oxlint --fix"
     ]

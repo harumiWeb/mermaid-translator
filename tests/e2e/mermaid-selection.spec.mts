@@ -9,7 +9,7 @@ let fixtureUrl = '';
 const extensionPath = fileURLToPath(new URL('../../dist', import.meta.url));
 
 const test = base.extend<{ page: Page }>({
-  page: async (_args, use) => {
+  page: async ({ browserName: _browserName }, use) => {
     const tmpRoot = os.tmpdir().replace(/[\\/]+$/, '');
     const userDataDir = await mkdtemp(`${tmpRoot}/mermaid-translator-e2e-`);
     const context = await chromium.launchPersistentContext(userDataDir, {
@@ -133,8 +133,11 @@ function trackPageErrors(page: Page): ErrorTracker {
 async function selectAllText(page: Page, selector: string): Promise<void> {
   await page.evaluate((targetSelector) => {
     const element = document.querySelector(targetSelector);
+    if (!element) {
+      throw new Error(`Element ${targetSelector} not found`);
+    }
     if (!(element instanceof HTMLTextAreaElement)) {
-      return;
+      throw new Error(`Element ${targetSelector} is not a textarea`);
     }
 
     element.focus();
@@ -152,13 +155,16 @@ async function selectSubstring(
   await page.evaluate(
     ({ targetSelector, targetText }) => {
       const element = document.querySelector(targetSelector);
+      if (!element) {
+        throw new Error(`Element ${targetSelector} not found`);
+      }
       if (!(element instanceof HTMLTextAreaElement)) {
-        return;
+        throw new Error(`Element ${targetSelector} is not a textarea`);
       }
 
       const startIndex = element.value.indexOf(targetText);
       if (startIndex === -1) {
-        return;
+        throw new Error(`Text "${targetText}" not found in element`);
       }
 
       element.focus();
