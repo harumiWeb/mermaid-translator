@@ -1,12 +1,10 @@
 import { defineConfig } from '@playwright/test';
 
-const cwd = globalThis.process?.cwd?.() ?? '';
+const cwd = globalThis.process.cwd();
 const normalizedCwd = cwd.replace(/[\\/]+$/, '');
-if (globalThis.process?.env) {
-  globalThis.process.env.PLAYWRIGHT_TS_CONFIG = normalizedCwd
-    ? `${normalizedCwd}/tsconfig.playwright.json`
-    : 'tsconfig.playwright.json';
-}
+globalThis.process.env.PLAYWRIGHT_TS_CONFIG = normalizedCwd
+  ? `${normalizedCwd}/tsconfig.playwright.json`
+  : 'tsconfig.playwright.json';
 
 export default defineConfig({
   testDir: 'tests/e2e',
