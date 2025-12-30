@@ -21,8 +21,7 @@ output without interfering with the host page.
 
 ## Out of Scope
 
-- Modal dialogs
-- Background overlays
+- Persistent full-page overlays
 - Persistent UI
 - Multiple simultaneous popups
 
@@ -69,6 +68,12 @@ Popup MUST be dismissed when any of the following occurs:
 - Popup maximum width is 50% of viewport width
 - Popup includes a close button in the top-right corner
 - Close button shows a tooltip on hover
+
+### Optional Edit Mode (when enabled by spec)
+
+- Popup may expand into a larger, modal-like panel for editing
+- Any overlay must not lock scrolling or trap focus
+- The page must remain interactive outside the panel
 
 ---
 

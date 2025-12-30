@@ -142,10 +142,15 @@ The host page must remain untouched.
 This project is NOT trying to:
 
 - be a Mermaid editor
+- provide a full-fledged authoring environment
 - replace Mermaid Live
 - parse Mermaid formally
 - validate Mermaid syntax
 - integrate with cloud services
+
+Note: The popup may offer a lightweight, in-place edit mode
+to adjust Mermaid source and preview changes, but it is not a
+dedicated editor product.
 
 Saying "no" is part of the architecture.
 
