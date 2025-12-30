@@ -1,34 +1,133 @@
 # Mermaid Translator
 
-選択した Mermaid コードを、クリック操作で安全にレンダリングできる
-Chrome 拡張機能（Manifest V3）です。
+> **Select Mermaid text anywhere on the web — render it instantly.**
 
-## 特長
+Web ページ上の Mermaid 記法を **選択してクリックするだけ** で、  
+その場に図として表示できる Chrome 拡張機能です。
 
-- テキスト選択 → ボタンクリックの明示操作のみで描画
-- 任意ページ対応（DOM 構造やタグに依存しない）
-- Shadow DOM で UI を隔離、ページを汚さない
-- SVG / PNG 保存、新規タブでの SVG 表示
-- Mermaid テーマ選択 + ポップアップのライト/ダーク切替
-- 失敗時は静かにフェイル（ページ動作を妨げない）
+---
 
-## 使い方
+## What is this?
 
-1. Mermaid コードを選択
-2. 選択付近に出るボタンをクリック
-3. ポップアップ内で表示・保存・新規タブ表示を実行
+**Mermaid Translator** は、  
+Markdown や特定のタグに依存せず、
 
-## ビルドと読み込み
+> **「人が選択した Mermaid テキスト」**
+
+を起点に、図をレンダリングします。
+
+- 自動では何もしません
+- ページ構造を解析しません
+- ページを壊しません
+
+**必要なときに、必要な分だけ。**
+
+---
+
+## How it works
+
+1. Web ページ上の Mermaid 記法テキストを選択
+2. 選択範囲の近くに小さなボタンが表示
+3. クリックすると、その場で図をレンダリング
+
+> 自動処理は一切ありません。  
+> 操作の主導権は常にユーザーにあります。
+
+---
+
+## Works anywhere
+
+- 技術ブログ / ドキュメント
+- GitHub Issues / README
+- 社内ツール / 社内 Wiki
+- HTML 構造が特殊なページ
+
+Markdown のコードブロックや  
+`<pre>` / `<code>` タグに **一切依存しません**。
+
+---
+
+## Designed to be unobtrusive
+
+- 自動レンダリングなし
+- ページレイアウトを変更しない
+- フォーカス・スクロールを奪わない
+- 常駐 UI なし
+
+処理に失敗した場合も、  
+**「何も起こらないだけ」** です。
+
+---
+
+## Privacy & Security
+
+- 外部通信なし
+- データ収集なし
+- 解析はすべてローカルで完結
+
+安心して業務・社内環境でも使用できます。
+
+---
+
+## Installation
+
+### Chrome Web Store
+
+（※ 公開後にリンクを追加）
+
+### Local build (for development)
 
 ```bash
 pnpm install
 pnpm build
 ```
 
-Chrome で `chrome://extensions` を開き、
-「デベロッパーモード」を ON → 「パッケージ化されていない拡張機能を読み込む」で `dist` を指定します。
+Chrome の拡張機能管理画面で
+`dist/` ディレクトリを読み込んでください。
 
-## 開発
+---
+
+## Why this approach?
+
+多くの Mermaid 拡張は、
+
+- ページ全体を解析する
+- 特定の構造を前提にする
+- 自動で描画してしまう
+
+という設計です。
+
+この拡張は、あえて **真逆** を選びました。
+
+> **DOM ではなく、人の意思を起点にする。**
+
+それが、
+最も壊れにくく、最も信頼できると考えています。
+
+---
+
+## Tech Stack
+
+- TypeScript
+- Vite
+- Chrome Extension (Manifest V3)
+- Preact
+- Mermaid
+
+---
+
+## License
+
+MIT License
+このソフトウェアは、いかなる保証もなく、「現状のまま」提供されます。
+
+## Philosophy (short)
+
+何も自動的には行わない。
+一つのことをしっかりやる。
+決して邪魔をしない。
+
+## Development
 
 ```bash
 pnpm build:dev
@@ -45,7 +144,7 @@ pnpm test
 pnpm format
 ```
 
-## ドキュメント
+## Documents
 
 - 仕様: `docs/specs/`
 - アーキテクチャ: `docs/ARCHITECTURE.md`

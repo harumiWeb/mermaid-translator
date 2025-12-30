@@ -95,3 +95,15 @@
 - [x] レンダリング完了まで新規タブボタンを無効化する。`spec: 010-open-in-new-tab`
 - [x] README を作成し、概要・機能・使い方・ビルド/読み込み手順・開発コマンドを記載する。`spec: 013-readme`
 - [x] プロジェクト名を mermaid-translator に統一する。`spec: 014-project-rename`
+
+- [ ] ポップアップツールバーに Edit ボタンを追加し、「新規タブで開く」の右隣に配置する。`spec: 015-edit-mode`
+- [ ] `public/icons/edit.svg` をボタンアイコンとして使用する。`spec: 015-edit-mode`
+- [ ] Mermaid ソースが存在しない場合は Edit ボタンを無効化する。`spec: 015-edit-mode`
+- [ ] Edit モード用にタブ UI（View / Editor）をツールバー直下へ追加する。`spec: 015-edit-mode`
+- [ ] Editor タブに Mermaid ソースを編集できるテキストエリアを表示する。`spec: 015-edit-mode`
+- [ ] View タブで Editor の内容を使って再レンダリングする。`spec: 015-edit-mode`
+- [ ] 編集モードの表示をポップアップの拡張（モーダル的パネル）として実装する。`spec: 015-edit-mode`
+- [ ] テーマ選択が編集モードのレンダリングにも反映されるようにする。`spec: 015-edit-mode`
+- [ ] エクスポート系アクションが最新レンダリング結果を使用するようにする。`spec: 015-edit-mode`
+- [ ] 編集モードのモーダルをドラッグで移動できるようにする。`spec: 004-popup-lifecycle`
+- [ ] 編集モードのモーダルをリサイズで拡大縮小できるようにする。`spec: 004-popup-lifecycle`

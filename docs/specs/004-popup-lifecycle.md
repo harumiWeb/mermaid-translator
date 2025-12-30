@@ -74,6 +74,7 @@ Popup MUST be dismissed when any of the following occurs:
 - Popup may expand into a larger, modal-like panel for editing
 - Any overlay must not lock scrolling or trap focus
 - The page must remain interactive outside the panel
+- Edit-mode panels may be draggable and resizable within the viewport
 
 ---
 

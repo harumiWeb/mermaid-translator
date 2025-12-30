@@ -14,6 +14,8 @@ and preview changes without leaving the page.
 - Add an Edit button in the popup toolbar, placed to the right of the "open in new tab" button
 - Use the icon asset at `public/icons/edit.svg`
 - Edit mode may open in a larger, modal-like popup presentation
+- Edit-mode panel can be dragged by its header area
+- Edit-mode panel can be resized from a corner handle
 - Provide two tabs below the toolbar: `View` and `Editor`
 - Seed the editor with the latest Mermaid source used for rendering
 - Switching to `View` re-renders using the current editor text

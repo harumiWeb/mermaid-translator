@@ -14,16 +14,19 @@ type PopupActionsProps = {
   svgEnabled: boolean;
   pngEnabled: boolean;
   openEnabled: boolean;
+  editEnabled: boolean;
   themeOptions: ReadonlyArray<{ value: string; label: string }>;
   themeValue: string;
   popupTheme: 'light' | 'dark';
   onSvg: () => void;
   onPng: () => void;
   onOpen: () => void;
+  onEdit: () => void;
   onThemeChange: (value: string) => void;
   onTogglePopupTheme: () => void;
   onClose: () => void;
   openIconUrl: string;
+  editIconUrl: string;
   closeIconUrl: string;
   sunIconUrl: string;
   moonIconUrl: string;
@@ -292,6 +295,15 @@ export function PopupActions(props: PopupActionsProps) {
           theme={props.popupTheme}
         >
           <img alt="" src={props.openIconUrl} style={iconStyle} />
+        </TooltipButton>
+        <TooltipButton
+          label="Edit"
+          disabled={!props.editEnabled}
+          onClick={props.onEdit}
+          variant="icon"
+          theme={props.popupTheme}
+        >
+          <img alt="" src={props.editIconUrl} style={iconStyle} />
         </TooltipButton>
       </div>
       <div style={groupStyle}>

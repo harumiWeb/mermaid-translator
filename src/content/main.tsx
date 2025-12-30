@@ -40,8 +40,38 @@ let popupActionsState = {
   svgEnabled: false,
   pngEnabled: false,
   openEnabled: false,
+  editEnabled: false,
 };
 let popupContent: HTMLElement | null = null;
+let popupEditorPanel: HTMLElement | null = null;
+let popupEditorTextarea: HTMLTextAreaElement | null = null;
+let popupHeader: HTMLElement | null = null;
+let popupResizeHandle: HTMLElement | null = null;
+let popupTabBar: HTMLElement | null = null;
+let popupViewTab: HTMLButtonElement | null = null;
+let popupEditorTab: HTMLButtonElement | null = null;
+let popupSourceText: string | null = null;
+let popupEditorText: string | null = null;
+let popupEditModeEnabled = false;
+let popupActiveTab: 'view' | 'editor' = 'view';
+let popupDragState: {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startTop: number;
+  startLeft: number;
+  width: number;
+  height: number;
+} | null = null;
+let popupResizeState: {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startWidth: number;
+  startHeight: number;
+  startTop: number;
+  startLeft: number;
+} | null = null;
 let themePreference: ThemePreference | null = null;
 let popupThemePreference: PopupThemePreference | null = null;
 let popupArrow: HTMLElement | null = null;
@@ -58,6 +88,7 @@ function resolveIconUrl(): string {
 
 const iconUrl = resolveIconUrl();
 const externalIconUrl = chrome.runtime.getURL('icons/external-link-icon.svg');
+const editIconUrl = chrome.runtime.getURL('icons/edit.svg');
 const closeIconUrl = chrome.runtime.getURL('icons/close.svg');
 const sunIconUrl = chrome.runtime.getURL('icons/sun.svg');
 const moonIconUrl = chrome.runtime.getURL('icons/moon.svg');
@@ -73,6 +104,14 @@ const themeOptions = [
   { value: 'neutral', label: 'Neutral' },
   { value: 'base', label: 'Base' },
 ] as const;
+const popupMinWidth = 550;
+const popupMaxWidth = '50vw';
+const popupDefaultMaxHeight = 320;
+const popupEditMaxHeightRatio = 0.8;
+const popupEditWidth = '80vw';
+const popupEditMaxHeight = '80vh';
+const popupEditContentMaxHeight = '55vh';
+const popupEditMinHeight = 320;
 
 type ThemePreference = (typeof themeOptions)[number]['value'];
 type ThemeName = Exclude<ThemePreference, 'system'>;
@@ -351,11 +390,196 @@ function setActionsEnabled(enabled: boolean): void {
   }
 
   popupActionsState = {
+    ...popupActionsState,
     svgEnabled: enabled,
     pngEnabled: enabled,
     openEnabled: enabled,
   };
   renderPopupActions();
+}
+
+function setEditEnabled(enabled: boolean): void {
+  if (!popupActionsMount) {
+    return;
+  }
+
+  popupActionsState = {
+    ...popupActionsState,
+    editEnabled: enabled,
+  };
+  renderPopupActions();
+}
+
+function clampValue(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+function updateEditLayout(): void {
+  if (
+    !popupRoot ||
+    !popupContent ||
+    !popupEditorTextarea ||
+    !popupTabBar ||
+    !popupHeader
+  ) {
+    return;
+  }
+
+  const rect = popupRoot.getBoundingClientRect();
+  const headerHeight = popupHeader.getBoundingClientRect().height;
+  const tabHeight = popupTabBar.getBoundingClientRect().height;
+  const messageHeight = popupMessage
+    ? popupMessage.getBoundingClientRect().height
+    : 0;
+  const available = Math.max(
+    200,
+    rect.height - headerHeight - tabHeight - messageHeight - 48
+  );
+
+  popupContent.style.maxHeight = `${Math.floor(available)}px`;
+  popupEditorTextarea.style.height = `${Math.floor(available)}px`;
+}
+
+function stopDrag(): void {
+  if (!popupDragState) {
+    return;
+  }
+
+  window.removeEventListener('pointermove', handleDragMove);
+  popupDragState = null;
+}
+
+function handleDragMove(event: PointerEvent): void {
+  if (!popupDragState || !popupRoot) {
+    return;
+  }
+
+  if (event.pointerId !== popupDragState.pointerId) {
+    return;
+  }
+
+  const deltaX = event.clientX - popupDragState.startX;
+  const deltaY = event.clientY - popupDragState.startY;
+  const maxLeft = window.innerWidth - popupDragState.width - 8;
+  const maxTop = window.innerHeight - popupDragState.height - 8;
+
+  const nextLeft = clampValue(
+    popupDragState.startLeft + deltaX,
+    8,
+    Math.max(8, maxLeft)
+  );
+  const nextTop = clampValue(
+    popupDragState.startTop + deltaY,
+    8,
+    Math.max(8, maxTop)
+  );
+
+  popupRoot.style.left = `${Math.floor(nextLeft)}px`;
+  popupRoot.style.top = `${Math.floor(nextTop)}px`;
+}
+
+function startDrag(event: PointerEvent): void {
+  if (!popupEditModeEnabled || !popupRoot) {
+    return;
+  }
+
+  const target = event.target;
+  if (
+    target instanceof HTMLElement &&
+    target.closest('button, select, option, textarea, input, a')
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  const rect = popupRoot.getBoundingClientRect();
+  popupDragState = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    startTop: rect.top,
+    startLeft: rect.left,
+    width: rect.width,
+    height: rect.height,
+  };
+  window.addEventListener('pointermove', handleDragMove);
+  window.addEventListener(
+    'pointerup',
+    () => {
+      stopDrag();
+    },
+    { once: true }
+  );
+}
+
+function stopResize(): void {
+  if (!popupResizeState) {
+    return;
+  }
+
+  window.removeEventListener('pointermove', handleResizeMove);
+  popupResizeState = null;
+}
+
+function handleResizeMove(event: PointerEvent): void {
+  if (!popupResizeState || !popupRoot) {
+    return;
+  }
+
+  if (event.pointerId !== popupResizeState.pointerId) {
+    return;
+  }
+
+  const deltaX = event.clientX - popupResizeState.startX;
+  const deltaY = event.clientY - popupResizeState.startY;
+
+  const maxWidth = window.innerWidth - popupResizeState.startLeft - 8;
+  const maxHeight = Math.min(
+    Math.floor(window.innerHeight * popupEditMaxHeightRatio),
+    window.innerHeight - popupResizeState.startTop - 8
+  );
+
+  const nextWidth = clampValue(
+    popupResizeState.startWidth + deltaX,
+    popupMinWidth,
+    Math.max(popupMinWidth, maxWidth)
+  );
+  const nextHeight = clampValue(
+    popupResizeState.startHeight + deltaY,
+    popupEditMinHeight,
+    Math.max(popupEditMinHeight, maxHeight)
+  );
+
+  popupRoot.style.width = `${Math.floor(nextWidth)}px`;
+  popupRoot.style.height = `${Math.floor(nextHeight)}px`;
+  updateEditLayout();
+  clampPopupToViewport(popupRoot);
+}
+
+function startResize(event: PointerEvent): void {
+  if (!popupEditModeEnabled || !popupRoot) {
+    return;
+  }
+
+  event.preventDefault();
+  const rect = popupRoot.getBoundingClientRect();
+  popupResizeState = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    startWidth: rect.width,
+    startHeight: rect.height,
+    startTop: rect.top,
+    startLeft: rect.left,
+  };
+  window.addEventListener('pointermove', handleResizeMove);
+  window.addEventListener(
+    'pointerup',
+    () => {
+      stopResize();
+    },
+    { once: true }
+  );
 }
 
 function loadThemePreference(): ThemePreference {
@@ -435,12 +659,170 @@ function getNextPopupTheme(
   return 'dark';
 }
 
-function rerenderPopup(theme: ThemeName): void {
-  if (!popupSelectionText || !popupContent) {
+function updateEditModeStyles(theme: 'light' | 'dark'): void {
+  if (
+    !popupTabBar ||
+    !popupViewTab ||
+    !popupEditorTab ||
+    !popupEditorTextarea
+  ) {
     return;
   }
 
-  const code = extractMermaidCode(popupSelectionText);
+  const isDark = theme === 'dark';
+  const borderColor = isDark ? '#3a3a3a' : '#222';
+  const activeBackground = isDark ? '#2a2a2a' : '#fff';
+  const inactiveBackground = isDark ? '#242424' : '#f2f2f2';
+  const activeColor = isDark ? '#f2f2f2' : '#111';
+  const inactiveColor = isDark ? '#cfcfcf' : '#333';
+
+  const applyTabStyle = (button: HTMLButtonElement, isActive: boolean) => {
+    button.style.height = '28px';
+    button.style.flex = '1';
+    button.style.border = `1px solid ${borderColor}`;
+    button.style.borderRadius = '6px';
+    button.style.background = isActive ? activeBackground : inactiveBackground;
+    button.style.color = isActive ? activeColor : inactiveColor;
+    button.style.cursor = 'pointer';
+    button.style.fontSize = '12px';
+  };
+
+  applyTabStyle(popupViewTab, popupActiveTab === 'view');
+  applyTabStyle(popupEditorTab, popupActiveTab === 'editor');
+
+  popupTabBar.style.display = popupEditModeEnabled ? 'flex' : 'none';
+  popupTabBar.style.gap = '6px';
+  popupTabBar.style.marginTop = '8px';
+
+  popupEditorTextarea.style.border = `1px solid ${borderColor}`;
+  popupEditorTextarea.style.background = isDark ? '#151515' : '#fff';
+  popupEditorTextarea.style.color = isDark ? '#f2f2f2' : '#111';
+}
+
+function setActiveTab(tab: 'view' | 'editor'): void {
+  popupActiveTab = tab;
+
+  if (popupContent) {
+    popupContent.style.display = tab === 'view' ? 'block' : 'none';
+  }
+  if (popupEditorPanel) {
+    popupEditorPanel.style.display = tab === 'editor' ? 'block' : 'none';
+  }
+
+  const currentPopupTheme = resolvePopupTheme(popupThemePreference ?? 'system');
+  updateEditModeStyles(currentPopupTheme);
+
+  if (tab === 'view' && popupEditModeEnabled) {
+    const theme = resolveTheme(themePreference ?? 'system');
+    const source = popupEditorText ?? '';
+    if (!popupContent) {
+      return;
+    }
+
+    if (source.trim().length === 0) {
+      popupSvg = null;
+      setPopupMessage(renderErrorMessage);
+      setActionsEnabled(false);
+      return;
+    }
+
+    setPopupMessage(null);
+    setActionsEnabled(false);
+    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
+      const svg = await renderMermaid(source, popupContent, theme);
+      if (!svg) {
+        popupSvg = null;
+        setPopupMessage(renderErrorMessage);
+        setActionsEnabled(false);
+        return;
+      }
+
+      popupSvg = svg;
+      popupSourceText = source;
+      setPopupMessage(null);
+      setActionsEnabled(true);
+      setEditEnabled(true);
+      if (popupRoot) {
+        clampPopupToViewport(popupRoot);
+      }
+    });
+  }
+}
+
+function setEditMode(enabled: boolean): void {
+  popupEditModeEnabled = enabled;
+  if (
+    !popupRoot ||
+    !popupContent ||
+    !popupEditorPanel ||
+    !popupTabBar ||
+    !popupHeader ||
+    !popupResizeHandle
+  ) {
+    return;
+  }
+
+  if (enabled) {
+    popupRoot.style.width = popupEditWidth;
+    popupRoot.style.maxWidth = 'none';
+    popupRoot.style.maxHeight = popupEditMaxHeight;
+    popupContent.style.maxHeight = popupEditContentMaxHeight;
+    if (popupArrow) {
+      popupArrow.style.display = 'none';
+    }
+    popupHeader.style.cursor = 'move';
+    popupResizeHandle.style.display = 'block';
+    popupRoot.style.height = '';
+
+    const rect = popupRoot.getBoundingClientRect();
+    const centeredTop = Math.max(8, (window.innerHeight - rect.height) / 2);
+    const centeredLeft = Math.max(8, (window.innerWidth - rect.width) / 2);
+    popupRoot.style.top = `${Math.floor(centeredTop)}px`;
+    popupRoot.style.left = `${Math.floor(centeredLeft)}px`;
+  } else {
+    popupRoot.style.width = '';
+    popupRoot.style.maxWidth = popupMaxWidth;
+    popupRoot.style.maxHeight = '';
+    popupRoot.style.height = '';
+    popupContent.style.maxHeight = `${popupDefaultMaxHeight}px`;
+    if (popupArrow) {
+      popupArrow.style.display = '';
+    }
+    popupHeader.style.cursor = 'default';
+    popupResizeHandle.style.display = 'none';
+  }
+
+  setActiveTab(popupActiveTab);
+  if (enabled) {
+    updateEditLayout();
+  }
+  if (popupRoot) {
+    clampPopupToViewport(popupRoot);
+  }
+}
+
+function getCurrentRenderSource(): string | null {
+  if (popupEditModeEnabled && popupEditorText !== null) {
+    return popupEditorText;
+  }
+  if (popupSourceText) {
+    return popupSourceText;
+  }
+  if (popupSelectionText) {
+    return extractMermaidCode(popupSelectionText);
+  }
+  return null;
+}
+
+function rerenderPopup(theme: ThemeName): void {
+  if (!popupContent) {
+    return;
+  }
+
+  const code = getCurrentRenderSource();
+  if (!code) {
+    return;
+  }
   setPopupMessage(null);
   setActionsEnabled(false);
 
@@ -454,6 +836,7 @@ function rerenderPopup(theme: ThemeName): void {
     }
 
     popupSvg = svg;
+    popupSourceText = code;
     setPopupMessage(null);
     setActionsEnabled(true);
     if (popupRoot) {
@@ -588,6 +971,8 @@ function dismissPopup(): void {
     return;
   }
 
+  stopDrag();
+  stopResize();
   popupRoot.remove();
   popupRoot = null;
   popupSelectionText = null;
@@ -598,8 +983,22 @@ function dismissPopup(): void {
     svgEnabled: false,
     pngEnabled: false,
     openEnabled: false,
+    editEnabled: false,
   };
   popupContent = null;
+  popupEditorPanel = null;
+  popupEditorTextarea = null;
+  popupHeader = null;
+  popupResizeHandle = null;
+  popupTabBar = null;
+  popupViewTab = null;
+  popupEditorTab = null;
+  popupSourceText = null;
+  popupEditorText = null;
+  popupEditModeEnabled = false;
+  popupActiveTab = 'view';
+  popupDragState = null;
+  popupResizeState = null;
   popupThemePreference = null;
   popupArrow = null;
 
@@ -624,8 +1023,8 @@ function showPopup(
   popup.style.position = 'fixed';
   popup.style.top = `${position.top}px`;
   popup.style.left = `${position.left}px`;
-  popup.style.minWidth = '550px';
-  popup.style.maxWidth = '50vw';
+  popup.style.minWidth = `${popupMinWidth}px`;
+  popup.style.maxWidth = popupMaxWidth;
   popup.style.background = '#fff';
   popup.style.color = '#111';
   popup.style.border = '1px solid #222';
@@ -651,8 +1050,36 @@ function showPopup(
     resolvePopupTheme(popupThemePreference ?? 'system')
   );
 
+  const header = document.createElement('div');
+  header.style.paddingTop = '4px';
+  header.style.display = 'flex';
+  header.style.alignItems = 'center';
+  header.addEventListener('pointerdown', (event) => {
+    startDrag(event);
+  });
+
   const actions = document.createElement('div');
-  actions.style.paddingTop = '4px';
+  actions.style.flex = '1';
+
+  const tabBar = document.createElement('div');
+  tabBar.style.display = 'none';
+
+  const viewTab = document.createElement('button');
+  viewTab.type = 'button';
+  viewTab.textContent = 'View';
+  viewTab.addEventListener('click', () => {
+    setActiveTab('view');
+  });
+
+  const editorTab = document.createElement('button');
+  editorTab.type = 'button';
+  editorTab.textContent = 'Editor';
+  editorTab.addEventListener('click', () => {
+    setActiveTab('editor');
+  });
+
+  tabBar.appendChild(viewTab);
+  tabBar.appendChild(editorTab);
 
   const message = document.createElement('div');
   message.style.marginTop = '8px';
@@ -660,15 +1087,54 @@ function showPopup(
   message.style.color = '#b00020';
   message.style.display = 'none';
 
+  const contentWrapper = document.createElement('div');
+
   const content = document.createElement('div');
-  content.style.maxHeight = '320px';
+  content.style.maxHeight = `${popupDefaultMaxHeight}px`;
   content.style.overflow = 'auto';
   content.style.paddingTop = '8px';
 
+  const editorPanel = document.createElement('div');
+  editorPanel.style.display = 'none';
+  editorPanel.style.paddingTop = '8px';
+
+  const editorTextarea = document.createElement('textarea');
+  editorTextarea.style.width = '100%';
+  editorTextarea.style.minHeight = '320px';
+  editorTextarea.style.height = popupEditContentMaxHeight;
+  editorTextarea.style.resize = 'vertical';
+  editorTextarea.style.fontFamily = 'monospace';
+  editorTextarea.style.fontSize = '12px';
+  editorTextarea.style.lineHeight = '1.4';
+  editorTextarea.style.padding = '8px';
+  editorTextarea.style.boxSizing = 'border-box';
+  editorTextarea.addEventListener('input', () => {
+    popupEditorText = editorTextarea.value;
+  });
+
+  editorPanel.appendChild(editorTextarea);
+  contentWrapper.appendChild(content);
+  contentWrapper.appendChild(editorPanel);
+
   popup.appendChild(arrow);
-  popup.appendChild(actions);
+  header.appendChild(actions);
+  popup.appendChild(header);
+  popup.appendChild(tabBar);
   popup.appendChild(message);
-  popup.appendChild(content);
+  popup.appendChild(contentWrapper);
+
+  const resizeHandle = document.createElement('div');
+  resizeHandle.style.position = 'absolute';
+  resizeHandle.style.width = '14px';
+  resizeHandle.style.height = '14px';
+  resizeHandle.style.right = '6px';
+  resizeHandle.style.bottom = '6px';
+  resizeHandle.style.cursor = 'nwse-resize';
+  resizeHandle.style.display = 'none';
+  resizeHandle.addEventListener('pointerdown', (event) => {
+    startResize(event);
+  });
+  popup.appendChild(resizeHandle);
   shadowRoot.appendChild(popup);
 
   clampPopupToViewport(popup);
@@ -679,7 +1145,16 @@ function showPopup(
   popupSvg = null;
   popupActionsMount = actions;
   popupContent = content;
+  popupEditorPanel = editorPanel;
+  popupEditorTextarea = editorTextarea;
+  popupHeader = header;
+  popupResizeHandle = resizeHandle;
+  popupTabBar = tabBar;
+  popupViewTab = viewTab;
+  popupEditorTab = editorTab;
   popupArrow = arrow;
+  popupEditModeEnabled = false;
+  popupActiveTab = 'view';
   if (!popupThemePreference) {
     popupThemePreference = loadPopupThemePreference();
   }
@@ -687,12 +1162,18 @@ function showPopup(
     svgEnabled: false,
     pngEnabled: false,
     openEnabled: false,
+    editEnabled: false,
   };
+  updateEditModeStyles(resolvePopupTheme(popupThemePreference));
+  setEditMode(false);
   renderPopupActions();
   setActionsEnabled(false);
 
   outsidePointerHandler = (event: PointerEvent) => {
     if (!popupRoot) {
+      return;
+    }
+    if (popupEditModeEnabled) {
       return;
     }
 
@@ -723,10 +1204,12 @@ function renderPopupActions(): void {
       svgEnabled={popupActionsState.svgEnabled}
       pngEnabled={popupActionsState.pngEnabled}
       openEnabled={popupActionsState.openEnabled}
+      editEnabled={popupActionsState.editEnabled}
       themeOptions={themeOptions}
       themeValue={currentThemePreference}
       popupTheme={currentPopupTheme}
       openIconUrl={externalIconUrl}
+      editIconUrl={editIconUrl}
       closeIconUrl={closeIconUrl}
       sunIconUrl={sunIconUrl}
       moonIconUrl={moonIconUrl}
@@ -763,6 +1246,18 @@ function renderPopupActions(): void {
         }
 
         openSvgInNewTab(popupSvg);
+      }}
+      onEdit={() => {
+        if (!popupSourceText) {
+          return;
+        }
+
+        popupEditorText = popupEditorText ?? popupSourceText;
+        if (popupEditorTextarea) {
+          popupEditorTextarea.value = popupEditorText;
+        }
+        popupActiveTab = 'view';
+        setEditMode(true);
       }}
       onThemeChange={(value) => {
         if (!isThemePreference(value)) {
@@ -812,6 +1307,8 @@ function applyPopupTheme(
     arrow.style.borderLeft = '1px solid #222';
     arrow.style.borderTop = '1px solid #222';
   }
+
+  updateEditModeStyles(theme);
 }
 
 function clampPopupToViewport(popup: HTMLElement): void {
@@ -854,6 +1351,7 @@ function handleActionClick(): void {
       popupSvg = null;
       setPopupMessage(renderErrorMessage);
       setActionsEnabled(false);
+      setEditEnabled(false);
       if (popupRoot) {
         clampPopupToViewport(popupRoot);
       }
@@ -861,8 +1359,11 @@ function handleActionClick(): void {
     }
 
     popupSvg = svg;
+    popupSourceText = code;
+    popupEditorText = code;
     setPopupMessage(null);
     setActionsEnabled(true);
+    setEditEnabled(true);
     if (popupRoot) {
       clampPopupToViewport(popupRoot);
     }
@@ -871,6 +1372,9 @@ function handleActionClick(): void {
 
 function handleSelectionChange(): void {
   try {
+    if (popupEditModeEnabled) {
+      return;
+    }
     const selectionInfo = getSelectionInfo();
     if (!selectionInfo) {
       renderActionButton(false, null);
