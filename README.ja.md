@@ -4,6 +4,8 @@
   <img src="/assets/icon_full.png" width="200" alt="中央揃えの画像">
 </p>
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Vitest](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml/badge.svg)](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml) [![Oxlint](https://github.com/harumiWeb/mermaid-translator/actions/workflows/oxlint.yml/badge.svg)](https://github.com/harumiWeb/mermaid-translator/actions/workflows/oxlint.yml)
+
 [英語版README](README.md)
 
 > **Select Mermaid text anywhere on the web — render it instantly.**
