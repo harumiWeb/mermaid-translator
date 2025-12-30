@@ -10,7 +10,7 @@ export async function renderMermaid(
   code: string,
   container: HTMLElement,
   theme: MermaidTheme
-): Promise<string | null> {
+): Promise<SVGElement | null> {
   try {
     if (code.trim().length === 0) {
       return null;
@@ -48,7 +48,7 @@ export async function renderMermaid(
     }
 
     container.replaceChildren(svgElement);
-    return svgElement.outerHTML;
+    return svgElement;
   } catch {
     return null;
   }
