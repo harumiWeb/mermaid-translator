@@ -111,7 +111,13 @@
 - [x] 図の右下にズームイン/ズームアウトのボタンを追加する。`spec: 016-pan-zoom-controls`
 - [x] `public/icons/zoom.svg` と `public/icons/zoom-out.svg` をボタンアイコンとして使用する。`spec: 016-pan-zoom-controls`
 - [x] ズーム倍率の上下限とステップを設け、ポップアップ終了時にリセットする。`spec: 016-pan-zoom-controls`
-- [ ] 編集モードのView/Editor両方で右上にコピーボタンを表示する。`spec: 017-copy-mermaid-code`
-- [ ] `public/icons/copy.svg` をボタンアイコンとして使用する。`spec: 017-copy-mermaid-code`
-- [ ] Viewでは最新レンダリングのMermaidソースをコピーする。`spec: 017-copy-mermaid-code`
-- [ ] Editorでは現在のテキストエリア内容をコピーする。`spec: 017-copy-mermaid-code`
+- [x] 編集モードのView/Editor両方で右上にコピーボタンを表示する。`spec: 017-copy-mermaid-code`
+- [x] `public/icons/copy.svg` をボタンアイコンとして使用する。`spec: 017-copy-mermaid-code`
+- [x] Viewでは最新レンダリングのMermaidソースをコピーする。`spec: 017-copy-mermaid-code`
+- [x] Editorでは現在のテキストエリア内容をコピーする。`spec: 017-copy-mermaid-code`
+- [x] 選択取得・選択矩形算出の処理を専用モジュールに分割する。`spec: 018-main-refactor-split`
+- [x] ポップアップ生成/破棄/位置調整の処理を専用モジュールに分割する。`spec: 018-main-refactor-split`
+- [x] Editモードの状態管理とタブ切替を専用モジュールに分割する。`spec: 018-main-refactor-split`
+- [x] パン/ズーム/コピー関連のUI処理を専用モジュールに分割する。`spec: 018-main-refactor-split`
+- [x] テーマ設定の読み書きを専用モジュールに分割する。`spec: 018-main-refactor-split`
+- [x] main.tsx をエントリ兼配線役に整理し、責務を薄くする。`spec: 018-main-refactor-split`
