@@ -16,6 +16,9 @@ No setup.
 No page-specific rules.
 Just select Mermaid text and click.
 
+- Render Mermaid diagrams from selected text
+- Edit mode: open a larger panel, tweak Mermaid code, and preview changes
+
 ---
 
 ### 🖱️ How it works
