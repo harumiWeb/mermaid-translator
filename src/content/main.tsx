@@ -741,7 +741,7 @@ function setActiveTab(tab: 'view' | 'editor'): void {
       popupSourceText = source;
       setPopupMessage(null);
       setActionsEnabled(true);
-      setEditEnabled(true);
+      setEditEnabled(!popupEditModeEnabled);
       if (popupRoot) {
         clampPopupToViewport(popupRoot);
       }
@@ -773,6 +773,7 @@ function setEditMode(enabled: boolean): void {
     popupHeader.style.cursor = 'move';
     popupResizeHandle.style.display = 'block';
     popupRoot.style.height = '';
+    setEditEnabled(false);
 
     const rect = popupRoot.getBoundingClientRect();
     const centeredTop = Math.max(8, (window.innerHeight - rect.height) / 2);
@@ -790,6 +791,7 @@ function setEditMode(enabled: boolean): void {
     }
     popupHeader.style.cursor = 'default';
     popupResizeHandle.style.display = 'none';
+    setEditEnabled(Boolean(popupSourceText));
   }
 
   setActiveTab(popupActiveTab);
