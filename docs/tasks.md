@@ -126,3 +126,6 @@
 - [x] `public/_locales/ja/messages.json` に拡張名/説明文を追加する。`spec: 019-i18n-manifest`
 - [x] `public/_locales/ko/messages.json` に拡張名/説明文を追加する。`spec: 019-i18n-manifest`
 - [x] `public/_locales/zh_CN/messages.json` に拡張名/説明文を追加する。`spec: 019-i18n-manifest`
+- [x] CodeQL のGitHub Actionsワークフローを追加する。`spec: 020-ci-workflows`
+- [x] Vitest のGitHub Actionsワークフローを追加する。`spec: 020-ci-workflows`
+- [x] Oxlint のGitHub Actionsワークフローを追加する。`spec: 020-ci-workflows`
