@@ -1,78 +1,87 @@
 # Mermaid Translator
 
-> **Select Mermaid text anywhere on the web — render it instantly.**
+<p align="center">
+  <img src="/assets/icon_full.png" width="200" alt="Centered illustration">
+</p>
 
-Web ページ上の Mermaid 記法を **選択してクリックするだけ** で、  
-その場に図として表示できる Chrome 拡張機能です。
+[日本版README](README.ja.md)
+
+> **Select Mermaid text anywhere on the web and render it instantly.**
+
+Mermaid Translator is a Chrome extension that lets you select Mermaid syntax
+on any web page and render it on the spot.
+
+![demo](/assets/screenshot.gif)
 
 ---
 
 ## What is this?
 
-**Mermaid Translator** は、  
-Markdown や特定のタグに依存せず、
+**Mermaid Translator** renders diagrams based on what a person selects, not on
+Markdown structure or specific tags.
 
-> **「人が選択した Mermaid テキスト」**
+- No automatic actions
+- No page structure assumptions
+- No page breakage
 
-を起点に、図をレンダリングします。
-
-- 自動では何もしません
-- ページ構造を解析しません
-- ページを壊しません
-
-**必要なときに、必要な分だけ。**
+**Only when you need it, and only as much as you need.**
 
 ---
 
 ## Features
 
-- 選択したテキストから Mermaid ダイアグラムをレンダリング
-- 編集モード：より大きなパネルを開き、Mermaid コードを調整し、変更内容をプレビューします
+- Render Mermaid diagrams from selected text
+- Edit mode: open a larger panel, tweak Mermaid code, and preview changes
+
+![Select Mermaid code and preview](/assets/screenshot01.png)
+
+<p>
+  <img width="48%" src="/assets/screenshot02.png" alt="Edit mode panel">
+  <img width="48%" src="/assets/screenshot03.png" alt="Code editor view">
+</p>
 
 ---
 
 ## How it works
 
-1. Web ページ上の Mermaid 記法テキストを選択
-2. 選択範囲の近くに小さなボタンが表示
-3. クリックすると、その場で図をレンダリング
+1. Select Mermaid text on a web page
+2. A small button appears near your selection
+3. Click the button to render the diagram
 
-> 自動処理は一切ありません。  
-> 操作の主導権は常にユーザーにあります。
+> Nothing happens automatically.
+> You are always in control.
 
 ---
 
 ## Works anywhere
 
-- 技術ブログ / ドキュメント
-- GitHub Issues / README
-- 社内ツール / 社内 Wiki
-- HTML 構造が特殊なページ
+- Technical blogs and documentation
+- GitHub Issues and README pages
+- Internal tools and company wikis
+- Pages with unusual HTML structures
 
-Markdown のコードブロックや  
-`<pre>` / `<code>` タグに **一切依存しません**。
+It does **not** rely on Markdown code blocks or `<pre>` / `<code>` tags.
 
 ---
 
 ## Designed to be unobtrusive
 
-- 自動レンダリングなし
-- ページレイアウトを変更しない
-- フォーカス・スクロールを奪わない
-- 常駐 UI なし
+- No automatic rendering
+- No page layout changes
+- No focus or scroll hijacking
+- No persistent UI
 
-処理に失敗した場合も、  
-**「何も起こらないだけ」** です。
+If something fails, it simply does nothing.
 
 ---
 
 ## Privacy & Security
 
-- 外部通信なし
-- データ収集なし
-- 解析はすべてローカルで完結
+- No external network requests
+- No data collection
+- All processing happens locally
 
-安心して業務・社内環境でも使用できます。
+Safe for internal or corporate usage.
 
 ---
 
@@ -80,7 +89,7 @@ Markdown のコードブロックや
 
 ### Chrome Web Store
 
-（※ 公開後にリンクを追加）
+TBD: Add link after release.
 
 ### Local build (for development)
 
@@ -89,27 +98,23 @@ pnpm install
 pnpm build
 ```
 
-Chrome の拡張機能管理画面で
-`dist/` ディレクトリを読み込んでください。
+Load the `dist/` directory from Chrome's extensions page.
 
 ---
 
 ## Why this approach?
 
-多くの Mermaid 拡張は、
+Many Mermaid extensions:
 
-- ページ全体を解析する
-- 特定の構造を前提にする
-- 自動で描画してしまう
+- Scan the entire page
+- Assume a specific structure
+- Auto-render without user intent
 
-という設計です。
+This extension intentionally chooses the opposite.
 
-この拡張は、あえて **真逆** を選びました。
+> **Not DOM-driven, but user-driven.**
 
-> **DOM ではなく、人の意思を起点にする。**
-
-それが、
-最も壊れにくく、最も信頼できると考えています。
+This makes it more reliable and trustworthy.
 
 ---
 
@@ -126,13 +131,13 @@ Chrome の拡張機能管理画面で
 ## License
 
 MIT License
-このソフトウェアは、いかなる保証もなく、「現状のまま」提供されます。
+Provided "as is" without warranty of any kind.
 
 ## Philosophy (short)
 
-何も自動的には行わない。
-一つのことをしっかりやる。
-決して邪魔をしない。
+Do nothing automatically.
+Do one thing well.
+Never get in the way.
 
 ## Development
 
@@ -140,9 +145,9 @@ MIT License
 pnpm build:dev
 ```
 
-`build:dev` は開発ログを有効化したビルドを出力します。
+`build:dev` outputs a build with developer logging enabled.
 
-## コマンド一覧
+## Commands
 
 ```bash
 pnpm lint
@@ -153,6 +158,6 @@ pnpm format
 
 ## Documents
 
-- 仕様: `docs/specs/`
-- アーキテクチャ: `docs/ARCHITECTURE.md`
-- コーディングガイド: `docs/CODING_GUIDELINES.md`
+- Specs: `docs/specs/`
+- Architecture: `docs/ARCHITECTURE.md`
+- Coding Guidelines: `docs/CODING_GUIDELINES.md`
