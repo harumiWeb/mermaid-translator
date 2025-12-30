@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import type { Mermaid } from 'mermaid';
 
 type MermaidTheme = 'default' | 'dark' | 'forest' | 'neutral' | 'base';
@@ -9,7 +10,7 @@ export async function renderMermaid(
   code: string,
   container: HTMLElement,
   theme: MermaidTheme
-): Promise<string | null> {
+): Promise<SVGElement | null> {
   try {
     if (code.trim().length === 0) {
       return null;
@@ -34,8 +35,20 @@ export async function renderMermaid(
 
     const id = `mermaid-${crypto.randomUUID()}`;
     const { svg } = await mermaidApi.render(id, code);
-    container.innerHTML = svg;
-    return svg;
+    const sanitizedFragment = DOMPurify.sanitize(svg, {
+      USE_PROFILES: { svg: true, svgFilters: true },
+      ADD_TAGS: ['style', 'foreignObject', 'div', 'span', 'p', 'br'],
+      ADD_ATTR: ['style', 'class', 'xmlns', 'xmlns:xlink'],
+      RETURN_DOM_FRAGMENT: true,
+    });
+
+    const svgElement = sanitizedFragment.querySelector('svg');
+    if (!(svgElement instanceof SVGElement)) {
+      return null;
+    }
+
+    container.replaceChildren(svgElement);
+    return svgElement;
   } catch {
     return null;
   }

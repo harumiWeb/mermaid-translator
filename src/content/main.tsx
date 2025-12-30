@@ -36,6 +36,7 @@ const isLoggingEnabled =
   isDev || import.meta.env.VITE_ENABLE_LOGGING === 'true';
 
 const kaTeXWarningSnippet = "KaTeX doesn't work in quirks mode.";
+const svgSerializer = new XMLSerializer();
 
 function suppressKaTeXQuirksWarning(): void {
   const originalWarn = console.warn.bind(console);
@@ -283,15 +284,15 @@ function handleEditModeViewRender(): void {
   setPopupMessage(null);
   setActionsEnabled(false);
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const svg = await renderMermaid(source, popupDiagram, theme);
-    if (!svg) {
+    const svgElement = await renderMermaid(source, popupDiagram, theme);
+    if (!svgElement) {
       popupSvg = null;
       setPopupMessage(renderErrorMessage);
       setActionsEnabled(false);
       return;
     }
 
-    popupSvg = svg;
+    popupSvg = svgSerializer.serializeToString(svgElement);
     popupSourceText = source;
     diagramControls.setSourceText(source);
     setPopupMessage(null);
@@ -473,15 +474,15 @@ function rerenderPopup(theme: ThemeName): void {
   setActionsEnabled(false);
 
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const svg = await renderMermaid(code, popupDiagram, theme);
-    if (!svg) {
+    const svgElement = await renderMermaid(code, popupDiagram, theme);
+    if (!svgElement) {
       popupSvg = null;
       setPopupMessage(renderErrorMessage);
       setActionsEnabled(false);
       return;
     }
 
-    popupSvg = svg;
+    popupSvg = svgSerializer.serializeToString(svgElement);
     popupSourceText = code;
     diagramControls.setSourceText(code);
     setPopupMessage(null);
@@ -926,8 +927,8 @@ function handleActionClick(): void {
   const theme = resolveTheme(themePreference ?? 'system');
 
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const svg = await renderMermaid(code, diagram, theme);
-    if (!svg) {
+    const svgElement = await renderMermaid(code, diagram, theme);
+    if (!svgElement) {
       popupSvg = null;
       setPopupMessage(renderErrorMessage);
       setActionsEnabled(false);
@@ -938,7 +939,7 @@ function handleActionClick(): void {
       return;
     }
 
-    popupSvg = svg;
+    popupSvg = svgSerializer.serializeToString(svgElement);
     popupSourceText = code;
     popupEditorText = code;
     diagramControls.setSourceText(code);
