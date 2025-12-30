@@ -121,3 +121,8 @@
 - [x] パン/ズーム/コピー関連のUI処理を専用モジュールに分割する。`spec: 018-main-refactor-split`
 - [x] テーマ設定の読み書きを専用モジュールに分割する。`spec: 018-main-refactor-split`
 - [x] main.tsx をエントリ兼配線役に整理し、責務を薄くする。`spec: 018-main-refactor-split`
+- [x] `manifest.json` の name/description を i18n キー参照に変更する。`spec: 019-i18n-manifest`
+- [x] `public/_locales/en/messages.json` に拡張名/説明文を追加する。`spec: 019-i18n-manifest`
+- [x] `public/_locales/ja/messages.json` に拡張名/説明文を追加する。`spec: 019-i18n-manifest`
+- [x] `public/_locales/ko/messages.json` に拡張名/説明文を追加する。`spec: 019-i18n-manifest`
+- [x] `public/_locales/zh_CN/messages.json` に拡張名/説明文を追加する。`spec: 019-i18n-manifest`

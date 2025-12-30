@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "Mermaid Translator"
+  },
+  "extensionDescription": {
+    "message": "選択したテキストからMermaidダイアグラムをレンダリング"
+  }
+}

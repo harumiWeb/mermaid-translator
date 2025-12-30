@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "Mermaid Translator"
+  },
+  "extensionDescription": {
+    "message": "Render Mermaid diagram from selected text"
+  }
+}
