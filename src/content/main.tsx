@@ -43,6 +43,10 @@ let popupActionsState = {
   editEnabled: false,
 };
 let popupContent: HTMLElement | null = null;
+let popupDiagram: HTMLElement | null = null;
+let popupZoomControls: HTMLElement | null = null;
+let popupZoomInButton: HTMLButtonElement | null = null;
+let popupZoomOutButton: HTMLButtonElement | null = null;
 let popupEditorPanel: HTMLElement | null = null;
 let popupEditorTextarea: HTMLTextAreaElement | null = null;
 let popupHeader: HTMLElement | null = null;
@@ -54,6 +58,16 @@ let popupSourceText: string | null = null;
 let popupEditorText: string | null = null;
 let popupEditModeEnabled = false;
 let popupActiveTab: 'view' | 'editor' = 'view';
+let popupPanX = 0;
+let popupPanY = 0;
+let popupZoom = 1;
+let popupPanState: {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startPanX: number;
+  startPanY: number;
+} | null = null;
 let popupDragState: {
   pointerId: number;
   startX: number;
@@ -76,6 +90,7 @@ let themePreference: ThemePreference | null = null;
 let popupThemePreference: PopupThemePreference | null = null;
 let popupArrow: HTMLElement | null = null;
 let outsidePointerHandler: ((event: PointerEvent) => void) | null = null;
+let resizeHandler: (() => void) | null = null;
 let beforeUnloadBound = false;
 
 function resolveIconUrl(): string {
@@ -89,6 +104,8 @@ function resolveIconUrl(): string {
 const iconUrl = resolveIconUrl();
 const externalIconUrl = chrome.runtime.getURL('icons/external-link-icon.svg');
 const editIconUrl = chrome.runtime.getURL('icons/edit.svg');
+const zoomInIconUrl = chrome.runtime.getURL('icons/zoom.svg');
+const zoomOutIconUrl = chrome.runtime.getURL('icons/zoom-out.svg');
 const closeIconUrl = chrome.runtime.getURL('icons/close.svg');
 const sunIconUrl = chrome.runtime.getURL('icons/sun.svg');
 const moonIconUrl = chrome.runtime.getURL('icons/moon.svg');
@@ -112,6 +129,9 @@ const popupEditWidth = '80vw';
 const popupEditMaxHeight = '80vh';
 const popupEditContentMaxHeight = '55vh';
 const popupEditMinHeight = 320;
+const zoomStep = 0.1;
+const zoomMin = 0.5;
+const zoomMax = 2.0;
 
 type ThemePreference = (typeof themeOptions)[number]['value'];
 type ThemeName = Exclude<ThemePreference, 'system'>;
@@ -414,6 +434,136 @@ function clampValue(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+function applyPanZoom(): void {
+  if (!popupDiagram) {
+    return;
+  }
+
+  popupDiagram.style.transform = `translate(${popupPanX}px, ${popupPanY}px) scale(${popupZoom})`;
+}
+
+function updateZoomButtons(): void {
+  if (!popupZoomInButton || !popupZoomOutButton) {
+    return;
+  }
+
+  const canZoomIn = popupZoom < zoomMax;
+  const canZoomOut = popupZoom > zoomMin;
+
+  popupZoomInButton.disabled = !canZoomIn;
+  popupZoomOutButton.disabled = !canZoomOut;
+  popupZoomInButton.style.opacity = canZoomIn ? '1' : '0.5';
+  popupZoomOutButton.style.opacity = canZoomOut ? '1' : '0.5';
+}
+
+function setZoom(next: number): void {
+  popupZoom = clampValue(next, zoomMin, zoomMax);
+  applyPanZoom();
+  updateZoomButtons();
+}
+
+function resetPanZoom(): void {
+  popupPanX = 0;
+  popupPanY = 0;
+  popupZoom = 1;
+  applyPanZoom();
+  updateZoomButtons();
+}
+
+function updateZoomControlsTheme(theme: 'light' | 'dark'): void {
+  if (!popupZoomControls || !popupZoomInButton || !popupZoomOutButton) {
+    return;
+  }
+
+  const isDark = theme === 'dark';
+  const borderColor = isDark ? '#3a3a3a' : '#222';
+  const background = isDark ? '#2a2a2a' : '#fff';
+  const iconFilter = isDark ? 'invert(1)' : 'none';
+
+  const applyButtonStyle = (button: HTMLButtonElement) => {
+    button.style.width = '28px';
+    button.style.height = '28px';
+    button.style.border = `1px solid ${borderColor}`;
+    button.style.borderRadius = '6px';
+    button.style.background = background;
+    button.style.display = 'inline-flex';
+    button.style.alignItems = 'center';
+    button.style.justifyContent = 'center';
+    button.style.cursor = 'pointer';
+  };
+
+  applyButtonStyle(popupZoomInButton);
+  applyButtonStyle(popupZoomOutButton);
+
+  const icons = popupZoomControls.querySelectorAll('img');
+  icons.forEach((icon) => {
+    if (icon instanceof HTMLElement) {
+      icon.style.filter = iconFilter;
+    }
+  });
+}
+
+function stopPan(): void {
+  if (!popupPanState) {
+    return;
+  }
+
+  window.removeEventListener('pointermove', handlePanMove);
+  popupPanState = null;
+  if (popupContent) {
+    popupContent.style.cursor = 'grab';
+  }
+}
+
+function handlePanMove(event: PointerEvent): void {
+  if (!popupPanState) {
+    return;
+  }
+
+  if (event.pointerId !== popupPanState.pointerId) {
+    return;
+  }
+
+  popupPanX = popupPanState.startPanX + (event.clientX - popupPanState.startX);
+  popupPanY = popupPanState.startPanY + (event.clientY - popupPanState.startY);
+  applyPanZoom();
+}
+
+function startPan(event: PointerEvent): void {
+  if (!popupContent || !popupDiagram) {
+    return;
+  }
+  if (event.button !== 0) {
+    return;
+  }
+
+  const target = event.target;
+  if (
+    target instanceof HTMLElement &&
+    target.closest('[data-zoom-control="true"]')
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  popupContent.style.cursor = 'grabbing';
+  popupPanState = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    startPanX: popupPanX,
+    startPanY: popupPanY,
+  };
+  window.addEventListener('pointermove', handlePanMove);
+  window.addEventListener(
+    'pointerup',
+    () => {
+      stopPan();
+    },
+    { once: true }
+  );
+}
+
 function updateEditLayout(): void {
   if (
     !popupRoot ||
@@ -436,8 +586,21 @@ function updateEditLayout(): void {
     rect.height - headerHeight - tabHeight - messageHeight - 48
   );
 
-  popupContent.style.maxHeight = `${Math.floor(available)}px`;
+  const availablePx = `${Math.floor(available)}px`;
+  popupContent.style.height = availablePx;
+  popupContent.style.maxHeight = availablePx;
   popupEditorTextarea.style.height = `${Math.floor(available)}px`;
+}
+
+function handleWindowResize(): void {
+  if (!popupRoot) {
+    return;
+  }
+
+  if (popupEditModeEnabled) {
+    updateEditLayout();
+  }
+  clampPopupToViewport(popupRoot);
 }
 
 function stopDrag(): void {
@@ -715,7 +878,7 @@ function setActiveTab(tab: 'view' | 'editor'): void {
   if (tab === 'view' && popupEditModeEnabled) {
     const theme = resolveTheme(themePreference ?? 'system');
     const source = popupEditorText ?? '';
-    if (!popupContent) {
+    if (!popupDiagram) {
       return;
     }
 
@@ -729,7 +892,7 @@ function setActiveTab(tab: 'view' | 'editor'): void {
     setPopupMessage(null);
     setActionsEnabled(false);
     void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-      const svg = await renderMermaid(source, popupContent, theme);
+      const svg = await renderMermaid(source, popupDiagram, theme);
       if (!svg) {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
@@ -817,7 +980,7 @@ function getCurrentRenderSource(): string | null {
 }
 
 function rerenderPopup(theme: ThemeName): void {
-  if (!popupContent) {
+  if (!popupDiagram) {
     return;
   }
 
@@ -829,7 +992,7 @@ function rerenderPopup(theme: ThemeName): void {
   setActionsEnabled(false);
 
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const svg = await renderMermaid(code, popupContent, theme);
+    const svg = await renderMermaid(code, popupDiagram, theme);
     if (!svg) {
       popupSvg = null;
       setPopupMessage(renderErrorMessage);
@@ -975,6 +1138,7 @@ function dismissPopup(): void {
 
   stopDrag();
   stopResize();
+  stopPan();
   popupRoot.remove();
   popupRoot = null;
   popupSelectionText = null;
@@ -988,6 +1152,10 @@ function dismissPopup(): void {
     editEnabled: false,
   };
   popupContent = null;
+  popupDiagram = null;
+  popupZoomControls = null;
+  popupZoomInButton = null;
+  popupZoomOutButton = null;
   popupEditorPanel = null;
   popupEditorTextarea = null;
   popupHeader = null;
@@ -999,6 +1167,10 @@ function dismissPopup(): void {
   popupEditorText = null;
   popupEditModeEnabled = false;
   popupActiveTab = 'view';
+  popupPanX = 0;
+  popupPanY = 0;
+  popupZoom = 1;
+  popupPanState = null;
   popupDragState = null;
   popupResizeState = null;
   popupThemePreference = null;
@@ -1007,6 +1179,11 @@ function dismissPopup(): void {
   if (outsidePointerHandler) {
     document.removeEventListener('pointerdown', outsidePointerHandler, true);
     outsidePointerHandler = null;
+  }
+
+  if (resizeHandler) {
+    window.removeEventListener('resize', resizeHandler);
+    resizeHandler = null;
   }
 }
 
@@ -1093,8 +1270,61 @@ function showPopup(
 
   const content = document.createElement('div');
   content.style.maxHeight = `${popupDefaultMaxHeight}px`;
-  content.style.overflow = 'auto';
+  content.style.overflow = 'hidden';
   content.style.paddingTop = '8px';
+  content.style.position = 'relative';
+  content.style.cursor = 'grab';
+  content.addEventListener('pointerdown', (event) => {
+    startPan(event);
+  });
+
+  const diagram = document.createElement('div');
+  diagram.style.transformOrigin = '0 0';
+  diagram.style.willChange = 'transform';
+  content.appendChild(diagram);
+
+  const zoomControls = document.createElement('div');
+  zoomControls.style.position = 'absolute';
+  zoomControls.style.right = '8px';
+  zoomControls.style.bottom = '8px';
+  zoomControls.style.display = 'flex';
+  zoomControls.style.gap = '6px';
+  zoomControls.style.zIndex = '2';
+  zoomControls.setAttribute('data-zoom-control', 'true');
+
+  const zoomOutButton = document.createElement('button');
+  zoomOutButton.type = 'button';
+  zoomOutButton.setAttribute('aria-label', 'Zoom out');
+  zoomOutButton.setAttribute('data-zoom-control', 'true');
+  zoomOutButton.addEventListener('click', () => {
+    setZoom(popupZoom - zoomStep);
+  });
+
+  const zoomOutIcon = document.createElement('img');
+  zoomOutIcon.alt = '';
+  zoomOutIcon.src = zoomOutIconUrl;
+  zoomOutIcon.style.width = '14px';
+  zoomOutIcon.style.height = '14px';
+  zoomOutButton.appendChild(zoomOutIcon);
+
+  const zoomInButton = document.createElement('button');
+  zoomInButton.type = 'button';
+  zoomInButton.setAttribute('aria-label', 'Zoom in');
+  zoomInButton.setAttribute('data-zoom-control', 'true');
+  zoomInButton.addEventListener('click', () => {
+    setZoom(popupZoom + zoomStep);
+  });
+
+  const zoomInIcon = document.createElement('img');
+  zoomInIcon.alt = '';
+  zoomInIcon.src = zoomInIconUrl;
+  zoomInIcon.style.width = '14px';
+  zoomInIcon.style.height = '14px';
+  zoomInButton.appendChild(zoomInIcon);
+
+  zoomControls.appendChild(zoomOutButton);
+  zoomControls.appendChild(zoomInButton);
+  content.appendChild(zoomControls);
 
   const editorPanel = document.createElement('div');
   editorPanel.style.display = 'none';
@@ -1147,6 +1377,10 @@ function showPopup(
   popupSvg = null;
   popupActionsMount = actions;
   popupContent = content;
+  popupDiagram = diagram;
+  popupZoomControls = zoomControls;
+  popupZoomInButton = zoomInButton;
+  popupZoomOutButton = zoomOutButton;
   popupEditorPanel = editorPanel;
   popupEditorTextarea = editorTextarea;
   popupHeader = header;
@@ -1167,6 +1401,8 @@ function showPopup(
     editEnabled: false,
   };
   updateEditModeStyles(resolvePopupTheme(popupThemePreference));
+  resetPanZoom();
+  updateZoomControlsTheme(resolvePopupTheme(popupThemePreference));
   setEditMode(false);
   renderPopupActions();
   setActionsEnabled(false);
@@ -1190,7 +1426,13 @@ function showPopup(
 
   document.addEventListener('pointerdown', outsidePointerHandler, true);
 
-  return content;
+  if (resizeHandler) {
+    window.removeEventListener('resize', resizeHandler);
+  }
+  resizeHandler = handleWindowResize;
+  window.addEventListener('resize', resizeHandler);
+
+  return diagram;
 }
 
 function renderPopupActions(): void {
@@ -1311,6 +1553,7 @@ function applyPopupTheme(
   }
 
   updateEditModeStyles(theme);
+  updateZoomControlsTheme(theme);
 }
 
 function clampPopupToViewport(popup: HTMLElement): void {
@@ -1339,8 +1582,8 @@ function handleActionClick(): void {
   }
 
   const popupPosition = getPopupPosition(selectionInfo.rect);
-  const content = showPopup(popupPosition, selectionInfo.text);
-  if (!content) {
+  const diagram = showPopup(popupPosition, selectionInfo.text);
+  if (!diagram) {
     return;
   }
 
@@ -1348,7 +1591,7 @@ function handleActionClick(): void {
   const theme = resolveTheme(themePreference ?? 'system');
 
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const svg = await renderMermaid(code, content, theme);
+    const svg = await renderMermaid(code, diagram, theme);
     if (!svg) {
       popupSvg = null;
       setPopupMessage(renderErrorMessage);

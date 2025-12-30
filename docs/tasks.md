@@ -107,3 +107,7 @@
 - [ ] エクスポート系アクションが最新レンダリング結果を使用するようにする。`spec: 015-edit-mode`
 - [ ] 編集モードのモーダルをドラッグで移動できるようにする。`spec: 004-popup-lifecycle`
 - [ ] 編集モードのモーダルをリサイズで拡大縮小できるようにする。`spec: 004-popup-lifecycle`
+- [ ] 図の表示領域でドラッグ操作によるパン移動を追加する。`spec: 016-pan-zoom-controls`
+- [ ] 図の右下にズームイン/ズームアウトのボタンを追加する。`spec: 016-pan-zoom-controls`
+- [ ] `public/icons/zoom.svg` と `public/icons/zoom-out.svg` をボタンアイコンとして使用する。`spec: 016-pan-zoom-controls`
+- [ ] ズーム倍率の上下限とステップを設け、ポップアップ終了時にリセットする。`spec: 016-pan-zoom-controls`
