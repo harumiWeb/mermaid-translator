@@ -9,10 +9,8 @@
 ## Description
 
 该扩展可在任意网页上 **直接从选中文本渲染 Mermaid 图表**。
-无论是 ChatGPT / Claude 等 AI 服务生成的 Mermaid 代码，还是内网文档、Wiki、技术文章中的 Mermaid，都可以在原页面即时查看。
+无论是 AI 聊天服务生成的 Mermaid 代码，还是内网文档、Wiki、技术文章中的 Mermaid，都可以在原页面即时查看。
 无需设置，不依赖页面结构，只需选中文本并点击即可。
-
-> ※ ChatGPT 和 Claude 为 OpenAI / Anthropic 的商标。本扩展与其无关。
 
 ---
 
