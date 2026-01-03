@@ -147,10 +147,13 @@
 - [x] editor ポップアップをドラッグ/リサイズ可能にする。`spec: 026-split-editor-window`
 - [x] editor ポップアップを閉じたら統合し、メイン閉鎖で editor も閉じる。`spec: 026-split-editor-window`
 
-- [ ] Shadow DOM 向けの UI スタイルを専用モジュールとして分離し、Shadow Root へ一度だけ注入する。`spec: 027-style-separation`
-- [ ] ポップアップ DOM の静的スタイルをクラス化して CSS 側へ移し、動的な位置/サイズは現行のロジックで維持する。`spec: 027-style-separation`
-- [ ] `src/content/ui.tsx` の ActionButton/Tooltip/PopupActions をクラス化して CSS 適用に切り替える。`spec: 027-style-separation`
-- [ ] `src/content/editMode.ts` のタブとエディタの静的スタイルを CSS へ移し、テーマは属性/クラスで反映できるようにする。`spec: 027-style-separation`
-- [ ] `src/content/diagramControls.ts` の copy/zoom など静的スタイルを CSS へ移し、状態は属性/クラスで反映できるようにする。`spec: 027-style-separation`
-- [ ] `src/content/main.tsx` にある split editor popup の静的スタイルを CSS へ移す。`spec: 027-style-separation`
-- [ ] ポップアップ/エディタのテーマ反映処理を属性/クラス切替ベースへ整理する。`spec: 027-style-separation`
+- [x] Shadow DOM 向けの UI スタイルを専用モジュールとして分離し、Shadow Root へ一度だけ注入する。`spec: 027-style-separation`
+- [x] ポップアップ DOM の静的スタイルをクラス化して CSS 側へ移し、動的な位置/サイズは現行のロジックで維持する。`spec: 027-style-separation`
+- [x] `src/content/ui.tsx` の ActionButton/Tooltip/PopupActions をクラス化して CSS 適用に切り替える。`spec: 027-style-separation`
+- [x] `src/content/editMode.ts` のタブとエディタの静的スタイルを CSS へ移し、テーマは属性/クラスで反映できるようにする。`spec: 027-style-separation`
+- [x] `src/content/diagramControls.ts` の copy/zoom など静的スタイルを CSS へ移し、状態は属性/クラスで反映できるようにする。`spec: 027-style-separation`
+- [x] `src/content/main.tsx` にある split editor popup の静的スタイルを CSS へ移す。`spec: 027-style-separation`
+- [x] ポップアップ/エディタのテーマ反映処理を属性/クラス切替ベースへ整理する。`spec: 027-style-separation`
+
+- [x] Edit モードの View/Editor タブ切替と再レンダリングが動作することを E2E で検証する。`spec: 015-edit-mode`
+- [x] Render cache の判定を純粋関数へ分離し、同一入力時は再レンダリングをスキップする条件をユニットテストする。`spec: 023-render-cache`

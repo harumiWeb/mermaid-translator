@@ -1,5 +1,6 @@
 import { render } from 'preact';
 import { extractMermaidCode, isMermaidLike } from '../shared/detectMermaid';
+import { isRenderCacheHit } from '../shared/renderCache';
 import { createDiagramControls } from './diagramControls';
 import { createEditModeController } from './editMode';
 import {
@@ -395,9 +396,13 @@ function handleEditModeViewRender(): void {
   }
 
   if (
-    popupSvg &&
-    lastRenderedSource === source &&
-    lastRenderedTheme === theme
+    isRenderCacheHit({
+      lastSvg: popupSvg,
+      lastSource: lastRenderedSource,
+      lastTheme: lastRenderedTheme,
+      nextSource: source,
+      nextTheme: theme,
+    })
   ) {
     setPopupMessage(null);
     setActionsEnabled(true);
@@ -885,7 +890,15 @@ function rerenderPopup(theme: ThemeName): void {
   if (!code) {
     return;
   }
-  if (popupSvg && lastRenderedSource === code && lastRenderedTheme === theme) {
+  if (
+    isRenderCacheHit({
+      lastSvg: popupSvg,
+      lastSource: lastRenderedSource,
+      lastTheme: lastRenderedTheme,
+      nextSource: code,
+      nextTheme: theme,
+    })
+  ) {
     setPopupMessage(null);
     setActionsEnabled(true);
     setLoadingVisible(false);
@@ -1416,7 +1429,15 @@ function handleActionClick(): void {
   const code = extractMermaidCode(selectionInfo.text);
   const theme = resolveTheme(themePreference ?? 'system');
 
-  if (popupSvg && lastRenderedSource === code && lastRenderedTheme === theme) {
+  if (
+    isRenderCacheHit({
+      lastSvg: popupSvg,
+      lastSource: lastRenderedSource,
+      lastTheme: lastRenderedTheme,
+      nextSource: code,
+      nextTheme: theme,
+    })
+  ) {
     setPopupMessage(null);
     setActionsEnabled(true);
     setEditEnabled(true);

@@ -97,6 +97,36 @@ function getCloseButton(page: Page) {
     .locator('button[aria-label="Close"]');
 }
 
+function getEditButton(page: Page) {
+  return page
+    .locator('[data-mermaid-selection-renderer="root"]')
+    .locator('button[aria-label="Edit"]');
+}
+
+function getTabButton(page: Page, label: string) {
+  return page
+    .locator('[data-mermaid-selection-renderer="root"]')
+    .locator(`button:has-text("${label}")`);
+}
+
+function getEditorTextarea(page: Page) {
+  return page
+    .locator('[data-mermaid-selection-renderer="root"]')
+    .locator('textarea');
+}
+
+function getPopupContent(page: Page) {
+  return page
+    .locator('[data-mermaid-selection-renderer="root"]')
+    .locator('.mr-popup-content');
+}
+
+function getPopupMessage(page: Page) {
+  return page
+    .locator('[data-mermaid-selection-renderer="root"]')
+    .locator('.mr-popup-message');
+}
+
 async function waitForActionButton(page: Page): Promise<void> {
   await page.waitForFunction(() => {
     const host = document.querySelector(
@@ -243,5 +273,33 @@ test('popup dismisses on outside click or selection change', async ({
   await openPopupFromSelection(page);
   await selectSubstring(page, '#mermaid-source', 'Start');
   await expect(getCloseButton(page)).toHaveCount(0);
+  errors.assertNoErrors();
+});
+
+test('edit mode view/editor tabs render and switch', async ({ page }) => {
+  const errors = trackPageErrors(page);
+  await page.goto(fixtureUrl);
+
+  await openPopupFromSelection(page);
+
+  const editButton = getEditButton(page);
+  await expect(editButton).toBeEnabled();
+  await editButton.click();
+
+  const viewTab = getTabButton(page, 'View');
+  const editorTab = getTabButton(page, 'Editor');
+  await expect(viewTab).toBeVisible();
+  await expect(editorTab).toBeVisible();
+  await expect(viewTab).toHaveClass(/is-active/);
+
+  await editorTab.click();
+  await expect(getEditorTextarea(page)).toBeVisible();
+  await expect(getPopupContent(page)).toBeHidden();
+
+  await getEditorTextarea(page).fill('');
+  await viewTab.click();
+  await expect(getPopupMessage(page)).toContainText(
+    'Unable to render Mermaid diagram.'
+  );
   errors.assertNoErrors();
 });
