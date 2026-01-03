@@ -9,6 +9,7 @@ export type PopupElements = {
   viewTab: HTMLButtonElement;
   editorTab: HTMLButtonElement;
   message: HTMLElement;
+  loading: HTMLElement;
   content: HTMLElement;
   diagram: HTMLElement;
   editorPanel: HTMLElement;
@@ -45,10 +46,31 @@ type PopupDomOptions = {
   onZoomIn: () => void;
 };
 
+function ensureSpinnerStyles(shadowRoot: ShadowRoot): void {
+  if (shadowRoot.querySelector('[data-mermaid-spinner-style]')) {
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.setAttribute('data-mermaid-spinner-style', 'true');
+  style.textContent = `
+    @keyframes mermaid-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .mermaid-spinner {
+      animation: mermaid-spin 0.9s linear infinite;
+    }
+  `;
+  shadowRoot.appendChild(style);
+}
+
 export function createPopupDom(
   shadowRoot: ShadowRoot,
   options: PopupDomOptions
 ): PopupElements {
+  ensureSpinnerStyles(shadowRoot);
+
   const popup = document.createElement('div');
   popup.style.position = 'fixed';
   popup.style.top = `${options.position.top}px`;
@@ -110,6 +132,28 @@ export function createPopupDom(
   message.style.fontSize = '12px';
   message.style.color = '#b00020';
   message.style.display = 'none';
+
+  const loading = document.createElement('div');
+  loading.style.marginTop = '8px';
+  loading.style.display = 'none';
+  loading.style.alignItems = 'center';
+  loading.style.gap = '8px';
+  loading.style.fontSize = '12px';
+  loading.style.color = '#555';
+
+  const spinner = document.createElement('div');
+  spinner.className = 'mermaid-spinner';
+  spinner.style.width = '14px';
+  spinner.style.height = '14px';
+  spinner.style.borderRadius = '999px';
+  spinner.style.border = '2px solid #c7c7c7';
+  spinner.style.borderTopColor = '#555';
+
+  const loadingText = document.createElement('span');
+  loadingText.textContent = 'Rendering...';
+
+  loading.appendChild(spinner);
+  loading.appendChild(loadingText);
 
   const contentWrapper = document.createElement('div');
   contentWrapper.style.position = 'relative';
@@ -256,6 +300,7 @@ export function createPopupDom(
   popup.appendChild(header);
   popup.appendChild(tabBar);
   popup.appendChild(message);
+  popup.appendChild(loading);
   popup.appendChild(contentWrapper);
 
   const resizeHandle = document.createElement('div');
@@ -282,6 +327,7 @@ export function createPopupDom(
     viewTab,
     editorTab,
     message,
+    loading,
     content,
     diagram,
     editorPanel,
@@ -303,6 +349,10 @@ export function applyPopupTheme(
   elements: PopupElements,
   theme: 'light' | 'dark'
 ): void {
+  const spinner = elements.loading.querySelector(
+    '.mermaid-spinner'
+  ) as HTMLElement | null;
+
   if (theme === 'dark') {
     elements.root.style.background = '#1c1c1c';
     elements.root.style.color = '#f2f2f2';
@@ -311,6 +361,11 @@ export function applyPopupTheme(
     elements.arrow.style.background = '#1c1c1c';
     elements.arrow.style.borderLeft = '1px solid #3a3a3a';
     elements.arrow.style.borderTop = '1px solid #3a3a3a';
+    elements.loading.style.color = '#cfcfcf';
+    if (spinner) {
+      spinner.style.border = '2px solid #555';
+      spinner.style.borderTopColor = '#cfcfcf';
+    }
   } else {
     elements.root.style.background = '#fff';
     elements.root.style.color = '#111';
@@ -319,6 +374,11 @@ export function applyPopupTheme(
     elements.arrow.style.background = '#fff';
     elements.arrow.style.borderLeft = '1px solid #222';
     elements.arrow.style.borderTop = '1px solid #222';
+    elements.loading.style.color = '#555';
+    if (spinner) {
+      spinner.style.border = '2px solid #c7c7c7';
+      spinner.style.borderTopColor = '#555';
+    }
   }
 }
 

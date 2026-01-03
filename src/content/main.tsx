@@ -221,6 +221,20 @@ function setPopupMessage(message: string | null): void {
   popupMessage.style.display = message ? 'block' : 'none';
 }
 
+function setLoadingVisible(visible: boolean): void {
+  if (!popupElements) {
+    return;
+  }
+
+  popupElements.loading.style.display = visible ? 'flex' : 'none';
+}
+
+function scheduleRender(callback: () => void): void {
+  window.requestAnimationFrame(() => {
+    callback();
+  });
+}
+
 function setActionsEnabled(enabled: boolean): void {
   if (!popupActionsMount) {
     return;
@@ -280,6 +294,7 @@ function handleEditModeViewRender(): void {
     popupSvg = null;
     setPopupMessage(renderErrorMessage);
     setActionsEnabled(false);
+    setLoadingVisible(false);
     return;
   }
 
@@ -290,31 +305,37 @@ function handleEditModeViewRender(): void {
   ) {
     setPopupMessage(null);
     setActionsEnabled(true);
+    setLoadingVisible(false);
     return;
   }
 
   setPopupMessage(null);
   setActionsEnabled(false);
-  void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const svgElement = await renderMermaid(source, popupDiagram, theme);
-    if (!svgElement) {
-      popupSvg = null;
-      setPopupMessage(renderErrorMessage);
-      setActionsEnabled(false);
-      return;
-    }
+  setLoadingVisible(true);
+  scheduleRender(() => {
+    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
+      const svgElement = await renderMermaid(source, popupDiagram, theme);
+      if (!svgElement) {
+        popupSvg = null;
+        setPopupMessage(renderErrorMessage);
+        setActionsEnabled(false);
+        setLoadingVisible(false);
+        return;
+      }
 
-    popupSvg = svgSerializer.serializeToString(svgElement);
-    lastRenderedSource = source;
-    lastRenderedTheme = theme;
-    popupSourceText = source;
-    diagramControls.setSourceText(source);
-    setPopupMessage(null);
-    setActionsEnabled(true);
-    setEditEnabled(!editMode.isEnabled());
-    if (popupElements) {
-      clampPopupToViewport(popupElements);
-    }
+      popupSvg = svgSerializer.serializeToString(svgElement);
+      lastRenderedSource = source;
+      lastRenderedTheme = theme;
+      popupSourceText = source;
+      diagramControls.setSourceText(source);
+      setPopupMessage(null);
+      setActionsEnabled(true);
+      setEditEnabled(!editMode.isEnabled());
+      setLoadingVisible(false);
+      if (popupElements) {
+        clampPopupToViewport(popupElements);
+      }
+    });
   });
 }
 
@@ -487,33 +508,39 @@ function rerenderPopup(theme: ThemeName): void {
   if (popupSvg && lastRenderedSource === code && lastRenderedTheme === theme) {
     setPopupMessage(null);
     setActionsEnabled(true);
+    setLoadingVisible(false);
     return;
   }
 
   setPopupMessage(null);
   setActionsEnabled(false);
+  setLoadingVisible(true);
 
-  void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const svgElement = await renderMermaid(code, popupDiagram, theme);
-    if (!svgElement) {
-      popupSvg = null;
-      setPopupMessage(renderErrorMessage);
-      setActionsEnabled(false);
-      return;
-    }
-
-    popupSvg = svgSerializer.serializeToString(svgElement);
-    lastRenderedSource = code;
-    lastRenderedTheme = theme;
-    popupSourceText = code;
-    diagramControls.setSourceText(code);
-    setPopupMessage(null);
-    setActionsEnabled(true);
-    if (popupRoot) {
-      if (popupElements) {
-        clampPopupToViewport(popupElements);
+  scheduleRender(() => {
+    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
+      const svgElement = await renderMermaid(code, popupDiagram, theme);
+      if (!svgElement) {
+        popupSvg = null;
+        setPopupMessage(renderErrorMessage);
+        setActionsEnabled(false);
+        setLoadingVisible(false);
+        return;
       }
-    }
+
+      popupSvg = svgSerializer.serializeToString(svgElement);
+      lastRenderedSource = code;
+      lastRenderedTheme = theme;
+      popupSourceText = code;
+      diagramControls.setSourceText(code);
+      setPopupMessage(null);
+      setActionsEnabled(true);
+      setLoadingVisible(false);
+      if (popupRoot) {
+        if (popupElements) {
+          clampPopupToViewport(popupElements);
+        }
+      }
+    });
   });
 }
 
@@ -748,6 +775,7 @@ function showPopup(
   popupRoot = elements.root;
   popupSelectionText = selectionText;
   popupMessage = elements.message;
+  setLoadingVisible(false);
   popupSvg = null;
   popupActionsMount = elements.actionsMount;
   popupDiagram = elements.diagram;
@@ -954,35 +982,41 @@ function handleActionClick(): void {
     setPopupMessage(null);
     setActionsEnabled(true);
     setEditEnabled(true);
+    setLoadingVisible(false);
     return;
   }
 
-  void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-    const svgElement = await renderMermaid(code, diagram, theme);
-    if (!svgElement) {
-      popupSvg = null;
-      setPopupMessage(renderErrorMessage);
-      setActionsEnabled(false);
-      setEditEnabled(false);
+  setLoadingVisible(true);
+  scheduleRender(() => {
+    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
+      const svgElement = await renderMermaid(code, diagram, theme);
+      if (!svgElement) {
+        popupSvg = null;
+        setPopupMessage(renderErrorMessage);
+        setActionsEnabled(false);
+        setEditEnabled(false);
+        setLoadingVisible(false);
+        if (popupElements) {
+          clampPopupToViewport(popupElements);
+        }
+        return;
+      }
+
+      popupSvg = svgSerializer.serializeToString(svgElement);
+      lastRenderedSource = code;
+      lastRenderedTheme = theme;
+      popupSourceText = code;
+      popupEditorText = code;
+      diagramControls.setSourceText(code);
+      diagramControls.setEditorText(code);
+      setPopupMessage(null);
+      setActionsEnabled(true);
+      setEditEnabled(true);
+      setLoadingVisible(false);
       if (popupElements) {
         clampPopupToViewport(popupElements);
       }
-      return;
-    }
-
-    popupSvg = svgSerializer.serializeToString(svgElement);
-    lastRenderedSource = code;
-    lastRenderedTheme = theme;
-    popupSourceText = code;
-    popupEditorText = code;
-    diagramControls.setSourceText(code);
-    diagramControls.setEditorText(code);
-    setPopupMessage(null);
-    setActionsEnabled(true);
-    setEditEnabled(true);
-    if (popupElements) {
-      clampPopupToViewport(popupElements);
-    }
+    });
   });
 }
 

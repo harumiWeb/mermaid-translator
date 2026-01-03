@@ -138,3 +138,5 @@
 - [x] サニタイズ失敗時はレンダリング失敗として既存のエラーメッセージを表示する。`spec: 022-sanitize-mermaid-svg`
 - [x] 最後にレンダリングした Mermaid ソースとテーマを保持し、同一なら再レンダリングをスキップする。`spec: 023-render-cache`
 - [x] 再レンダリングをスキップした場合、既存SVGをそのまま表示したままにする。`spec: 023-render-cache`
+- [x] Mermaid レンダリング中にポップアップ内でローディングスピナーを表示する。`spec: 024-loading-indicator`
+- [x] レンダリング完了/失敗でスピナーを確実に非表示にする。`spec: 024-loading-indicator`
