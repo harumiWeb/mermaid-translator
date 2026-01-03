@@ -39,31 +39,16 @@ export function createEditModeController(
   let enabled = false;
   let activeTab: 'view' | 'editor' = 'view';
 
-  const applyTabStyle = (
-    button: HTMLButtonElement,
-    isActive: boolean,
-    theme: 'light' | 'dark'
-  ) => {
-    const isDark = theme === 'dark';
-    const borderColor = isDark ? '#3a3a3a' : '#222';
-    const activeBackground = isDark ? '#2a2a2a' : '#fff';
-    const inactiveBackground = isDark ? '#242424' : '#f2f2f2';
-    const activeColor = isDark ? '#f2f2f2' : '#111';
-    const inactiveColor = isDark ? '#cfcfcf' : '#333';
-
-    button.style.height = '28px';
-    button.style.flex = '1';
-    button.style.border = `1px solid ${borderColor}`;
-    button.style.borderRadius = '6px';
-    button.style.background = isActive ? activeBackground : inactiveBackground;
-    button.style.color = isActive ? activeColor : inactiveColor;
-    button.style.cursor = 'pointer';
-    button.style.fontSize = '12px';
-  };
-
   return {
     setElements(next) {
       elements = next;
+      if (elements) {
+        elements.viewTab.classList.toggle('is-active', activeTab === 'view');
+        elements.editorTab.classList.toggle(
+          'is-active',
+          activeTab === 'editor'
+        );
+      }
     },
     setEnabled(nextEnabled) {
       enabled = nextEnabled;
@@ -111,8 +96,6 @@ export function createEditModeController(
       }
 
       elements.tabBar.style.display = enabled ? 'flex' : 'none';
-      elements.tabBar.style.gap = '6px';
-      elements.tabBar.style.marginTop = '8px';
 
       this.updateLayout();
     },
@@ -122,6 +105,8 @@ export function createEditModeController(
         return;
       }
 
+      elements.viewTab.classList.toggle('is-active', activeTab === 'view');
+      elements.editorTab.classList.toggle('is-active', activeTab === 'editor');
       elements.content.style.display = tab === 'view' ? 'block' : 'none';
       elements.editorPanel.style.display = tab === 'editor' ? 'block' : 'none';
 
@@ -133,15 +118,7 @@ export function createEditModeController(
       if (!elements) {
         return;
       }
-
-      applyTabStyle(elements.viewTab, activeTab === 'view', theme);
-      applyTabStyle(elements.editorTab, activeTab === 'editor', theme);
-
-      const isDark = theme === 'dark';
-      const borderColor = isDark ? '#3a3a3a' : '#222';
-      elements.editorTextarea.style.border = `1px solid ${borderColor}`;
-      elements.editorTextarea.style.background = isDark ? '#151515' : '#fff';
-      elements.editorTextarea.style.color = isDark ? '#f2f2f2' : '#111';
+      elements.root.dataset.theme = theme;
     },
     updateLayout() {
       if (!elements) {

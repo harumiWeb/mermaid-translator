@@ -136,3 +136,24 @@
 - [x] E2E テストで未処理の console/page error を検出したら失敗とする。`spec: 021-playwright-e2e-smoke`
 - [x] Mermaid から返る SVG を DOMPurify でサニタイズしてから描画する。`spec: 022-sanitize-mermaid-svg`
 - [x] サニタイズ失敗時はレンダリング失敗として既存のエラーメッセージを表示する。`spec: 022-sanitize-mermaid-svg`
+- [x] 最後にレンダリングした Mermaid ソースとテーマを保持し、同一なら再レンダリングをスキップする。`spec: 023-render-cache`
+- [x] 再レンダリングをスキップした場合、既存SVGをそのまま表示したままにする。`spec: 023-render-cache`
+- [x] Mermaid レンダリング中にポップアップ内でローディングスピナーを表示する。`spec: 024-loading-indicator`
+- [x] レンダリング完了/失敗でスピナーを確実に非表示にする。`spec: 024-loading-indicator`
+- [x] 図の表示領域で Ctrl + ホイール時にズーム操作が行われるようにする。`spec: 025-ctrl-wheel-zoom`
+- [x] Ctrl 未押下時はホストページのスクロール挙動を妨げないことを確認する。`spec: 025-ctrl-wheel-zoom`
+- [x] 編集モード時のみ表示される split ボタンをコピーの左隣に追加する。`spec: 026-split-editor-window`
+- [x] split 時に editor パネルを別ポップアップへ移し、メインは editor 以外を保持する。`spec: 026-split-editor-window`
+- [x] editor ポップアップをドラッグ/リサイズ可能にする。`spec: 026-split-editor-window`
+- [x] editor ポップアップを閉じたら統合し、メイン閉鎖で editor も閉じる。`spec: 026-split-editor-window`
+
+- [x] Shadow DOM 向けの UI スタイルを専用モジュールとして分離し、Shadow Root へ一度だけ注入する。`spec: 027-style-separation`
+- [x] ポップアップ DOM の静的スタイルをクラス化して CSS 側へ移し、動的な位置/サイズは現行のロジックで維持する。`spec: 027-style-separation`
+- [x] `src/content/ui.tsx` の ActionButton/Tooltip/PopupActions をクラス化して CSS 適用に切り替える。`spec: 027-style-separation`
+- [x] `src/content/editMode.ts` のタブとエディタの静的スタイルを CSS へ移し、テーマは属性/クラスで反映できるようにする。`spec: 027-style-separation`
+- [x] `src/content/diagramControls.ts` の copy/zoom など静的スタイルを CSS へ移し、状態は属性/クラスで反映できるようにする。`spec: 027-style-separation`
+- [x] `src/content/main.tsx` にある split editor popup の静的スタイルを CSS へ移す。`spec: 027-style-separation`
+- [x] ポップアップ/エディタのテーマ反映処理を属性/クラス切替ベースへ整理する。`spec: 027-style-separation`
+
+- [x] Edit モードの View/Editor タブ切替と再レンダリングが動作することを E2E で検証する。`spec: 015-edit-mode`
+- [x] Render cache の判定を純粋関数へ分離し、同一入力時は再レンダリングをスキップする条件をユニットテストする。`spec: 023-render-cache`

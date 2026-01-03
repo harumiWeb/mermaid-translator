@@ -30,6 +30,7 @@ type PopupActionsProps = {
   closeIconUrl: string;
   sunIconUrl: string;
   moonIconUrl: string;
+  appIconUrl: string;
 };
 
 type TooltipProps = {
@@ -38,38 +39,12 @@ type TooltipProps = {
 };
 
 export function Tooltip(props: TooltipProps) {
-  const tooltipStyle = {
-    position: 'absolute',
-    bottom: '36px',
-    left: '50%',
-    transform: props.visible ? 'translate(-50%, 0)' : 'translate(-50%, 4px)',
-    opacity: props.visible ? 1 : 0,
-    transition: 'opacity 140ms ease, transform 140ms ease',
-    padding: '6px 8px',
-    borderRadius: '6px',
-    background: '#111',
-    color: '#fff',
-    fontSize: '12px',
-    lineHeight: '16px',
-    whiteSpace: 'nowrap',
-    pointerEvents: 'none',
-    zIndex: '2147483647',
-  } as const;
-
-  const arrowStyle = {
-    position: 'absolute',
-    bottom: '-4px',
-    left: '50%',
-    width: '8px',
-    height: '8px',
-    transform: 'translateX(-50%) rotate(45deg)',
-    background: '#111',
-  } as const;
+  const tooltipClass = props.visible ? 'mr-tooltip is-visible' : 'mr-tooltip';
 
   return (
-    <div aria-hidden={!props.visible} style={tooltipStyle}>
+    <div aria-hidden={!props.visible} className={tooltipClass}>
       {props.text}
-      <span style={arrowStyle} />
+      <span className="mr-tooltip-arrow" />
     </div>
   );
 }
@@ -80,41 +55,19 @@ type TooltipButtonProps = {
   onClick: () => void;
   children: ComponentChildren;
   variant?: 'standard' | 'icon';
-  theme: 'light' | 'dark';
 };
 
 function TooltipButton(props: TooltipButtonProps) {
   const [isHover, setIsHover] = useState(false);
   const isDisabled = props.disabled ?? false;
   const variant = props.variant ?? 'standard';
-  const isDark = props.theme === 'dark';
-
-  const wrapperStyle = {
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  } as const;
-
-  const buttonStyle = {
-    height: '28px',
-    border: `1px solid ${isDark ? '#3a3a3a' : '#222'}`,
-    borderRadius: '6px',
-    background: isDark ? '#2a2a2a' : '#fff',
-    color: isDark ? '#f2f2f2' : '#111',
-    fontSize: '12px',
-    cursor: isDisabled ? 'not-allowed' : 'pointer',
-    padding: variant === 'icon' ? '0 6px' : '0 8px',
-    opacity: isDisabled ? 0.5 : 1,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-  } as const;
+  const buttonClass = `mr-tooltip-button${
+    variant === 'icon' ? ' is-icon' : ''
+  }`;
 
   return (
     <div
-      style={wrapperStyle}
+      className="mr-tooltip-button-wrapper"
       onMouseEnter={() => {
         setIsHover(true);
       }}
@@ -125,7 +78,7 @@ function TooltipButton(props: TooltipButtonProps) {
       <button
         type="button"
         aria-label={props.label}
-        style={buttonStyle}
+        className={buttonClass}
         disabled={isDisabled}
         onPointerDown={(event) => {
           event.preventDefault();
@@ -155,38 +108,14 @@ export function ActionButton(props: ActionButtonProps) {
   }
 
   const wrapperStyle = {
-    position: 'fixed',
     top: `${props.top}px`,
     left: `${props.left}px`,
-    zIndex: '2147483647',
-  } as const;
-
-  const style = {
-    width: '35px',
-    height: '35px',
-    borderRadius: '6px',
-    border: '1px solid #222',
-    background: '#fff',
-    color: '#111',
-    fontSize: '12px',
-    lineHeight: '26px',
-    textAlign: 'center',
-    padding: '0',
-    cursor: 'pointer',
-    userSelect: 'none',
-    zIndex: '2147483647',
-  } as const;
-
-  const iconStyle = {
-    display: 'block',
-    width: '22px',
-    height: '22px',
-    margin: '0 auto',
   } as const;
 
   return (
     <div
       style={wrapperStyle}
+      className="mr-action-wrapper"
       onMouseEnter={() => {
         setIsHover(true);
       }}
@@ -198,7 +127,7 @@ export function ActionButton(props: ActionButtonProps) {
         type="button"
         tabIndex={-1}
         aria-label="Render Mermaid"
-        style={style}
+        className="mr-action-button"
         onPointerDown={(event) => {
           event.preventDefault();
         }}
@@ -207,7 +136,7 @@ export function ActionButton(props: ActionButtonProps) {
         }}
         onClick={props.onClick}
       >
-        <img alt="" src={props.iconUrl} style={iconStyle} />
+        <img alt="" src={props.iconUrl} className="mr-action-icon" />
       </button>
       <Tooltip text={props.tooltipText} visible={isHover} />
     </div>
@@ -216,66 +145,19 @@ export function ActionButton(props: ActionButtonProps) {
 
 export function PopupActions(props: PopupActionsProps) {
   const [isThemeHover, setIsThemeHover] = useState(false);
-  const barStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '12px',
-  } as const;
-
-  const groupStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  } as const;
-
-  const isDark = props.popupTheme === 'dark';
-  const iconFilter = isDark ? 'invert(1)' : 'none';
-  const iconStyle = {
-    display: 'block',
-    width: '14px',
-    height: '14px',
-    filter: iconFilter,
-  } as const;
-
-  const closeStyle = {
-    display: 'block',
-    width: '14px',
-    height: '14px',
-    filter: iconFilter,
-  } as const;
-
-  const themeIconStyle = {
-    display: 'block',
-    width: '14px',
-    height: '14px',
-    filter: iconFilter,
-  } as const;
-
-  const themeGroupStyle = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-  } as const;
-
-  const selectStyle = {
-    height: '28px',
-    border: `1px solid ${isDark ? '#3a3a3a' : '#222'}`,
-    borderRadius: '6px',
-    background: isDark ? '#2a2a2a' : '#fff',
-    color: isDark ? '#f2f2f2' : '#111',
-    fontSize: '12px',
-    padding: '0 8px',
-  } as const;
 
   return (
-    <div style={barStyle}>
-      <div style={groupStyle}>
+    <div className="mr-popup-actions-bar">
+      <div className="mr-popup-actions-group">
+        <img
+          alt=""
+          src={props.appIconUrl}
+          className="mr-popup-actions-app-icon"
+        />
         <TooltipButton
           label="Save as SVG"
           disabled={!props.svgEnabled}
           onClick={props.onSvg}
-          theme={props.popupTheme}
         >
           <span>SVG</span>
         </TooltipButton>
@@ -283,7 +165,6 @@ export function PopupActions(props: PopupActionsProps) {
           label="Save as PNG"
           disabled={!props.pngEnabled}
           onClick={props.onPng}
-          theme={props.popupTheme}
         >
           <span>PNG</span>
         </TooltipButton>
@@ -292,27 +173,32 @@ export function PopupActions(props: PopupActionsProps) {
           disabled={!props.openEnabled}
           onClick={props.onOpen}
           variant="icon"
-          theme={props.popupTheme}
         >
-          <img alt="" src={props.openIconUrl} style={iconStyle} />
+          <img
+            alt=""
+            src={props.openIconUrl}
+            className="mr-popup-actions-icon"
+          />
         </TooltipButton>
         <TooltipButton
           label="Edit"
           disabled={!props.editEnabled}
           onClick={props.onEdit}
           variant="icon"
-          theme={props.popupTheme}
         >
-          <img alt="" src={props.editIconUrl} style={iconStyle} />
+          <img
+            alt=""
+            src={props.editIconUrl}
+            className="mr-popup-actions-icon"
+          />
         </TooltipButton>
       </div>
-      <div style={groupStyle}>
-        <div style={themeGroupStyle}>
+      <div className="mr-popup-actions-group">
+        <div className="mr-popup-actions-theme-group">
           <TooltipButton
             label="Toggle popup theme"
             onClick={props.onTogglePopupTheme}
             variant="icon"
-            theme={props.popupTheme}
           >
             <img
               alt=""
@@ -321,11 +207,11 @@ export function PopupActions(props: PopupActionsProps) {
                   ? props.sunIconUrl
                   : props.moonIconUrl
               }
-              style={themeIconStyle}
+              className="mr-popup-actions-icon"
             />
           </TooltipButton>
           <div
-            style={{ position: 'relative', display: 'inline-flex' }}
+            className="mr-theme-select-wrapper"
             onMouseEnter={() => {
               setIsThemeHover(true);
             }}
@@ -336,7 +222,7 @@ export function PopupActions(props: PopupActionsProps) {
             <select
               aria-label="Theme"
               value={props.themeValue}
-              style={selectStyle}
+              className="mr-popup-actions-select"
               onChange={(event) => {
                 const target = event.currentTarget;
                 props.onThemeChange(target.value);
@@ -351,13 +237,12 @@ export function PopupActions(props: PopupActionsProps) {
             <Tooltip text="Theme" visible={isThemeHover} />
           </div>
         </div>
-        <TooltipButton
-          label="Close"
-          onClick={props.onClose}
-          variant="icon"
-          theme={props.popupTheme}
-        >
-          <img alt="" src={props.closeIconUrl} style={closeStyle} />
+        <TooltipButton label="Close" onClick={props.onClose} variant="icon">
+          <img
+            alt=""
+            src={props.closeIconUrl}
+            className="mr-popup-actions-icon"
+          />
         </TooltipButton>
       </div>
     </div>

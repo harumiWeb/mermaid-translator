@@ -36,6 +36,7 @@ export type DiagramControls = {
 
 const zoomMin = 0.5;
 const zoomMax = 2.0;
+const zoomStep = 0.1;
 
 function clampValue(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -52,6 +53,7 @@ export function createDiagramControls(): DiagramControls {
   let sourceText: string | null = null;
   let editorText: string | null = null;
   let copyTooltipTimeout: number | null = null;
+  let wheelHandler: ((event: WheelEvent) => void) | null = null;
 
   const applyPanZoom = () => {
     if (!elements) {
@@ -79,10 +81,7 @@ export function createDiagramControls(): DiagramControls {
       return;
     }
     elements.copyTooltip.textContent = text;
-    elements.copyTooltip.style.opacity = visible ? '1' : '0';
-    elements.copyTooltip.style.transform = visible
-      ? 'translate(0, calc(-100% - 6px))'
-      : 'translate(0, calc(-100% - 2px))';
+    elements.copyTooltip.classList.toggle('is-visible', visible);
   };
 
   const triggerCopyFeedback = () => {
@@ -158,7 +157,29 @@ export function createDiagramControls(): DiagramControls {
 
   return {
     setElements(next) {
+      if (elements && wheelHandler) {
+        elements.content.removeEventListener('wheel', wheelHandler);
+        wheelHandler = null;
+      }
       elements = next;
+      if (elements) {
+        wheelHandler = (event: WheelEvent) => {
+          if (!event.ctrlKey) {
+            return;
+          }
+          event.preventDefault();
+          if (event.deltaY === 0) {
+            return;
+          }
+          const direction = event.deltaY > 0 ? -1 : 1;
+          zoom = clampValue(zoom + zoomStep * direction, zoomMin, zoomMax);
+          applyPanZoom();
+          updateZoomButtons();
+        };
+        elements.content.addEventListener('wheel', wheelHandler, {
+          passive: false,
+        });
+      }
       updateZoomButtons();
       updateCopyState();
     },
@@ -190,50 +211,11 @@ export function createDiagramControls(): DiagramControls {
       elements.copyButton.style.top = `${topOffset}px`;
       elements.copyTooltip.style.top = `${topOffset}px`;
     },
-    updateCopyTheme(theme) {
-      if (!elements) {
-        return;
-      }
-      const isDark = theme === 'dark';
-      elements.copyButton.style.border = `1px solid ${isDark ? '#3a3a3a' : '#222'}`;
-      elements.copyButton.style.background = isDark ? '#2a2a2a' : '#fff';
-      elements.copyButton.style.color = isDark ? '#f2f2f2' : '#111';
-
-      const icon = elements.copyButton.querySelector('img');
-      if (icon instanceof HTMLElement) {
-        icon.style.filter = isDark ? 'invert(1)' : 'none';
-      }
+    updateCopyTheme(_theme) {
+      // handled by CSS variables on the popup root
     },
-    updateZoomTheme(theme) {
-      if (!elements) {
-        return;
-      }
-      const isDark = theme === 'dark';
-      const borderColor = isDark ? '#3a3a3a' : '#222';
-      const background = isDark ? '#2a2a2a' : '#fff';
-      const iconFilter = isDark ? 'invert(1)' : 'none';
-
-      const applyButtonStyle = (button: HTMLButtonElement) => {
-        button.style.width = '28px';
-        button.style.height = '28px';
-        button.style.border = `1px solid ${borderColor}`;
-        button.style.borderRadius = '6px';
-        button.style.background = background;
-        button.style.display = 'inline-flex';
-        button.style.alignItems = 'center';
-        button.style.justifyContent = 'center';
-        button.style.cursor = 'pointer';
-      };
-
-      applyButtonStyle(elements.zoomInButton);
-      applyButtonStyle(elements.zoomOutButton);
-
-      const icons = elements.zoomControls.querySelectorAll('img');
-      icons.forEach((icon) => {
-        if (icon instanceof HTMLElement) {
-          icon.style.filter = iconFilter;
-        }
-      });
+    updateZoomTheme(_theme) {
+      // handled by CSS variables on the popup root
     },
     resetPanZoom() {
       panX = 0;
@@ -305,6 +287,10 @@ export function createDiagramControls(): DiagramControls {
     },
     cleanup() {
       stopPan();
+      if (elements && wheelHandler) {
+        elements.content.removeEventListener('wheel', wheelHandler);
+        wheelHandler = null;
+      }
       if (copyTooltipTimeout !== null) {
         window.clearTimeout(copyTooltipTimeout);
         copyTooltipTimeout = null;
