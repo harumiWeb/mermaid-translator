@@ -54,12 +54,15 @@ function parseGitRemote(url) {
   const org = m[2];
   const repo = m[3];
 
+  const isSameOrSubdomain = (hostname, baseDomain) =>
+    hostname === baseDomain || hostname.endsWith('.' + baseDomain);
+
   let provider;
-  if (host.includes('github.com')) {
+  if (isSameOrSubdomain(host, 'github.com')) {
     provider = 'gh';
-  } else if (host.includes('gitlab.com')) {
+  } else if (isSameOrSubdomain(host, 'gitlab.com')) {
     provider = 'gl';
-  } else if (host.includes('bitbucket.org')) {
+  } else if (isSameOrSubdomain(host, 'bitbucket.org')) {
     provider = 'bb';
   } else {
     provider = 'unknown';
