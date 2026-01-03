@@ -75,7 +75,7 @@ function parseGitRemote(url) {
 
 function parseArgs(argv) {
   const args = {
-    minLevel: 'High',
+    minLevel: 'Info',
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -143,10 +143,17 @@ async function fetchRepoIssues({ provider, org, repo, limit }) {
   return fetchJSON(url, 'POST', {});
 }
 
-async function fetchPrIssues({ provider, org, repo, pr, limit }) {
+async function fetchPrIssues({
+  provider,
+  org,
+  repo,
+  pr,
+  limit,
+  status = 'all',
+}) {
   const url =
     `${BASE}/analysis/organizations/${provider}/${org}` +
-    `/repositories/${repo}/pull-requests/${pr}/issues?limit=${limit}`;
+    `/repositories/${repo}/pull-requests/${pr}/issues?status=${status}&limit=${limit}`;
 
   return fetchJSON(url);
 }
@@ -166,6 +173,7 @@ function formatForAI(rawIssues, minLevel) {
   }
 
   return rawIssues
+    .map((i) => i.commitIssue ?? i)
     .filter((i) => LEVEL_PRIORITY[i.patternInfo?.level] >= minPriority)
     .map((i) => {
       const level = i.patternInfo.level;
