@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Vitest](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml/badge.svg)](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fe084998551b4d978da692e28c818c06)](https://app.codacy.com/gh/harumiWeb/mermaid-translator/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
-[英語版README](README.md)
+[英語版 README](README.md)
 
 > **Select Mermaid text anywhere on the web — render it instantly.**
 
@@ -37,7 +37,9 @@ Markdown や特定のタグに依存せず、
 ## Features
 
 - 選択したテキストから Mermaid ダイアグラムをレンダリング
+- SVG/PNG 形式で Mermaid ダイアグラムを保存
 - 編集モード：より大きなパネルを開き、Mermaid コードを調整し、変更内容をプレビューします
+  - ウィンドウは自由にドラッグ/リサイズ可能。既存ページを邪魔しません。
 
 ![mermaidコードを選択してプレビュー](/assets/screenshot01.png)
 

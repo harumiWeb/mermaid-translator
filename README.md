@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Vitest](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml/badge.svg)](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fe084998551b4d978da692e28c818c06)](https://app.codacy.com/gh/harumiWeb/mermaid-translator/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
-[日本版README](README.ja.md)
+[日本版 README](README.ja.md)
 
 > **Select Mermaid text anywhere on the web and render it instantly.**
 
@@ -33,7 +33,9 @@ Markdown structure or specific tags.
 ## Features
 
 - Render Mermaid diagrams from selected text
+- Save Mermaid diagrams in SVG/PNG format
 - Edit mode: open a larger panel, tweak Mermaid code, and preview changes
+  - The window can be freely dragged and resized without interfering with existing pages.
 
 ![Select Mermaid code and preview](/assets/screenshot01.png)
 
