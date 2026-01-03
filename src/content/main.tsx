@@ -141,6 +141,7 @@ const splitIconUrl = chrome.runtime.getURL('icons/split-window.svg');
 const closeIconUrl = chrome.runtime.getURL('icons/close.svg');
 const sunIconUrl = chrome.runtime.getURL('icons/sun.svg');
 const moonIconUrl = chrome.runtime.getURL('icons/moon.svg');
+const appIconUrl = chrome.runtime.getURL('icons/icon48.png');
 const tooltipText = 'View Mermaid diagram';
 const renderErrorMessage = 'Unable to render Mermaid diagram.';
 const popupMinWidth = 550;
@@ -793,6 +794,17 @@ function createEditorPopup(): void {
   header.style.justifyContent = 'space-between';
   header.style.cursor = 'move';
 
+  const headerLeft = document.createElement('div');
+  headerLeft.style.display = 'flex';
+  headerLeft.style.alignItems = 'center';
+  headerLeft.style.gap = '8px';
+
+  const appIcon = document.createElement('img');
+  appIcon.alt = '';
+  appIcon.src = appIconUrl;
+  appIcon.style.width = '18px';
+  appIcon.style.height = '18px';
+
   const title = document.createElement('div');
   title.textContent = 'Editor';
   title.style.fontSize = '12px';
@@ -820,7 +832,9 @@ function createEditorPopup(): void {
     closeEditorPopup();
   });
 
-  header.appendChild(title);
+  headerLeft.appendChild(appIcon);
+  headerLeft.appendChild(title);
+  header.appendChild(headerLeft);
   header.appendChild(closeButton);
   header.addEventListener('pointerdown', (event) => {
     startEditorDrag(event);
@@ -1359,6 +1373,7 @@ function renderPopupActions(): void {
       closeIconUrl={closeIconUrl}
       sunIconUrl={sunIconUrl}
       moonIconUrl={moonIconUrl}
+      appIconUrl={appIconUrl}
       onSvg={() => {
         if (!popupSvg) {
           setPopupMessage(renderErrorMessage);

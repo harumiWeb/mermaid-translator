@@ -30,6 +30,7 @@ type PopupActionsProps = {
   closeIconUrl: string;
   sunIconUrl: string;
   moonIconUrl: string;
+  appIconUrl: string;
 };
 
 type TooltipProps = {
@@ -238,6 +239,12 @@ export function PopupActions(props: PopupActionsProps) {
     filter: iconFilter,
   } as const;
 
+  const appIconStyle = {
+    display: 'block',
+    width: '18px',
+    height: '18px',
+  } as const;
+
   const closeStyle = {
     display: 'block',
     width: '14px',
@@ -271,6 +278,7 @@ export function PopupActions(props: PopupActionsProps) {
   return (
     <div style={barStyle}>
       <div style={groupStyle}>
+        <img alt="" src={props.appIconUrl} style={appIconStyle} />
         <TooltipButton
           label="Save as SVG"
           disabled={!props.svgEnabled}
