@@ -58,6 +58,7 @@ export function createPopupDom(
 ): PopupElements {
   const popup = document.createElement('div');
   popup.className = 'mr-popup mr-theme';
+  popup.tabIndex = -1;
   popup.style.top = `${options.position.top}px`;
   popup.style.left = `${options.position.left}px`;
   popup.style.minWidth = `${options.popupMinWidth}px`;

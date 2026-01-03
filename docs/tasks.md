@@ -157,3 +157,10 @@
 
 - [x] Edit モードの View/Editor タブ切替と再レンダリングが動作することを E2E で検証する。`spec: 015-edit-mode`
 - [x] Render cache の判定を純粋関数へ分離し、同一入力時は再レンダリングをスキップする条件をユニットテストする。`spec: 023-render-cache`
+
+- [x] split 中のメイン/エディタ両方のポップアップにクリックで最前面化とフォーカス移動を適用する。`spec: 028-popup-front-focus`
+- [x] split 開始時にエディタポップアップを最前面にする。`spec: 028-popup-front-focus`
+
+- [x] codacy-issues で Buffer を明示的に定義する。`spec: 029-codacy-issues-buffer`
+
+- [x] codacy-issues のセキュリティ指摘（SSRF/obj injection）に対応する。`spec: 029-codacy-issues-security-findings`

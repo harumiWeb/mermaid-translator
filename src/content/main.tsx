@@ -156,6 +156,8 @@ const popupEditContentMaxHeight = '55vh';
 const popupEditMinHeight = 320;
 const popupInitialContentHeight = Math.round(popupEditMinHeight * 1.5);
 const zoomStep = 0.1;
+const popupZIndexBase = 2147483646;
+const popupZIndexTop = 2147483647;
 const diagramControls = createDiagramControls();
 const editMode = createEditModeController(
   {
@@ -728,6 +730,23 @@ function applyEditorPopupTheme(theme: 'light' | 'dark'): void {
   editorPopupRoot.dataset.theme = theme;
 }
 
+function bringPopupToFront(target: 'main' | 'editor'): void {
+  if (!popupRoot || !editorPopupRoot) {
+    return;
+  }
+
+  if (target === 'main') {
+    popupRoot.style.zIndex = String(popupZIndexTop);
+    editorPopupRoot.style.zIndex = String(popupZIndexBase);
+    popupRoot.focus();
+    return;
+  }
+
+  editorPopupRoot.style.zIndex = String(popupZIndexTop);
+  popupRoot.style.zIndex = String(popupZIndexBase);
+  editorPopupRoot.focus();
+}
+
 function createEditorPopup(): void {
   if (!shadowRoot || !popupElements || !popupEditorTextarea) {
     return;
@@ -746,6 +765,7 @@ function createEditorPopup(): void {
 
   const root = document.createElement('div');
   root.className = 'mr-editor-popup mr-theme';
+  root.tabIndex = -1;
   root.style.width = `${Math.max(popupMinWidth, popupRect.width)}px`;
   root.style.height = `${Math.max(popupEditMinHeight, popupRect.height)}px`;
 
@@ -804,6 +824,10 @@ function createEditorPopup(): void {
   content.appendChild(editorPanel);
   editorPopupContent = content;
 
+  root.addEventListener('pointerdown', () => {
+    bringPopupToFront('editor');
+  });
+
   if (!editorPanel.dataset.originalPaddingTop) {
     editorPanel.dataset.originalPaddingTop = editorPanel.style.paddingTop;
   }
@@ -832,6 +856,7 @@ function createEditorPopup(): void {
 
   isEditorSplit = true;
   setSplitActive(true);
+  bringPopupToFront('editor');
 }
 
 function closeEditorPopup(): void {
@@ -866,6 +891,9 @@ function closeEditorPopup(): void {
 
   isEditorSplit = false;
   setSplitActive(false);
+  if (popupRoot) {
+    popupRoot.style.zIndex = '';
+  }
 }
 
 function getCurrentRenderSource(): string | null {
@@ -1078,6 +1106,7 @@ function dismissPopup(): void {
     editorPopupResizeState = null;
     isEditorSplit = false;
   }
+  popupRoot.style.zIndex = '';
 
   stopDrag();
   stopResize();
@@ -1247,6 +1276,12 @@ function showPopup(
     openEnabled: false,
     editEnabled: false,
   };
+
+  popupRoot.addEventListener('pointerdown', () => {
+    if (editorPopupRoot) {
+      bringPopupToFront('main');
+    }
+  });
   diagramControls.setElements({
     content: elements.content,
     diagram: elements.diagram,
