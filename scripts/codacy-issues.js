@@ -48,7 +48,9 @@ function parseGitRemote(url) {
     m = url.match(/^git@([^:]+):([^/]+)\/([^/]+?)(?:\.git)?$/);
   }
 
-  if (!m) {return null;}
+  if (!m) {
+    return null;
+  }
 
   const host = m[1];
   const org = m[2];
@@ -73,17 +75,28 @@ function parseGitRemote(url) {
 
 function parseArgs(argv) {
   const args = {
-    provider: 'gh',
     minLevel: 'High',
   };
 
   for (let i = 0; i < argv.length; i++) {
     const v = argv[i];
     if (v === '--pr') {
+      if (i + 1 >= argv.length) {
+        console.error('Missing value for --pr');
+        globalThis.process.exit(1);
+      }
       args.pr = argv[++i];
     } else if (v === '--min-level') {
+      if (i + 1 >= argv.length) {
+        console.error('Missing value for --min-level');
+        globalThis.process.exit(1);
+      }
       args.minLevel = argv[++i];
     } else if (v === '--provider') {
+      if (i + 1 >= argv.length) {
+        console.error('Missing value for --provider');
+        globalThis.process.exit(1);
+      }
       args.provider = argv[++i];
     } else if (!args.org) {
       args.org = v;
@@ -143,6 +156,14 @@ async function fetchPrIssues({ provider, org, repo, pr, limit }) {
  * ================================ */
 function formatForAI(rawIssues, minLevel) {
   const minPriority = LEVEL_PRIORITY[minLevel];
+  if (minPriority === undefined) {
+    console.error(
+      `Invalid --min-level: ${minLevel}. Valid values: ${Object.keys(
+        LEVEL_PRIORITY
+      ).join(', ')}`
+    );
+    globalThis.process.exit(1);
+  }
 
   return rawIssues
     .filter((i) => LEVEL_PRIORITY[i.patternInfo?.level] >= minPriority)
@@ -176,6 +197,8 @@ async function main() {
       }
     }
   }
+
+  args.provider ??= 'gh';
 
   if (!args.org || !args.repo) {
     console.error(

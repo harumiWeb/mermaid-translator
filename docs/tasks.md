@@ -162,3 +162,4 @@
 - [x] split 開始時にエディタポップアップを最前面にする。`spec: 028-popup-front-focus`
 
 - [x] codacy-issues スクリプトが oxlint を通過するように修正する。`spec: 029-codacy-issues-script-lint`
+- [x] codacy-issues の引数検証と provider 自動検出の改善を行う。`spec: 030-codacy-issues-arg-validation`
