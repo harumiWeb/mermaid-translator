@@ -298,6 +298,7 @@ test('edit mode view/editor tabs render and switch', async ({ page }) => {
 
   await getEditorTextarea(page).fill('');
   await viewTab.click();
+  await expect(getPopupMessage(page)).toBeVisible();
   await expect(getPopupMessage(page)).toContainText(
     'Unable to render Mermaid diagram.'
   );

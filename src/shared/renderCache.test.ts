@@ -5,7 +5,7 @@ describe('isRenderCacheHit', () => {
   it('returns true when svg/source/theme match', () => {
     expect(
       isRenderCacheHit({
-        lastSvg: '<svg />',
+        lastSvg: 'svg-fragment',
         lastSource: 'graph TD',
         lastTheme: 'default',
         nextSource: 'graph TD',
@@ -29,7 +29,7 @@ describe('isRenderCacheHit', () => {
   it('returns false when source changes', () => {
     expect(
       isRenderCacheHit({
-        lastSvg: '<svg />',
+        lastSvg: 'svg-fragment',
         lastSource: 'graph TD',
         lastTheme: 'default',
         nextSource: 'sequenceDiagram',
@@ -41,7 +41,7 @@ describe('isRenderCacheHit', () => {
   it('returns false when theme changes', () => {
     expect(
       isRenderCacheHit({
-        lastSvg: '<svg />',
+        lastSvg: 'svg-fragment',
         lastSource: 'graph TD',
         lastTheme: 'default',
         nextSource: 'graph TD',
