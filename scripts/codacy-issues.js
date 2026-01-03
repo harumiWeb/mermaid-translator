@@ -60,12 +60,13 @@ function assertValidChoice(name, value, choices) {
   return value;
 }
 
-function buildCodacyUrl(pathname, params) {
+function encodeSegment(value) {
+  return encodeURIComponent(value);
+}
+
+function buildCodacyUrl(pathname) {
   const url = new URL(BASE_URL.origin);
   url.pathname = `${BASE_PATH}${pathname}`;
-  for (const [key, value] of params) {
-    url.searchParams.set(key, String(value));
-  }
   return url;
 }
 
@@ -82,20 +83,26 @@ function assertCodacyUrl(url) {
 }
 
 function buildRepoIssuesUrl({ provider, org, repo, limit }) {
-  return buildCodacyUrl(
-    `/analysis/organizations/${provider}/${org}/repositories/${repo}/issues/search`,
-    [['limit', limit]]
+  const url = buildCodacyUrl(
+    `/analysis/organizations/${encodeSegment(provider)}/${encodeSegment(
+      org
+    )}/repositories/${encodeSegment(repo)}/issues/search`
   );
+  url.searchParams.set('limit', String(limit));
+  return url;
 }
 
 function buildPrIssuesUrl({ provider, org, repo, pr, limit, status }) {
-  return buildCodacyUrl(
-    `/analysis/organizations/${provider}/${org}/repositories/${repo}/pull-requests/${pr}/issues`,
-    [
-      ['status', status],
-      ['limit', limit],
-    ]
+  const url = buildCodacyUrl(
+    `/analysis/organizations/${encodeSegment(provider)}/${encodeSegment(
+      org
+    )}/repositories/${encodeSegment(repo)}/pull-requests/${encodeSegment(
+      pr
+    )}/issues`
   );
+  url.searchParams.set('status', status);
+  url.searchParams.set('limit', String(limit));
+  return url;
 }
 
 function getGitOriginUrl() {
