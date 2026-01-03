@@ -6,6 +6,8 @@ import { execSync } from 'node:child_process';
  * Config
  * ================================ */
 const BASE = 'https://api.codacy.com/api/v3';
+const BASE_URL = new URL(BASE);
+const BASE_PATH = BASE_URL.pathname.replace(/\/$/, '');
 const TOKEN = globalThis.process.env.CODACY_API_TOKEN;
 
 if (!TOKEN) {
@@ -58,21 +60,42 @@ function assertValidChoice(name, value, choices) {
   return value;
 }
 
+function buildCodacyUrl(pathname, params) {
+  const url = new URL(BASE_URL.origin);
+  url.pathname = `${BASE_PATH}${pathname}`;
+  for (const [key, value] of params) {
+    url.searchParams.set(key, String(value));
+  }
+  return url;
+}
+
+function assertCodacyUrl(url) {
+  const expectedPrefix = `${BASE_PATH}/analysis/`;
+  if (
+    url.origin !== BASE_URL.origin ||
+    !url.pathname.startsWith(expectedPrefix)
+  ) {
+    console.error(`Invalid URL: ${url}`);
+    globalThis.process.exit(1);
+  }
+  return url;
+}
+
 function buildRepoIssuesUrl({ provider, org, repo, limit }) {
-  const url = new URL(
-    `${BASE}/analysis/organizations/${provider}/${org}/repositories/${repo}/issues/search`
+  return buildCodacyUrl(
+    `/analysis/organizations/${provider}/${org}/repositories/${repo}/issues/search`,
+    [['limit', limit]]
   );
-  url.searchParams.set('limit', String(limit));
-  return url.toString();
 }
 
 function buildPrIssuesUrl({ provider, org, repo, pr, limit, status }) {
-  const url = new URL(
-    `${BASE}/analysis/organizations/${provider}/${org}/repositories/${repo}/pull-requests/${pr}/issues`
+  return buildCodacyUrl(
+    `/analysis/organizations/${provider}/${org}/repositories/${repo}/pull-requests/${pr}/issues`,
+    [
+      ['status', status],
+      ['limit', limit],
+    ]
   );
-  url.searchParams.set('status', status);
-  url.searchParams.set('limit', String(limit));
-  return url.toString();
 }
 
 function getGitOriginUrl() {
@@ -126,9 +149,11 @@ function parseGitRemote(url) {
 }
 
 function parseArgs(argv) {
-  const args = {
-    minLevel: 'Info',
-  };
+  let org;
+  let repo;
+  let pr;
+  let provider;
+  let minLevel = 'Info';
 
   for (let i = 0; i < argv.length; i++) {
     const v = argv[i];
@@ -137,30 +162,37 @@ function parseArgs(argv) {
         console.error('Missing value for --pr');
         globalThis.process.exit(1);
       }
-      args.pr = argv[++i];
+      pr = argv[++i];
     } else if (v === '--min-level') {
       if (i + 1 >= argv.length) {
         console.error('Missing value for --min-level');
         globalThis.process.exit(1);
       }
-      args.minLevel = argv[++i];
+      minLevel = argv[++i];
     } else if (v === '--provider') {
       if (i + 1 >= argv.length) {
         console.error('Missing value for --provider');
         globalThis.process.exit(1);
       }
-      args.provider = argv[++i];
-    } else if (!args.org) {
-      args.org = v;
-    } else if (!args.repo) {
-      args.repo = v;
+      provider = argv[++i];
+    } else if (!org) {
+      org = v;
+    } else if (!repo) {
+      repo = v;
     }
   }
 
-  return args;
+  return {
+    org,
+    repo,
+    pr,
+    provider,
+    minLevel,
+  };
 }
 
 async function fetchJSON(url, method = 'GET', body) {
+  const safeUrl = assertCodacyUrl(url);
   const options = {
     method,
     headers: {
@@ -174,7 +206,7 @@ async function fetchJSON(url, method = 'GET', body) {
     options.body = JSON.stringify(body);
   }
 
-  const res = await fetch(url, options);
+  const res = await fetch(safeUrl, options);
 
   if (!res.ok) {
     const text = await res.text();
