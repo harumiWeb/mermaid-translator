@@ -24,7 +24,7 @@ export async function renderMermaid(
       const mermaidModule = (await import('mermaid')) as { default: Mermaid };
       mermaidApi = mermaidModule.default;
       if (isDebug) {
-        console.info(
+        console.warn(
           '[mermaid-render] load mermaid',
           Math.round(performance.now() - loadStart),
           'ms'
@@ -44,7 +44,7 @@ export async function renderMermaid(
       });
       lastTheme = theme;
       if (isDebug) {
-        console.info(
+        console.warn(
           '[mermaid-render] init mermaid',
           Math.round(performance.now() - initStart),
           'ms'
@@ -56,7 +56,7 @@ export async function renderMermaid(
     const renderSvgStart = performance.now();
     const { svg } = await mermaidApi.render(id, code);
     if (isDebug) {
-      console.info(
+      console.warn(
         '[mermaid-render] render svg',
         Math.round(performance.now() - renderSvgStart),
         'ms'
@@ -70,7 +70,7 @@ export async function renderMermaid(
       RETURN_DOM_FRAGMENT: true,
     });
     if (isDebug) {
-      console.info(
+      console.warn(
         '[mermaid-render] sanitize svg',
         Math.round(performance.now() - sanitizeStart),
         'ms'
@@ -85,12 +85,12 @@ export async function renderMermaid(
     const insertStart = performance.now();
     container.replaceChildren(svgElement);
     if (isDebug) {
-      console.info(
+      console.warn(
         '[mermaid-render] insert svg',
         Math.round(performance.now() - insertStart),
         'ms'
       );
-      console.info(
+      console.warn(
         '[mermaid-render] total',
         Math.round(performance.now() - renderStart),
         'ms'

@@ -9,6 +9,7 @@ import {
   destroyPopupDom,
   type PopupElements,
 } from './popupDom';
+import { ensurePopupStyle } from './popupStyle';
 import {
   getButtonPosition,
   getPopupPosition,
@@ -183,16 +184,11 @@ function ensureMountNode(): HTMLElement | null {
 
   const host = document.createElement('div');
   host.setAttribute('data-mermaid-selection-renderer', 'root');
-  host.style.position = 'fixed';
-  host.style.top = '0';
-  host.style.left = '0';
-  host.style.width = '0';
-  host.style.height = '0';
-  host.style.zIndex = '2147483647';
 
   const shadow = host.attachShadow({ mode: 'open' });
   const container = document.createElement('div');
   shadow.appendChild(container);
+  ensurePopupStyle(shadow);
 
   const parent = document.body ?? document.documentElement;
   if (!parent) {
@@ -261,10 +257,7 @@ function setSplitTooltip(visible: boolean): void {
     return;
   }
 
-  popupElements.splitTooltip.style.opacity = visible ? '1' : '0';
-  popupElements.splitTooltip.style.transform = visible
-    ? 'translate(0, calc(-100% - 6px))'
-    : 'translate(0, calc(-100% - 2px))';
+  popupElements.splitTooltip.classList.toggle('is-visible', visible);
 }
 
 function setSplitEnabled(enabled: boolean): void {
@@ -298,21 +291,7 @@ function updateSplitLayout(): void {
 }
 
 function updateSplitTheme(theme: 'light' | 'dark'): void {
-  if (!popupElements) {
-    return;
-  }
-
-  const isDark = theme === 'dark';
-  popupElements.splitButton.style.border = `1px solid ${
-    isDark ? '#3a3a3a' : '#222'
-  }`;
-  popupElements.splitButton.style.background = isDark ? '#2a2a2a' : '#fff';
-  popupElements.splitButton.style.color = isDark ? '#f2f2f2' : '#111';
-
-  const icon = popupElements.splitButton.querySelector('img');
-  if (icon instanceof HTMLElement) {
-    icon.style.filter = isDark ? 'invert(1)' : 'none';
-  }
+  void theme;
 }
 
 function updateEditorPopupLayout(): void {
@@ -741,24 +720,7 @@ function applyEditorPopupTheme(theme: 'light' | 'dark'): void {
     return;
   }
 
-  const isDark = theme === 'dark';
-  editorPopupRoot.style.background = isDark ? '#1c1c1c' : '#fff';
-  editorPopupRoot.style.color = isDark ? '#f2f2f2' : '#111';
-  editorPopupRoot.style.border = `1px solid ${isDark ? '#3a3a3a' : '#222'}`;
-  editorPopupRoot.style.boxShadow = isDark
-    ? '0 6px 18px rgba(0,0,0,0.4)'
-    : '0 6px 18px rgba(0,0,0,0.15)';
-
-  editorPopupCloseButton.style.border = `1px solid ${
-    isDark ? '#3a3a3a' : '#222'
-  }`;
-  editorPopupCloseButton.style.background = isDark ? '#2a2a2a' : '#fff';
-  editorPopupCloseButton.style.color = isDark ? '#f2f2f2' : '#111';
-
-  const icon = editorPopupCloseButton.querySelector('img');
-  if (icon instanceof HTMLElement) {
-    icon.style.filter = isDark ? 'invert(1)' : 'none';
-  }
+  editorPopupRoot.dataset.theme = theme;
 }
 
 function createEditorPopup(): void {
@@ -778,54 +740,34 @@ function createEditorPopup(): void {
   const popupRect = popupElements.root.getBoundingClientRect();
 
   const root = document.createElement('div');
-  root.style.position = 'fixed';
-  root.style.zIndex = '2147483647';
-  root.style.borderRadius = '8px';
-  root.style.padding = '12px 12px 10px';
-  root.style.display = 'flex';
-  root.style.flexDirection = 'column';
-  root.style.gap = '8px';
+  root.className = 'mr-editor-popup mr-theme';
   root.style.width = `${Math.max(popupMinWidth, popupRect.width)}px`;
   root.style.height = `${Math.max(popupEditMinHeight, popupRect.height)}px`;
 
   const header = document.createElement('div');
-  header.style.display = 'flex';
-  header.style.alignItems = 'center';
-  header.style.justifyContent = 'space-between';
-  header.style.cursor = 'move';
+  header.className = 'mr-editor-popup-header';
 
   const headerLeft = document.createElement('div');
-  headerLeft.style.display = 'flex';
-  headerLeft.style.alignItems = 'center';
-  headerLeft.style.gap = '8px';
+  headerLeft.className = 'mr-editor-popup-header-left';
 
   const appIcon = document.createElement('img');
   appIcon.alt = '';
   appIcon.src = appIconUrl;
-  appIcon.style.width = '18px';
-  appIcon.style.height = '18px';
+  appIcon.className = 'mr-popup-actions-app-icon';
 
   const title = document.createElement('div');
   title.textContent = 'Editor';
-  title.style.fontSize = '12px';
-  title.style.fontWeight = '600';
+  title.className = 'mr-editor-popup-title';
 
   const closeButton = document.createElement('button');
   closeButton.type = 'button';
   closeButton.setAttribute('aria-label', 'Close editor');
-  closeButton.style.width = '28px';
-  closeButton.style.height = '28px';
-  closeButton.style.borderRadius = '6px';
-  closeButton.style.display = 'inline-flex';
-  closeButton.style.alignItems = 'center';
-  closeButton.style.justifyContent = 'center';
-  closeButton.style.cursor = 'pointer';
+  closeButton.className = 'mr-editor-popup-close';
 
   const closeIcon = document.createElement('img');
   closeIcon.alt = '';
   closeIcon.src = closeIconUrl;
-  closeIcon.style.width = '14px';
-  closeIcon.style.height = '14px';
+  closeIcon.className = 'mr-editor-popup-close-icon';
   closeButton.appendChild(closeIcon);
 
   closeButton.addEventListener('click', () => {
@@ -841,16 +783,10 @@ function createEditorPopup(): void {
   });
 
   const content = document.createElement('div');
-  content.style.flex = '1';
-  content.style.minHeight = '0';
+  content.className = 'mr-editor-popup-content';
 
   const resizeHandle = document.createElement('div');
-  resizeHandle.style.position = 'absolute';
-  resizeHandle.style.width = '14px';
-  resizeHandle.style.height = '14px';
-  resizeHandle.style.right = '6px';
-  resizeHandle.style.bottom = '6px';
-  resizeHandle.style.cursor = 'nwse-resize';
+  resizeHandle.className = 'mr-resize-handle is-visible';
   resizeHandle.addEventListener('pointerdown', (event) => {
     startEditorResize(event);
   });
@@ -922,8 +858,6 @@ function closeEditorPopup(): void {
 
   popupElements.tabBar.style.display = editMode.isEnabled() ? 'flex' : 'none';
   popupElements.editorTab.style.display = '';
-  popupElements.tabBar.style.gap = '6px';
-  popupElements.tabBar.style.marginTop = '8px';
 
   isEditorSplit = false;
   setSplitActive(false);

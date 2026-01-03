@@ -52,72 +52,35 @@ type PopupDomOptions = {
   onZoomIn: () => void;
 };
 
-function ensureSpinnerStyles(shadowRoot: ShadowRoot): void {
-  if (shadowRoot.querySelector('[data-mermaid-spinner-style]')) {
-    return;
-  }
-
-  const style = document.createElement('style');
-  style.setAttribute('data-mermaid-spinner-style', 'true');
-  style.textContent = `
-    @keyframes mermaid-spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .mermaid-spinner {
-      animation: mermaid-spin 0.9s linear infinite;
-    }
-  `;
-  shadowRoot.appendChild(style);
-}
-
 export function createPopupDom(
   shadowRoot: ShadowRoot,
   options: PopupDomOptions
 ): PopupElements {
-  ensureSpinnerStyles(shadowRoot);
-
   const popup = document.createElement('div');
-  popup.style.position = 'fixed';
+  popup.className = 'mr-popup mr-theme';
   popup.style.top = `${options.position.top}px`;
   popup.style.left = `${options.position.left}px`;
   popup.style.minWidth = `${options.popupMinWidth}px`;
   popup.style.maxWidth = options.popupMaxWidth;
-  popup.style.background = '#fff';
-  popup.style.color = '#111';
-  popup.style.border = '1px solid #222';
-  popup.style.borderRadius = '8px';
-  popup.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
-  popup.style.padding = '12px 12px 10px';
-  popup.style.zIndex = '2147483647';
 
   const arrow = document.createElement('span');
-  arrow.style.position = 'absolute';
-  arrow.style.top = '-6px';
-  arrow.style.left = '16px';
-  arrow.style.width = '10px';
-  arrow.style.height = '10px';
-  arrow.style.background = '#fff';
-  arrow.style.borderLeft = '1px solid #222';
-  arrow.style.borderTop = '1px solid #222';
-  arrow.style.transform = 'rotate(45deg)';
+  arrow.className = 'mr-popup-arrow';
 
   const header = document.createElement('div');
-  header.style.paddingTop = '4px';
-  header.style.display = 'flex';
-  header.style.alignItems = 'center';
+  header.className = 'mr-popup-header';
   header.addEventListener('pointerdown', (event) => {
     options.onStartDrag(event);
   });
 
   const actions = document.createElement('div');
-  actions.style.flex = '1';
+  actions.className = 'mr-popup-actions';
 
   const tabBar = document.createElement('div');
-  tabBar.style.display = 'none';
+  tabBar.className = 'mr-tab-bar';
 
   const viewTab = document.createElement('button');
   viewTab.type = 'button';
+  viewTab.className = 'mr-tab';
   viewTab.textContent = 'View';
   viewTab.addEventListener('click', () => {
     options.onViewTab();
@@ -125,6 +88,7 @@ export function createPopupDom(
 
   const editorTab = document.createElement('button');
   editorTab.type = 'button';
+  editorTab.className = 'mr-tab';
   editorTab.textContent = 'Editor';
   editorTab.addEventListener('click', () => {
     options.onEditorTab();
@@ -134,26 +98,13 @@ export function createPopupDom(
   tabBar.appendChild(editorTab);
 
   const message = document.createElement('div');
-  message.style.marginTop = '8px';
-  message.style.fontSize = '12px';
-  message.style.color = '#b00020';
-  message.style.display = 'none';
+  message.className = 'mr-popup-message';
 
   const loading = document.createElement('div');
-  loading.style.marginTop = '8px';
-  loading.style.display = 'none';
-  loading.style.alignItems = 'center';
-  loading.style.gap = '8px';
-  loading.style.fontSize = '12px';
-  loading.style.color = '#555';
+  loading.className = 'mr-popup-loading';
 
   const spinner = document.createElement('div');
-  spinner.className = 'mermaid-spinner';
-  spinner.style.width = '14px';
-  spinner.style.height = '14px';
-  spinner.style.borderRadius = '999px';
-  spinner.style.border = '2px solid #c7c7c7';
-  spinner.style.borderTopColor = '#555';
+  spinner.className = 'mr-spinner';
 
   const loadingText = document.createElement('span');
   loadingText.textContent = 'Rendering...';
@@ -162,40 +113,24 @@ export function createPopupDom(
   loading.appendChild(loadingText);
 
   const contentWrapper = document.createElement('div');
-  contentWrapper.style.position = 'relative';
+  contentWrapper.className = 'mr-popup-content-wrapper';
 
   const content = document.createElement('div');
+  content.className = 'mr-popup-content';
   content.style.height = `${options.popupDefaultHeight}px`;
   content.style.maxHeight = `${options.popupDefaultHeight}px`;
-  content.style.overflow = 'hidden';
-  content.style.paddingTop = '8px';
-  content.style.position = 'relative';
-  content.style.cursor = 'grab';
-  content.style.zIndex = '0';
   content.addEventListener('pointerdown', (event) => {
     options.onStartPan(event);
   });
 
   const diagram = document.createElement('div');
-  diagram.style.transformOrigin = '0 0';
-  diagram.style.willChange = 'transform';
+  diagram.className = 'mr-popup-diagram';
   content.appendChild(diagram);
 
   const copyButton = document.createElement('button');
   copyButton.type = 'button';
+  copyButton.className = 'mr-floating-button mr-button-reset mr-copy-button';
   copyButton.setAttribute('aria-label', 'Copy Mermaid code');
-  copyButton.style.position = 'absolute';
-  copyButton.style.top = '8px';
-  copyButton.style.right = '8px';
-  copyButton.style.width = '28px';
-  copyButton.style.height = '28px';
-  copyButton.style.borderRadius = '6px';
-  copyButton.style.display = 'none';
-  copyButton.style.alignItems = 'center';
-  copyButton.style.justifyContent = 'center';
-  copyButton.style.cursor = 'pointer';
-  copyButton.style.transition = 'transform 120ms ease, background 120ms ease';
-  copyButton.style.zIndex = '2';
   copyButton.setAttribute('data-pan-ignore', 'true');
   copyButton.addEventListener('mouseenter', () => {
     options.onCopyEnter();
@@ -210,44 +145,18 @@ export function createPopupDom(
   const copyIcon = document.createElement('img');
   copyIcon.alt = '';
   copyIcon.src = options.copyIconUrl;
-  copyIcon.style.width = '14px';
-  copyIcon.style.height = '14px';
+  copyIcon.className = 'mr-floating-icon';
   copyButton.appendChild(copyIcon);
 
   const copyTooltip = document.createElement('div');
-  copyTooltip.style.position = 'absolute';
-  copyTooltip.style.top = '8px';
-  copyTooltip.style.right = '8px';
-  copyTooltip.style.transform = 'translate(0, calc(-100% - 2px))';
-  copyTooltip.style.opacity = '0';
-  copyTooltip.style.transition = 'opacity 140ms ease, transform 140ms ease';
-  copyTooltip.style.padding = '6px 8px';
-  copyTooltip.style.borderRadius = '6px';
-  copyTooltip.style.background = '#111';
-  copyTooltip.style.color = '#fff';
-  copyTooltip.style.fontSize = '12px';
-  copyTooltip.style.lineHeight = '16px';
-  copyTooltip.style.whiteSpace = 'nowrap';
-  copyTooltip.style.pointerEvents = 'none';
-  copyTooltip.style.zIndex = '3';
+  copyTooltip.className = 'mr-floating-tooltip mr-copy-tooltip';
   copyTooltip.setAttribute('data-pan-ignore', 'true');
   copyTooltip.textContent = 'Copy Mermaid code';
 
   const splitButton = document.createElement('button');
   splitButton.type = 'button';
+  splitButton.className = 'mr-floating-button mr-button-reset mr-split-button';
   splitButton.setAttribute('aria-label', 'Split editor');
-  splitButton.style.position = 'absolute';
-  splitButton.style.top = '8px';
-  splitButton.style.right = '42px';
-  splitButton.style.width = '28px';
-  splitButton.style.height = '28px';
-  splitButton.style.borderRadius = '6px';
-  splitButton.style.display = 'none';
-  splitButton.style.alignItems = 'center';
-  splitButton.style.justifyContent = 'center';
-  splitButton.style.cursor = 'pointer';
-  splitButton.style.transition = 'transform 120ms ease, background 120ms ease';
-  splitButton.style.zIndex = '2';
   splitButton.setAttribute('data-pan-ignore', 'true');
   splitButton.addEventListener('mouseenter', () => {
     options.onSplitEnter();
@@ -262,40 +171,21 @@ export function createPopupDom(
   const splitIcon = document.createElement('img');
   splitIcon.alt = '';
   splitIcon.src = options.splitIconUrl;
-  splitIcon.style.width = '14px';
-  splitIcon.style.height = '14px';
+  splitIcon.className = 'mr-floating-icon';
   splitButton.appendChild(splitIcon);
 
   const splitTooltip = document.createElement('div');
-  splitTooltip.style.position = 'absolute';
-  splitTooltip.style.top = '8px';
-  splitTooltip.style.right = '42px';
-  splitTooltip.style.transform = 'translate(0, calc(-100% - 2px))';
-  splitTooltip.style.opacity = '0';
-  splitTooltip.style.transition = 'opacity 140ms ease, transform 140ms ease';
-  splitTooltip.style.padding = '6px 8px';
-  splitTooltip.style.borderRadius = '6px';
-  splitTooltip.style.background = '#111';
-  splitTooltip.style.color = '#fff';
-  splitTooltip.style.fontSize = '12px';
-  splitTooltip.style.lineHeight = '16px';
-  splitTooltip.style.whiteSpace = 'nowrap';
-  splitTooltip.style.pointerEvents = 'none';
-  splitTooltip.style.zIndex = '3';
+  splitTooltip.className = 'mr-floating-tooltip mr-split-tooltip';
   splitTooltip.setAttribute('data-pan-ignore', 'true');
   splitTooltip.textContent = 'Split editor';
 
   const zoomControls = document.createElement('div');
-  zoomControls.style.position = 'absolute';
-  zoomControls.style.right = '8px';
-  zoomControls.style.bottom = '8px';
-  zoomControls.style.display = 'flex';
-  zoomControls.style.gap = '6px';
-  zoomControls.style.zIndex = '2';
+  zoomControls.className = 'mr-zoom-controls';
   zoomControls.setAttribute('data-zoom-control', 'true');
 
   const zoomOutButton = document.createElement('button');
   zoomOutButton.type = 'button';
+  zoomOutButton.className = 'mr-zoom-button';
   zoomOutButton.setAttribute('aria-label', 'Zoom out');
   zoomOutButton.setAttribute('data-zoom-control', 'true');
   zoomOutButton.addEventListener('click', () => {
@@ -305,12 +195,12 @@ export function createPopupDom(
   const zoomOutIcon = document.createElement('img');
   zoomOutIcon.alt = '';
   zoomOutIcon.src = options.zoomOutIconUrl;
-  zoomOutIcon.style.width = '14px';
-  zoomOutIcon.style.height = '14px';
+  zoomOutIcon.className = 'mr-zoom-icon';
   zoomOutButton.appendChild(zoomOutIcon);
 
   const zoomInButton = document.createElement('button');
   zoomInButton.type = 'button';
+  zoomInButton.className = 'mr-zoom-button';
   zoomInButton.setAttribute('aria-label', 'Zoom in');
   zoomInButton.setAttribute('data-zoom-control', 'true');
   zoomInButton.addEventListener('click', () => {
@@ -320,8 +210,7 @@ export function createPopupDom(
   const zoomInIcon = document.createElement('img');
   zoomInIcon.alt = '';
   zoomInIcon.src = options.zoomInIconUrl;
-  zoomInIcon.style.width = '14px';
-  zoomInIcon.style.height = '14px';
+  zoomInIcon.className = 'mr-zoom-icon';
   zoomInButton.appendChild(zoomInIcon);
 
   zoomControls.appendChild(zoomOutButton);
@@ -329,19 +218,12 @@ export function createPopupDom(
   content.appendChild(zoomControls);
 
   const editorPanel = document.createElement('div');
-  editorPanel.style.display = 'none';
-  editorPanel.style.paddingTop = '8px';
+  editorPanel.className = 'mr-editor-panel';
 
   const editorTextarea = document.createElement('textarea');
-  editorTextarea.style.width = '100%';
+  editorTextarea.className = 'mr-editor-textarea';
   editorTextarea.style.minHeight = options.editorTextareaMinHeight;
   editorTextarea.style.height = options.editorTextareaHeight;
-  editorTextarea.style.resize = 'none';
-  editorTextarea.style.fontFamily = 'monospace';
-  editorTextarea.style.fontSize = '12px';
-  editorTextarea.style.lineHeight = '1.4';
-  editorTextarea.style.padding = '8px';
-  editorTextarea.style.boxSizing = 'border-box';
   editorTextarea.addEventListener('input', () => {
     options.onEditorInput(editorTextarea.value);
   });
@@ -364,13 +246,7 @@ export function createPopupDom(
   popup.appendChild(contentWrapper);
 
   const resizeHandle = document.createElement('div');
-  resizeHandle.style.position = 'absolute';
-  resizeHandle.style.width = '14px';
-  resizeHandle.style.height = '14px';
-  resizeHandle.style.right = '6px';
-  resizeHandle.style.bottom = '6px';
-  resizeHandle.style.cursor = 'nwse-resize';
-  resizeHandle.style.display = 'none';
+  resizeHandle.className = 'mr-resize-handle';
   resizeHandle.addEventListener('pointerdown', (event) => {
     options.onStartResize(event);
   });
@@ -411,37 +287,7 @@ export function applyPopupTheme(
   elements: PopupElements,
   theme: 'light' | 'dark'
 ): void {
-  const spinner = elements.loading.querySelector(
-    '.mermaid-spinner'
-  ) as HTMLElement | null;
-
-  if (theme === 'dark') {
-    elements.root.style.background = '#1c1c1c';
-    elements.root.style.color = '#f2f2f2';
-    elements.root.style.border = '1px solid #3a3a3a';
-    elements.root.style.boxShadow = '0 6px 18px rgba(0,0,0,0.4)';
-    elements.arrow.style.background = '#1c1c1c';
-    elements.arrow.style.borderLeft = '1px solid #3a3a3a';
-    elements.arrow.style.borderTop = '1px solid #3a3a3a';
-    elements.loading.style.color = '#cfcfcf';
-    if (spinner) {
-      spinner.style.border = '2px solid #555';
-      spinner.style.borderTopColor = '#cfcfcf';
-    }
-  } else {
-    elements.root.style.background = '#fff';
-    elements.root.style.color = '#111';
-    elements.root.style.border = '1px solid #222';
-    elements.root.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
-    elements.arrow.style.background = '#fff';
-    elements.arrow.style.borderLeft = '1px solid #222';
-    elements.arrow.style.borderTop = '1px solid #222';
-    elements.loading.style.color = '#555';
-    if (spinner) {
-      spinner.style.border = '2px solid #c7c7c7';
-      spinner.style.borderTopColor = '#555';
-    }
-  }
+  elements.root.dataset.theme = theme;
 }
 
 export function clampPopupToViewport(elements: PopupElements): void {
