@@ -336,7 +336,7 @@ export function createPopupDom(
   editorTextarea.style.width = '100%';
   editorTextarea.style.minHeight = options.editorTextareaMinHeight;
   editorTextarea.style.height = options.editorTextareaHeight;
-  editorTextarea.style.resize = 'vertical';
+  editorTextarea.style.resize = 'none';
   editorTextarea.style.fontFamily = 'monospace';
   editorTextarea.style.fontSize = '12px';
   editorTextarea.style.lineHeight = '1.4';

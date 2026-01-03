@@ -79,6 +79,7 @@ let editorPopupRoot: HTMLElement | null = null;
 let editorPopupHeader: HTMLElement | null = null;
 let _editorPopupResizeHandle: HTMLElement | null = null;
 let editorPopupCloseButton: HTMLButtonElement | null = null;
+let editorPopupContent: HTMLElement | null = null;
 let editorPopupDragState: {
   pointerId: number;
   startX: number;
@@ -314,14 +315,12 @@ function updateSplitTheme(theme: 'light' | 'dark'): void {
 }
 
 function updateEditorPopupLayout(): void {
-  if (!editorPopupRoot || !popupEditorTextarea || !editorPopupHeader) {
+  if (!editorPopupRoot || !popupEditorTextarea || !editorPopupContent) {
     return;
   }
 
-  const rect = editorPopupRoot.getBoundingClientRect();
-  const headerHeight = editorPopupHeader.getBoundingClientRect().height;
-  const available = Math.max(200, rect.height - headerHeight - 24);
-  popupEditorTextarea.style.height = `${Math.floor(available)}px`;
+  const available = editorPopupContent.clientHeight;
+  popupEditorTextarea.style.height = `${Math.max(0, available)}px`;
 }
 
 function clampEditorPopupToViewport(): void {
@@ -782,6 +781,9 @@ function createEditorPopup(): void {
   root.style.zIndex = '2147483647';
   root.style.borderRadius = '8px';
   root.style.padding = '12px 12px 10px';
+  root.style.display = 'flex';
+  root.style.flexDirection = 'column';
+  root.style.gap = '8px';
   root.style.width = `${Math.max(popupMinWidth, popupRect.width)}px`;
   root.style.height = `${Math.max(popupEditMinHeight, popupRect.height)}px`;
 
@@ -825,7 +827,8 @@ function createEditorPopup(): void {
   });
 
   const content = document.createElement('div');
-  content.style.marginTop = '8px';
+  content.style.flex = '1';
+  content.style.minHeight = '0';
 
   const resizeHandle = document.createElement('div');
   resizeHandle.style.position = 'absolute';
@@ -844,6 +847,12 @@ function createEditorPopup(): void {
 
   shadowRoot.appendChild(root);
   content.appendChild(editorPanel);
+  editorPopupContent = content;
+
+  if (!editorPanel.dataset.originalPaddingTop) {
+    editorPanel.dataset.originalPaddingTop = editorPanel.style.paddingTop;
+  }
+  editorPanel.style.paddingTop = '0';
 
   const offset = 16;
   const initialTop = baseRect.top + offset;
@@ -855,6 +864,7 @@ function createEditorPopup(): void {
   editorPopupHeader = header;
   _editorPopupResizeHandle = resizeHandle;
   editorPopupCloseButton = closeButton;
+  updateEditorPopupLayout();
 
   applyEditorPopupTheme(resolvePopupTheme(popupThemePreference ?? 'system'));
   clampEditorPopupToViewport();
@@ -886,8 +896,15 @@ function closeEditorPopup(): void {
   editorPopupHeader = null;
   _editorPopupResizeHandle = null;
   editorPopupCloseButton = null;
+  editorPopupContent = null;
   editorPopupDragState = null;
   editorPopupResizeState = null;
+
+  if (popupElements.editorPanel.dataset.originalPaddingTop !== undefined) {
+    popupElements.editorPanel.style.paddingTop =
+      popupElements.editorPanel.dataset.originalPaddingTop;
+    delete popupElements.editorPanel.dataset.originalPaddingTop;
+  }
 
   popupElements.tabBar.style.display = editMode.isEnabled() ? 'flex' : 'none';
   popupElements.editorTab.style.display = '';
