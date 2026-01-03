@@ -142,3 +142,7 @@
 - [x] レンダリング完了/失敗でスピナーを確実に非表示にする。`spec: 024-loading-indicator`
 - [x] 図の表示領域で Ctrl + ホイール時にズーム操作が行われるようにする。`spec: 025-ctrl-wheel-zoom`
 - [x] Ctrl 未押下時はホストページのスクロール挙動を妨げないことを確認する。`spec: 025-ctrl-wheel-zoom`
+- [x] 編集モード時のみ表示される split ボタンをコピーの左隣に追加する。`spec: 026-split-editor-window`
+- [x] split 時に editor パネルを別ポップアップへ移し、メインは editor 以外を保持する。`spec: 026-split-editor-window`
+- [x] editor ポップアップをドラッグ/リサイズ可能にする。`spec: 026-split-editor-window`
+- [x] editor ポップアップを閉じたら統合し、メイン閉鎖で editor も閉じる。`spec: 026-split-editor-window`

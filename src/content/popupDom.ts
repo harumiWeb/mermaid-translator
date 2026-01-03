@@ -10,6 +10,8 @@ export type PopupElements = {
   editorTab: HTMLButtonElement;
   message: HTMLElement;
   loading: HTMLElement;
+  splitButton: HTMLButtonElement;
+  splitTooltip: HTMLElement;
   content: HTMLElement;
   diagram: HTMLElement;
   editorPanel: HTMLElement;
@@ -31,6 +33,7 @@ type PopupDomOptions = {
   editorTextareaHeight: string;
   editorTextareaMinHeight: string;
   copyIconUrl: string;
+  splitIconUrl: string;
   zoomInIconUrl: string;
   zoomOutIconUrl: string;
   onStartDrag: (event: PointerEvent) => void;
@@ -42,6 +45,9 @@ type PopupDomOptions = {
   onCopyEnter: () => void;
   onCopyLeave: () => void;
   onCopyClick: () => void;
+  onSplitEnter: () => void;
+  onSplitLeave: () => void;
+  onSplitClick: () => void;
   onZoomOut: () => void;
   onZoomIn: () => void;
 };
@@ -227,6 +233,58 @@ export function createPopupDom(
   copyTooltip.setAttribute('data-pan-ignore', 'true');
   copyTooltip.textContent = 'Copy Mermaid code';
 
+  const splitButton = document.createElement('button');
+  splitButton.type = 'button';
+  splitButton.setAttribute('aria-label', 'Split editor');
+  splitButton.style.position = 'absolute';
+  splitButton.style.top = '8px';
+  splitButton.style.right = '42px';
+  splitButton.style.width = '28px';
+  splitButton.style.height = '28px';
+  splitButton.style.borderRadius = '6px';
+  splitButton.style.display = 'none';
+  splitButton.style.alignItems = 'center';
+  splitButton.style.justifyContent = 'center';
+  splitButton.style.cursor = 'pointer';
+  splitButton.style.transition = 'transform 120ms ease, background 120ms ease';
+  splitButton.style.zIndex = '2';
+  splitButton.setAttribute('data-pan-ignore', 'true');
+  splitButton.addEventListener('mouseenter', () => {
+    options.onSplitEnter();
+  });
+  splitButton.addEventListener('mouseleave', () => {
+    options.onSplitLeave();
+  });
+  splitButton.addEventListener('click', () => {
+    options.onSplitClick();
+  });
+
+  const splitIcon = document.createElement('img');
+  splitIcon.alt = '';
+  splitIcon.src = options.splitIconUrl;
+  splitIcon.style.width = '14px';
+  splitIcon.style.height = '14px';
+  splitButton.appendChild(splitIcon);
+
+  const splitTooltip = document.createElement('div');
+  splitTooltip.style.position = 'absolute';
+  splitTooltip.style.top = '8px';
+  splitTooltip.style.right = '42px';
+  splitTooltip.style.transform = 'translate(0, calc(-100% - 2px))';
+  splitTooltip.style.opacity = '0';
+  splitTooltip.style.transition = 'opacity 140ms ease, transform 140ms ease';
+  splitTooltip.style.padding = '6px 8px';
+  splitTooltip.style.borderRadius = '6px';
+  splitTooltip.style.background = '#111';
+  splitTooltip.style.color = '#fff';
+  splitTooltip.style.fontSize = '12px';
+  splitTooltip.style.lineHeight = '16px';
+  splitTooltip.style.whiteSpace = 'nowrap';
+  splitTooltip.style.pointerEvents = 'none';
+  splitTooltip.style.zIndex = '3';
+  splitTooltip.setAttribute('data-pan-ignore', 'true');
+  splitTooltip.textContent = 'Split editor';
+
   const zoomControls = document.createElement('div');
   zoomControls.style.position = 'absolute';
   zoomControls.style.right = '8px';
@@ -292,6 +350,8 @@ export function createPopupDom(
 
   contentWrapper.appendChild(copyButton);
   contentWrapper.appendChild(copyTooltip);
+  contentWrapper.appendChild(splitButton);
+  contentWrapper.appendChild(splitTooltip);
   contentWrapper.appendChild(content);
   contentWrapper.appendChild(editorPanel);
 
@@ -328,6 +388,8 @@ export function createPopupDom(
     editorTab,
     message,
     loading,
+    splitButton,
+    splitTooltip,
     content,
     diagram,
     editorPanel,
