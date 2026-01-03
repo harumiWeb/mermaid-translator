@@ -136,3 +136,5 @@
 - [x] E2E テストで未処理の console/page error を検出したら失敗とする。`spec: 021-playwright-e2e-smoke`
 - [x] Mermaid から返る SVG を DOMPurify でサニタイズしてから描画する。`spec: 022-sanitize-mermaid-svg`
 - [x] サニタイズ失敗時はレンダリング失敗として既存のエラーメッセージを表示する。`spec: 022-sanitize-mermaid-svg`
+- [x] 最後にレンダリングした Mermaid ソースとテーマを保持し、同一なら再レンダリングをスキップする。`spec: 023-render-cache`
+- [x] 再レンダリングをスキップした場合、既存SVGをそのまま表示したままにする。`spec: 023-render-cache`

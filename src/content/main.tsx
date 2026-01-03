@@ -61,6 +61,8 @@ let popupElements: PopupElements | null = null;
 let popupSelectionText: string | null = null;
 let popupMessage: HTMLElement | null = null;
 let popupSvg: string | null = null;
+let lastRenderedSource: string | null = null;
+let lastRenderedTheme: ThemeName | null = null;
 let popupActionsMount: HTMLElement | null = null;
 let popupActionsState = {
   svgEnabled: false,
@@ -281,6 +283,16 @@ function handleEditModeViewRender(): void {
     return;
   }
 
+  if (
+    popupSvg &&
+    lastRenderedSource === source &&
+    lastRenderedTheme === theme
+  ) {
+    setPopupMessage(null);
+    setActionsEnabled(true);
+    return;
+  }
+
   setPopupMessage(null);
   setActionsEnabled(false);
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
@@ -293,6 +305,8 @@ function handleEditModeViewRender(): void {
     }
 
     popupSvg = svgSerializer.serializeToString(svgElement);
+    lastRenderedSource = source;
+    lastRenderedTheme = theme;
     popupSourceText = source;
     diagramControls.setSourceText(source);
     setPopupMessage(null);
@@ -470,6 +484,12 @@ function rerenderPopup(theme: ThemeName): void {
   if (!code) {
     return;
   }
+  if (popupSvg && lastRenderedSource === code && lastRenderedTheme === theme) {
+    setPopupMessage(null);
+    setActionsEnabled(true);
+    return;
+  }
+
   setPopupMessage(null);
   setActionsEnabled(false);
 
@@ -483,6 +503,8 @@ function rerenderPopup(theme: ThemeName): void {
     }
 
     popupSvg = svgSerializer.serializeToString(svgElement);
+    lastRenderedSource = code;
+    lastRenderedTheme = theme;
     popupSourceText = code;
     diagramControls.setSourceText(code);
     setPopupMessage(null);
@@ -633,6 +655,8 @@ function dismissPopup(): void {
   popupSelectionText = null;
   popupMessage = null;
   popupSvg = null;
+  lastRenderedSource = null;
+  lastRenderedTheme = null;
   popupActionsMount = null;
   popupActionsState = {
     svgEnabled: false,
@@ -926,6 +950,13 @@ function handleActionClick(): void {
   const code = extractMermaidCode(selectionInfo.text);
   const theme = resolveTheme(themePreference ?? 'system');
 
+  if (popupSvg && lastRenderedSource === code && lastRenderedTheme === theme) {
+    setPopupMessage(null);
+    setActionsEnabled(true);
+    setEditEnabled(true);
+    return;
+  }
+
   void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
     const svgElement = await renderMermaid(code, diagram, theme);
     if (!svgElement) {
@@ -940,6 +971,8 @@ function handleActionClick(): void {
     }
 
     popupSvg = svgSerializer.serializeToString(svgElement);
+    lastRenderedSource = code;
+    lastRenderedTheme = theme;
     popupSourceText = code;
     popupEditorText = code;
     diagramControls.setSourceText(code);
