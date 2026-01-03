@@ -160,3 +160,7 @@
 
 - [x] split 中のメイン/エディタ両方のポップアップにクリックで最前面化とフォーカス移動を適用する。`spec: 028-popup-front-focus`
 - [x] split 開始時にエディタポップアップを最前面にする。`spec: 028-popup-front-focus`
+
+- [x] codacy-issues で Buffer を明示的に定義する。`spec: 029-codacy-issues-buffer`
+
+- [x] codacy-issues のセキュリティ指摘（SSRF/obj injection）に対応する。`spec: 029-codacy-issues-security-findings`

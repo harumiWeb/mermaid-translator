@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import 'dotenv/config';
+import { Buffer } from 'node:buffer';
 import { execSync } from 'node:child_process';
+import { request } from 'node:https';
 
 /* ================================
  * Config
@@ -161,27 +163,31 @@ function parseArgs(argv) {
   let pr;
   let provider;
   let minLevel = 'Info';
+  const rest = [...argv];
 
-  for (let i = 0; i < argv.length; i++) {
-    const v = argv[i];
+  while (rest.length > 0) {
+    const v = rest.shift();
     if (v === '--pr') {
-      if (i + 1 >= argv.length) {
+      const value = rest.shift();
+      if (!value) {
         console.error('Missing value for --pr');
         globalThis.process.exit(1);
       }
-      pr = argv[++i];
+      pr = value;
     } else if (v === '--min-level') {
-      if (i + 1 >= argv.length) {
+      const value = rest.shift();
+      if (!value) {
         console.error('Missing value for --min-level');
         globalThis.process.exit(1);
       }
-      minLevel = argv[++i];
+      minLevel = value;
     } else if (v === '--provider') {
-      if (i + 1 >= argv.length) {
+      const value = rest.shift();
+      if (!value) {
         console.error('Missing value for --provider');
         globalThis.process.exit(1);
       }
-      provider = argv[++i];
+      provider = value;
     } else if (!org) {
       org = v;
     } else if (!repo) {
@@ -198,29 +204,59 @@ function parseArgs(argv) {
   };
 }
 
-async function fetchJSON(url, method = 'GET', body) {
+function fetchJSON(url, method = 'GET', body) {
   const safeUrl = assertCodacyUrl(url);
-  const options = {
-    method,
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'api-token': TOKEN,
-    },
+  const payload = body && method !== 'GET' ? JSON.stringify(body) : undefined;
+
+  let headers = {
+    Accept: 'application/json',
+    'api-token': TOKEN,
   };
 
-  if (body && method !== 'GET') {
-    options.body = JSON.stringify(body);
+  if (payload) {
+    headers = {
+      ...headers,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload).toString(),
+    };
   }
 
-  const res = await fetch(safeUrl, options);
+  const options = {
+    method,
+    hostname: BASE_URL.hostname,
+    port: BASE_URL.port || 443,
+    path: `${safeUrl.pathname}${safeUrl.search}`,
+    headers,
+  };
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`HTTP ${res.status}: ${text}`);
-  }
+  return new Promise((resolve, reject) => {
+    const req = request(options, (res) => {
+      let data = '';
+      res.setEncoding('utf8');
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        const status = res.statusCode ?? 0;
+        if (status < 200 || status >= 300) {
+          reject(new Error(`HTTP ${status}: ${data}`));
+          return;
+        }
+        try {
+          resolve(JSON.parse(data));
+        } catch {
+          reject(new Error('Invalid JSON response'));
+        }
+      });
+    });
 
-  return res.json();
+    req.on('error', reject);
+
+    if (payload) {
+      req.write(payload);
+    }
+    req.end();
+  });
 }
 
 /* ================================
