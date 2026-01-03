@@ -16,12 +16,64 @@ if (!TOKEN) {
 /* ================================
  * Utilities
  * ================================ */
-const LEVEL_PRIORITY = {
-  Error: 4,
-  High: 3,
-  Warning: 2,
-  Info: 1,
-};
+const LEVELS = ['Error', 'High', 'Warning', 'Info'];
+
+function getLevelPriority(level) {
+  switch (level) {
+    case 'Error':
+      return 4;
+    case 'High':
+      return 3;
+    case 'Warning':
+      return 2;
+    case 'Info':
+      return 1;
+    default:
+      return undefined;
+  }
+}
+
+function normalizeProvider(value) {
+  if (value === 'gh' || value === 'gl' || value === 'bb') {
+    return value;
+  }
+  return undefined;
+}
+
+function assertValidSegment(name, value, pattern) {
+  if (!value || !pattern.test(value)) {
+    console.error(`Invalid ${name}: ${value}`);
+    globalThis.process.exit(1);
+  }
+  return value;
+}
+
+function assertValidChoice(name, value, choices) {
+  if (!choices.includes(value)) {
+    console.error(
+      `Invalid ${name}: ${value}. Valid values: ${choices.join(', ')}`
+    );
+    globalThis.process.exit(1);
+  }
+  return value;
+}
+
+function buildRepoIssuesUrl({ provider, org, repo, limit }) {
+  const url = new URL(
+    `${BASE}/analysis/organizations/${provider}/${org}/repositories/${repo}/issues/search`
+  );
+  url.searchParams.set('limit', String(limit));
+  return url.toString();
+}
+
+function buildPrIssuesUrl({ provider, org, repo, pr, limit, status }) {
+  const url = new URL(
+    `${BASE}/analysis/organizations/${provider}/${org}/repositories/${repo}/pull-requests/${pr}/issues`
+  );
+  url.searchParams.set('status', status);
+  url.searchParams.set('limit', String(limit));
+  return url.toString();
+}
 
 function getGitOriginUrl() {
   try {
@@ -136,10 +188,7 @@ async function fetchJSON(url, method = 'GET', body) {
  * API
  * ================================ */
 async function fetchRepoIssues({ provider, org, repo, limit }) {
-  const url =
-    `${BASE}/analysis/organizations/${provider}/${org}` +
-    `/repositories/${repo}/issues/search?limit=${limit}`;
-
+  const url = buildRepoIssuesUrl({ provider, org, repo, limit });
   return fetchJSON(url, 'POST', {});
 }
 
@@ -151,10 +200,7 @@ async function fetchPrIssues({
   limit,
   status = 'all',
 }) {
-  const url =
-    `${BASE}/analysis/organizations/${provider}/${org}` +
-    `/repositories/${repo}/pull-requests/${pr}/issues?status=${status}&limit=${limit}`;
-
+  const url = buildPrIssuesUrl({ provider, org, repo, pr, limit, status });
   return fetchJSON(url);
 }
 
@@ -162,19 +208,20 @@ async function fetchPrIssues({
  * AI Output Formatter
  * ================================ */
 function formatForAI(rawIssues, minLevel) {
-  const minPriority = LEVEL_PRIORITY[minLevel];
+  const minPriority = getLevelPriority(minLevel);
   if (minPriority === undefined) {
     console.error(
-      `Invalid --min-level: ${minLevel}. Valid values: ${Object.keys(
-        LEVEL_PRIORITY
-      ).join(', ')}`
+      `Invalid --min-level: ${minLevel}. Valid values: ${LEVELS.join(', ')}`
     );
     globalThis.process.exit(1);
   }
 
   return rawIssues
     .map((i) => i.commitIssue ?? i)
-    .filter((i) => LEVEL_PRIORITY[i.patternInfo?.level] >= minPriority)
+    .filter((i) => {
+      const levelPriority = getLevelPriority(i.patternInfo?.level);
+      return levelPriority !== undefined && levelPriority >= minPriority;
+    })
     .map((i) => {
       const level = i.patternInfo.level;
       const file = i.filePath;
@@ -208,28 +255,45 @@ async function main() {
 
   args.provider ??= 'gh';
 
+  const provider = normalizeProvider(args.provider);
+  if (!provider) {
+    console.error('Invalid --provider: use gh, gl, or bb');
+    globalThis.process.exit(1);
+  }
+
   if (!args.org || !args.repo) {
     console.error(
       'Usage:\n' +
-        '  node codacy-issues.js <org> <repo> [--pr <number>] [--min-level Error|High|Warning|Info]'
+        '  node codacy-issues.js ORG REPO [--pr NUMBER] [--min-level Error|High|Warning|Info]'
     );
     globalThis.process.exit(1);
   }
+
+  const segmentPattern = /^[A-Za-z0-9_.-]+$/;
+  const org = assertValidSegment('org', args.org, segmentPattern);
+  const repo = assertValidSegment('repo', args.repo, segmentPattern);
+  const pr =
+    args.pr === undefined
+      ? undefined
+      : assertValidSegment('pr', args.pr, /^[0-9]+$/);
+
+  const status = assertValidChoice('status', 'all', ['all', 'open', 'closed']);
 
   const limit = 100;
 
   const result = args.pr
     ? await fetchPrIssues({
-        provider: args.provider,
-        org: args.org,
-        repo: args.repo,
-        pr: args.pr,
+        provider,
+        org,
+        repo,
+        pr,
         limit,
+        status,
       })
     : await fetchRepoIssues({
-        provider: args.provider,
-        org: args.org,
-        repo: args.repo,
+        provider,
+        org,
+        repo,
         limit,
       });
 
