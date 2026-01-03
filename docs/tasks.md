@@ -140,3 +140,5 @@
 - [x] 再レンダリングをスキップした場合、既存SVGをそのまま表示したままにする。`spec: 023-render-cache`
 - [x] Mermaid レンダリング中にポップアップ内でローディングスピナーを表示する。`spec: 024-loading-indicator`
 - [x] レンダリング完了/失敗でスピナーを確実に非表示にする。`spec: 024-loading-indicator`
+- [x] 図の表示領域で Ctrl + ホイール時にズーム操作が行われるようにする。`spec: 025-ctrl-wheel-zoom`
+- [x] Ctrl 未押下時はホストページのスクロール挙動を妨げないことを確認する。`spec: 025-ctrl-wheel-zoom`

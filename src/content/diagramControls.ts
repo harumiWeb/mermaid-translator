@@ -36,6 +36,7 @@ export type DiagramControls = {
 
 const zoomMin = 0.5;
 const zoomMax = 2.0;
+const zoomStep = 0.1;
 
 function clampValue(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -52,6 +53,7 @@ export function createDiagramControls(): DiagramControls {
   let sourceText: string | null = null;
   let editorText: string | null = null;
   let copyTooltipTimeout: number | null = null;
+  let wheelHandler: ((event: WheelEvent) => void) | null = null;
 
   const applyPanZoom = () => {
     if (!elements) {
@@ -158,7 +160,29 @@ export function createDiagramControls(): DiagramControls {
 
   return {
     setElements(next) {
+      if (elements && wheelHandler) {
+        elements.content.removeEventListener('wheel', wheelHandler);
+        wheelHandler = null;
+      }
       elements = next;
+      if (elements) {
+        wheelHandler = (event: WheelEvent) => {
+          if (!event.ctrlKey) {
+            return;
+          }
+          event.preventDefault();
+          if (event.deltaY === 0) {
+            return;
+          }
+          const direction = event.deltaY > 0 ? -1 : 1;
+          zoom = clampValue(zoom + zoomStep * direction, zoomMin, zoomMax);
+          applyPanZoom();
+          updateZoomButtons();
+        };
+        elements.content.addEventListener('wheel', wheelHandler, {
+          passive: false,
+        });
+      }
       updateZoomButtons();
       updateCopyState();
     },
@@ -305,6 +329,10 @@ export function createDiagramControls(): DiagramControls {
     },
     cleanup() {
       stopPan();
+      if (elements && wheelHandler) {
+        elements.content.removeEventListener('wheel', wheelHandler);
+        wheelHandler = null;
+      }
       if (copyTooltipTimeout !== null) {
         window.clearTimeout(copyTooltipTimeout);
         copyTooltipTimeout = null;
