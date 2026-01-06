@@ -4,7 +4,7 @@
   <img src="/assets/icon_full.png" width="200" alt="中央揃えの画像">
 </p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Vitest](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml/badge.svg)](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fe084998551b4d978da692e28c818c06)](https://app.codacy.com/gh/harumiWeb/mermaid-translator/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/nnpefgjibopfpcplldjaoniokpdcefjk) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Vitest](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml/badge.svg)](https://github.com/harumiWeb/mermaid-translator/actions/workflows/vitest.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fe084998551b4d978da692e28c818c06)](https://app.codacy.com/gh/harumiWeb/mermaid-translator/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 [英語版 README](README.md)
 
@@ -99,7 +99,7 @@ Markdown のコードブロックや
 
 ### Chrome Web Store
 
-（※ 公開後にリンクを追加）
+[Mermaid Translator (Chrome Web Store)](https://chromewebstore.google.com/detail/mermaid-translator/nnpefgjibopfpcplldjaoniokpdcefjk)
 
 ### Local build (for development)
 
