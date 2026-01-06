@@ -93,7 +93,7 @@ Safe for internal or corporate usage.
 
 ### Chrome Web Store
 
-[Mermaid Translator (Chrome Web Store)](https://img.shields.io/chrome-web-store/v/nnpefgjibopfpcplldjaoniokpdcefjk)
+[Mermaid Translator (Chrome Web Store)](https://chromewebstore.google.com/detail/mermaid-translator/nnpefgjibopfpcplldjaoniokpdcefjk)
 
 ### Local build (for development)
 
