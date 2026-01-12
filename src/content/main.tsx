@@ -731,29 +731,36 @@ function handleEditModeViewRender(): void {
       setLoadingVisible(false);
       return;
     }
-    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-      const svgElement = await renderMermaid(source, diagram, theme);
-      if (!svgElement) {
+    void import('./mermaidRenderer')
+      .then(({ renderMermaid }) => renderMermaid(source, diagram, theme))
+      .then((svgElement) => {
+        if (!svgElement) {
+          popupSvg = null;
+          setPopupMessage(renderErrorMessage);
+          setActionsEnabled(false);
+          setLoadingVisible(false);
+          return;
+        }
+
+        popupSvg = svgSerializer.serializeToString(svgElement);
+        lastRenderedSource = source;
+        lastRenderedTheme = theme;
+        popupSourceText = source;
+        diagramControls.setSourceText(source);
+        setPopupMessage(null);
+        setActionsEnabled(true);
+        setEditEnabled(!editMode.isEnabled());
+        setLoadingVisible(false);
+        if (popupElements) {
+          clampPopupToViewport(popupElements);
+        }
+      })
+      .catch(() => {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
         setActionsEnabled(false);
         setLoadingVisible(false);
-        return;
-      }
-
-      popupSvg = svgSerializer.serializeToString(svgElement);
-      lastRenderedSource = source;
-      lastRenderedTheme = theme;
-      popupSourceText = source;
-      diagramControls.setSourceText(source);
-      setPopupMessage(null);
-      setActionsEnabled(true);
-      setEditEnabled(!editMode.isEnabled());
-      setLoadingVisible(false);
-      if (popupElements) {
-        clampPopupToViewport(popupElements);
-      }
-    });
+      });
   });
 }
 
@@ -1409,30 +1416,37 @@ function rerenderPopup(theme: ThemeName): void {
       setLoadingVisible(false);
       return;
     }
-    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-      const svgElement = await renderMermaid(code, diagram, theme);
-      if (!svgElement) {
+    void import('./mermaidRenderer')
+      .then(({ renderMermaid }) => renderMermaid(code, diagram, theme))
+      .then((svgElement) => {
+        if (!svgElement) {
+          popupSvg = null;
+          setPopupMessage(renderErrorMessage);
+          setActionsEnabled(false);
+          setLoadingVisible(false);
+          return;
+        }
+
+        popupSvg = svgSerializer.serializeToString(svgElement);
+        lastRenderedSource = code;
+        lastRenderedTheme = theme;
+        popupSourceText = code;
+        diagramControls.setSourceText(code);
+        setPopupMessage(null);
+        setActionsEnabled(true);
+        setLoadingVisible(false);
+        if (popupRoot) {
+          if (popupElements) {
+            clampPopupToViewport(popupElements);
+          }
+        }
+      })
+      .catch(() => {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
         setActionsEnabled(false);
         setLoadingVisible(false);
-        return;
-      }
-
-      popupSvg = svgSerializer.serializeToString(svgElement);
-      lastRenderedSource = code;
-      lastRenderedTheme = theme;
-      popupSourceText = code;
-      diagramControls.setSourceText(code);
-      setPopupMessage(null);
-      setActionsEnabled(true);
-      setLoadingVisible(false);
-      if (popupRoot) {
-        if (popupElements) {
-          clampPopupToViewport(popupElements);
-        }
-      }
-    });
+      });
   });
 }
 
@@ -1446,7 +1460,7 @@ function downloadBlob(blob: Blob, filename: string): void {
 }
 
 function openSvgInNewTab(svgText: string): void {
-  const html = `<!doctype html>
+  const htmlMarkup = `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -1458,8 +1472,8 @@ function openSvgInNewTab(svgText: string): void {
   </head>
   <body>${svgText}</body>
 </html>`;
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
+  const htmlBlob = new Blob([htmlMarkup], { type: 'text/html' });
+  const url = URL.createObjectURL(htmlBlob);
   const link = document.createElement('a');
   link.href = url;
   link.target = '_blank';
@@ -1967,38 +1981,46 @@ function handleActionClick(): void {
 
   setLoadingVisible(true);
   scheduleRender(() => {
-    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-      const svgElement = await renderMermaid(code, diagram, theme);
-      if (!svgElement) {
+    void import('./mermaidRenderer')
+      .then(({ renderMermaid }) => renderMermaid(code, diagram, theme))
+      .then((svgElement) => {
+        if (!svgElement) {
+          popupSvg = null;
+          setPopupMessage(renderErrorMessage);
+          setActionsEnabled(false);
+          setEditEnabled(false);
+          setLoadingVisible(false);
+          if (popupElements) {
+            clampPopupToViewport(popupElements);
+          }
+          return;
+        }
+
+        popupSvg = svgSerializer.serializeToString(svgElement);
+        lastRenderedSource = code;
+        lastRenderedTheme = theme;
+        popupSourceText = code;
+        popupEditorText = code;
+        diagramControls.setSourceText(code);
+        diagramControls.setEditorText(code);
+        setPopupMessage(null);
+        setActionsEnabled(true);
+        setEditEnabled(true);
+        setLoadingVisible(false);
+        if (openInEditModeDefault) {
+          openEditMode('view');
+        }
+        if (popupElements) {
+          clampPopupToViewport(popupElements);
+        }
+      })
+      .catch(() => {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
         setActionsEnabled(false);
         setEditEnabled(false);
         setLoadingVisible(false);
-        if (popupElements) {
-          clampPopupToViewport(popupElements);
-        }
-        return;
-      }
-
-      popupSvg = svgSerializer.serializeToString(svgElement);
-      lastRenderedSource = code;
-      lastRenderedTheme = theme;
-      popupSourceText = code;
-      popupEditorText = code;
-      diagramControls.setSourceText(code);
-      diagramControls.setEditorText(code);
-      setPopupMessage(null);
-      setActionsEnabled(true);
-      setEditEnabled(true);
-      setLoadingVisible(false);
-      if (openInEditModeDefault) {
-        openEditMode('view');
-      }
-      if (popupElements) {
-        clampPopupToViewport(popupElements);
-      }
-    });
+      });
   });
 }
 

@@ -18,6 +18,7 @@ const isDebug =
  * @remarks
  * This function loads Mermaid lazily on first use and sanitizes SVG output.
  */
+// eslint-disable-next-line security-node/detect-unhandled-async-errors -- errors are handled with try/catch and a null fallback.
 export async function renderMermaid(
   code: string,
   container: HTMLElement,

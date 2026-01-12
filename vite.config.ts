@@ -4,8 +4,6 @@ import { mkdir, copyFile, readFile, writeFile } from 'fs/promises';
 import { defineConfig } from 'vite';
 
 const rootUrl = new URL('./', import.meta.url);
-const distDir = fileURLToPath(new URL('dist', rootUrl));
-const distContentDir = fileURLToPath(new URL('dist/content', rootUrl));
 const contentEntry = fileURLToPath(new URL('src/content/main.tsx', rootUrl));
 const manifestPath = fileURLToPath(new URL('manifest.json', rootUrl));
 const iconPath = fileURLToPath(
@@ -32,19 +30,14 @@ const thirdPartyLicensesPath = fileURLToPath(
   new URL('THIRD_PARTY_LICENSES.md', rootUrl)
 );
 const noticePath = fileURLToPath(new URL('NOTICE.md', rootUrl));
-const contentScriptPath = fileURLToPath(
-  new URL('dist/content/main.js', rootUrl)
-);
 
 function copyStaticFiles() {
   return {
     name: 'copy-static-files',
     async closeBundle() {
-      await mkdir(distDir, { recursive: true });
-      await mkdir(distContentDir, { recursive: true });
-      await mkdir(fileURLToPath(new URL('dist/icons', rootUrl)), {
-        recursive: true,
-      });
+      await mkdir('dist', { recursive: true });
+      await mkdir('dist/content', { recursive: true });
+      await mkdir('dist/icons', { recursive: true });
 
       await copyFile(
         manifestPath,
@@ -99,12 +92,12 @@ function copyStaticFiles() {
         fileURLToPath(new URL('dist/NOTICE.md', rootUrl))
       );
 
-      const raw = await readFile(contentScriptPath);
+      const raw = await readFile('dist/content/main.js');
       let text = raw.toString('utf8');
       if (text.charCodeAt(0) === 0xfeff) {
         text = text.slice(1);
       }
-      await writeFile(contentScriptPath, text, 'utf8');
+      await writeFile('dist/content/main.js', text, 'utf8');
     },
   };
 }

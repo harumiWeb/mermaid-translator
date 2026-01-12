@@ -90,7 +90,7 @@ function getInputSelectionRect(
   const valueBefore = element.value.slice(0, selectionEnd);
   const lines = valueBefore.split(/\r?\n/);
   const lineIndex = Math.max(0, lines.length - 1);
-  const lineText = lines[lineIndex] ?? '';
+  const lineText = lines.at(lineIndex) ?? '';
 
   const rect = element.getBoundingClientRect();
   const style = getComputedStyle(element);
@@ -123,7 +123,7 @@ function getSelectionRect(selection: Selection): DOMRect | null {
   const rect =
     rects.length > 0 ? rects[rects.length - 1] : range.getBoundingClientRect();
 
-  if (!rect || (rect.width === 0 && rect.height === 0)) {
+  if (rect.width === 0 && rect.height === 0) {
     return null;
   }
 
