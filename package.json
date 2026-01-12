@@ -19,7 +19,7 @@
     "build:dev": "cross-env VITE_ENABLE_LOGGING=true vite build --config vite.config.ts && vite build --config vite.config.popup.ts",
     "prepare": "husky",
     "codacy:issues": "node ./scripts/codacy-issues.js",
-    "docs": "typedoc"
+    "docs": "typedoc && node ./scripts/serve-typedocs.js"
   },
   "dependencies": {
     "dompurify": "^3.3.1",
