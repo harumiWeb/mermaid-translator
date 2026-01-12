@@ -108,6 +108,7 @@ export default defineConfig({
       output: {
         entryFileNames: '[name].js',
         format: 'iife',
+        inlineDynamicImports: true,
       },
     },
     outDir: 'dist',

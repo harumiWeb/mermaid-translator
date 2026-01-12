@@ -15,8 +15,8 @@
     "test": "vitest",
     "e2e": "cross-env PLAYWRIGHT_TS_CONFIG=tsconfig.playwright.json playwright test",
     "dev": "vite",
-    "build": "vite build",
-    "build:dev": "cross-env VITE_ENABLE_LOGGING=true vite build",
+    "build": "vite build --config vite.config.ts && vite build --config vite.config.popup.ts",
+    "build:dev": "cross-env VITE_ENABLE_LOGGING=true vite build --config vite.config.ts && vite build --config vite.config.popup.ts",
     "prepare": "husky",
     "codacy:issues": "node ./scripts/codacy-issues.js"
   },

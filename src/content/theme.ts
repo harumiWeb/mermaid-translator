@@ -1,15 +1,15 @@
-export const themeOptions = [
-  { value: 'system', label: 'System' },
-  { value: 'default', label: 'Default' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'forest', label: 'Forest' },
-  { value: 'neutral', label: 'Neutral' },
-  { value: 'base', label: 'Base' },
-] as const;
+import {
+  isMermaidThemePreference,
+  mermaidThemeOptions,
+  type MermaidThemeName,
+  type MermaidThemePreference,
+  type PopupThemePreference,
+} from '../shared/themeOptions';
 
-export type ThemePreference = (typeof themeOptions)[number]['value'];
-export type ThemeName = Exclude<ThemePreference, 'system'>;
-export type PopupThemePreference = 'system' | 'light' | 'dark';
+export const themeOptions = mermaidThemeOptions;
+
+export type ThemePreference = MermaidThemePreference;
+export type ThemeName = MermaidThemeName;
 
 const themeStorageKey = 'mermaid-selection-renderer:theme';
 const popupThemeStorageKey = 'mermaid-selection-renderer:popup-theme';
@@ -45,7 +45,7 @@ export function resolveTheme(preference: ThemePreference): ThemeName {
 }
 
 export function isThemePreference(value: string): value is ThemePreference {
-  return themeOptions.some((option) => option.value === value);
+  return isMermaidThemePreference(value);
 }
 
 export function loadPopupThemePreference(): PopupThemePreference {

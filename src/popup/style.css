@@ -1,0 +1,78 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', 'Noto Sans JP', sans-serif;
+  background: #f6f6f6;
+  color: #222;
+}
+
+.app {
+  min-width: 280px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.label {
+  font-weight: 600;
+}
+
+select,
+input[type='checkbox'] {
+  font-size: 12px;
+}
+
+select {
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 0 8px;
+  background: #fff;
+  color: #222;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.hint {
+  font-size: 11px;
+  color: #555;
+  margin-top: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1e1e1e;
+    color: #f1f1f1;
+  }
+
+  select {
+    background: #2a2a2a;
+    color: #f1f1f1;
+    border-color: #3a3a3a;
+  }
+
+  .hint {
+    color: #bdbdbd;
+  }
+}

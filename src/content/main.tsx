@@ -1,6 +1,8 @@
 import { render } from 'preact';
 import { extractMermaidCode, isMermaidLike } from '../shared/detectMermaid';
 import { isRenderCacheHit } from '../shared/renderCache';
+import { settingsStorageKeys, type Settings } from '../shared/settings';
+import { isPopupThemePreference } from '../shared/themeOptions';
 import { createDiagramControls } from './diagramControls';
 import { createEditModeController } from './editMode';
 import {
@@ -54,6 +56,43 @@ function suppressKaTeXQuirksWarning(): void {
 }
 
 suppressKaTeXQuirksWarning();
+loadSettingsFromStorage();
+if (chrome?.runtime?.onMessage) {
+  chrome.runtime.onMessage.addListener((message) => {
+    handleSettingsMessage(message);
+  });
+}
+if (chrome?.storage?.onChanged) {
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'local') {
+      return;
+    }
+
+    const next: Settings = {
+      mermaidTheme: themePreference ?? loadThemePreference(),
+      popupTheme: popupThemePreference ?? loadPopupThemePreference(),
+      openInEditMode: openInEditModeDefault,
+    };
+
+    const mermaidChange = changes[settingsStorageKeys.mermaidTheme];
+    if (mermaidChange && isThemePreference(String(mermaidChange.newValue))) {
+      next.mermaidTheme = String(mermaidChange.newValue);
+    }
+
+    const popupChange = changes[settingsStorageKeys.popupTheme];
+    if (popupChange && isPopupThemePreference(String(popupChange.newValue))) {
+      next.popupTheme = String(popupChange.newValue);
+    }
+
+    const editChange = changes[settingsStorageKeys.openInEditMode];
+    if (editChange && typeof editChange.newValue === 'boolean') {
+      next.openInEditMode = editChange.newValue;
+    }
+
+    applySettings(next);
+    applySettingsToActivePopup();
+  });
+}
 
 let lastSelectionText: string | null = null;
 let mountNode: HTMLElement | null = null;
@@ -74,6 +113,7 @@ let popupActionsState = {
 };
 let isPopupArrowHidden = false;
 let isPopupMaxWidthDisabled = false;
+let openInEditModeDefault = false;
 let popupDiagram: HTMLElement | null = null;
 let popupEditorTextarea: HTMLTextAreaElement | null = null;
 let popupSourceText: string | null = null;
@@ -366,6 +406,151 @@ function setEditEnabled(enabled: boolean): void {
 
 function clampValue(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
+}
+
+function normalizeSettings(raw: Record<string, unknown>): {
+  settings: Settings;
+  shouldPersist: boolean;
+} {
+  const mermaidRaw = raw[settingsStorageKeys.mermaidTheme];
+  const popupRaw = raw[settingsStorageKeys.popupTheme];
+  const editRaw = raw[settingsStorageKeys.openInEditMode];
+
+  const mermaidTheme = isThemePreference(String(mermaidRaw))
+    ? String(mermaidRaw)
+    : loadThemePreference();
+  const popupTheme = isPopupThemePreference(String(popupRaw))
+    ? String(popupRaw)
+    : loadPopupThemePreference();
+  const openInEditMode = typeof editRaw === 'boolean' ? editRaw : false;
+
+  const shouldPersist =
+    !isThemePreference(String(mermaidRaw)) ||
+    !isPopupThemePreference(String(popupRaw)) ||
+    typeof editRaw !== 'boolean';
+
+  return {
+    settings: {
+      mermaidTheme,
+      popupTheme,
+      openInEditMode,
+    },
+    shouldPersist,
+  };
+}
+
+function applySettings(settings: Settings): void {
+  themePreference = settings.mermaidTheme;
+  popupThemePreference = settings.popupTheme;
+  openInEditModeDefault = settings.openInEditMode;
+  saveThemePreference(settings.mermaidTheme);
+  savePopupThemePreference(settings.popupTheme);
+}
+
+function applySettingsToActivePopup(): void {
+  if (!popupRoot || !popupElements) {
+    return;
+  }
+
+  const popupTheme = resolvePopupTheme(popupThemePreference ?? 'system');
+  applyPopupTheme(popupElements, popupTheme);
+  diagramControls.updateZoomTheme(popupTheme);
+  diagramControls.updateCopyTheme(popupTheme);
+  editMode.updateTheme(popupTheme);
+  updateSplitTheme(popupTheme);
+  if (editorPopupRoot) {
+    applyEditorPopupTheme(popupTheme);
+  }
+  renderPopupActions();
+  rerenderPopup(resolveTheme(themePreference ?? 'system'));
+}
+
+function saveSettingsToStorage(settings: Settings): void {
+  try {
+    if (!chrome?.storage?.local) {
+      return;
+    }
+    chrome.storage.local.set({
+      [settingsStorageKeys.mermaidTheme]: settings.mermaidTheme,
+      [settingsStorageKeys.popupTheme]: settings.popupTheme,
+      [settingsStorageKeys.openInEditMode]: settings.openInEditMode,
+    });
+  } catch {
+    // ignore
+  }
+}
+
+function loadSettingsFromStorage(): void {
+  try {
+    if (!chrome?.storage?.local) {
+      return;
+    }
+    chrome.storage.local.get(
+      [
+        settingsStorageKeys.mermaidTheme,
+        settingsStorageKeys.popupTheme,
+        settingsStorageKeys.openInEditMode,
+      ],
+      (raw) => {
+        const { settings, shouldPersist } = normalizeSettings(raw);
+        applySettings(settings);
+        if (shouldPersist) {
+          saveSettingsToStorage(settings);
+        }
+      }
+    );
+  } catch {
+    // ignore
+  }
+}
+
+function handleSettingsMessage(message: unknown): void {
+  if (!message || typeof message !== 'object') {
+    return;
+  }
+  const payload = (message as { type?: string; payload?: unknown }).payload;
+  const type = (message as { type?: string }).type;
+  if (type !== 'settings:update' || !payload || typeof payload !== 'object') {
+    return;
+  }
+
+  const raw = payload as Record<string, unknown>;
+  const next: Settings = {
+    mermaidTheme: isThemePreference(String(raw.mermaidTheme))
+      ? String(raw.mermaidTheme)
+      : (themePreference ?? loadThemePreference()),
+    popupTheme: isPopupThemePreference(String(raw.popupTheme))
+      ? String(raw.popupTheme)
+      : (popupThemePreference ?? loadPopupThemePreference()),
+    openInEditMode:
+      typeof raw.openInEditMode === 'boolean'
+        ? raw.openInEditMode
+        : openInEditModeDefault,
+  };
+
+  applySettings(next);
+  applySettingsToActivePopup();
+}
+
+function openEditMode(tab: 'view' | 'editor'): void {
+  if (!popupSourceText) {
+    return;
+  }
+
+  popupEditorText = popupEditorText ?? popupSourceText;
+  diagramControls.setEditorText(popupEditorText);
+  if (popupEditorTextarea) {
+    popupEditorTextarea.value = popupEditorText;
+  }
+  editMode.setActiveTab(tab);
+  diagramControls.setActiveTab(tab);
+  editMode.setEnabled(true);
+  diagramControls.setEditModeEnabled(true);
+  diagramControls.updateCopyLayout();
+  setSplitEnabled(true);
+  updateSplitLayout();
+  updateSplitTheme(resolvePopupTheme(popupThemePreference ?? 'system'));
+  editMode.updateTheme(resolvePopupTheme(popupThemePreference ?? 'system'));
 }
 
 function hidePopupArrow(): void {
@@ -1641,26 +1826,7 @@ function renderPopupActions(): void {
         openSvgInNewTab(popupSvg);
       }}
       onEdit={() => {
-        if (!popupSourceText) {
-          return;
-        }
-
-        popupEditorText = popupEditorText ?? popupSourceText;
-        diagramControls.setEditorText(popupEditorText);
-        if (popupEditorTextarea) {
-          popupEditorTextarea.value = popupEditorText;
-        }
-        editMode.setActiveTab('view');
-        diagramControls.setActiveTab('view');
-        editMode.setEnabled(true);
-        diagramControls.setEditModeEnabled(true);
-        diagramControls.updateCopyLayout();
-        setSplitEnabled(true);
-        updateSplitLayout();
-        updateSplitTheme(resolvePopupTheme(popupThemePreference ?? 'system'));
-        editMode.updateTheme(
-          resolvePopupTheme(popupThemePreference ?? 'system')
-        );
+        openEditMode('view');
       }}
       onThemeChange={(value) => {
         if (!isThemePreference(value)) {
@@ -1668,6 +1834,11 @@ function renderPopupActions(): void {
         }
         themePreference = value;
         saveThemePreference(value);
+        saveSettingsToStorage({
+          mermaidTheme: value,
+          popupTheme: popupThemePreference ?? loadPopupThemePreference(),
+          openInEditMode: openInEditModeDefault,
+        });
         renderPopupActions();
         rerenderPopup(resolveTheme(value));
       }}
@@ -1675,6 +1846,11 @@ function renderPopupActions(): void {
         const next = getNextPopupTheme(popupThemePreference ?? 'system');
         popupThemePreference = next;
         savePopupThemePreference(next);
+        saveSettingsToStorage({
+          mermaidTheme: themePreference ?? loadThemePreference(),
+          popupTheme: next,
+          openInEditMode: openInEditModeDefault,
+        });
         if (popupElements) {
           applyPopupTheme(popupElements, resolvePopupTheme(next));
         }
@@ -1727,6 +1903,13 @@ function handleActionClick(): void {
     setActionsEnabled(true);
     setEditEnabled(true);
     setLoadingVisible(false);
+    popupSourceText = code;
+    popupEditorText = code;
+    diagramControls.setSourceText(code);
+    diagramControls.setEditorText(code);
+    if (openInEditModeDefault) {
+      openEditMode('editor');
+    }
     return;
   }
 
@@ -1757,6 +1940,9 @@ function handleActionClick(): void {
       setActionsEnabled(true);
       setEditEnabled(true);
       setLoadingVisible(false);
+      if (openInEditModeDefault) {
+        openEditMode('editor');
+      }
       if (popupElements) {
         clampPopupToViewport(popupElements);
       }

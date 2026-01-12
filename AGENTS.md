@@ -55,7 +55,7 @@ Agents MUST NOT introduce alternatives.
 - Chrome Extension: Manifest V3
 - UI: Preact (JSX)
 - Lint / Format: oxlint, oxfmt
-- Runtime environment: content script only (no server, no backend)
+- Runtime environment: content script + extension action popup (no server, no backend)
 
 ---
 
@@ -159,6 +159,12 @@ Agents MUST NOT implement unless explicitly instructed:
 - cloud rendering
 
 This project is **fully local**.
+
+### Explicitly Allowed (when specified by spec)
+
+- extension action popup UI
+- chrome.storage.local
+- extension messaging (popup/content script)
 
 ---
 

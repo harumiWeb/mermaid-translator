@@ -180,3 +180,9 @@
 
 - [x] ユーザーのリサイズ開始時に初期ポップアップの max-width 制約を解除する。`spec: 033-disable-maxwidth-on-resize`
 - [x] ポップアップ破棄で max-width 制約が初期化されることを確認する。`spec: 033-disable-maxwidth-on-resize`
+
+- [x] ツールバーの拡張アクションに設定ポップアップUIを追加する。`spec: 034-toolbar-settings-popup`
+- [x] 設定ポップアップでUIテーマ/Mermaidテーマ/編集モード初期化の設定項目を用意する。`spec: 034-toolbar-settings-popup`
+- [x] 設定値を `chrome.storage.local` に保存・復元する。`spec: 034-toolbar-settings-popup`
+- [x] content script が保存済み設定を読み取り、テーマと編集モード初期表示に反映する。`spec: 034-toolbar-settings-popup`
+- [x] 設定変更を content script へ反映できるようにする（メッセージング）。`spec: 034-toolbar-settings-popup`

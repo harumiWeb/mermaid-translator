@@ -4,6 +4,10 @@
   "version": "1.0.3",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "popup/index.html"
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },

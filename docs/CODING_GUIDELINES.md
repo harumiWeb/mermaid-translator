@@ -179,7 +179,7 @@ host.attachShadow({ mode: "open" });
 
 - React imports
 - Background scripts
-- chrome.storage usage
+- chrome.storage usage (except chrome.storage.local when explicitly specified)
 - Network requests
 - Analytics / telemetry
 - Auto-rendering without user action
