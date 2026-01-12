@@ -1,18 +1,44 @@
 :root {
   color-scheme: light dark;
+  --bg: #f6f6f6;
+  --text: #222;
+  --border: #ddd;
+  --input-bg: #fff;
+  --input-text: #222;
+  --hint: #555;
 }
 
 body {
   margin: 0;
   font-family: 'Segoe UI', 'Noto Sans JP', sans-serif;
-  background: #f6f6f6;
-  color: #222;
+  background: var(--bg);
+  color: var(--text);
 }
 
 .app {
   min-width: 280px;
   padding: 16px;
   box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+}
+
+.header-text {
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .title {
@@ -41,10 +67,10 @@ input[type='checkbox'] {
 select {
   height: 30px;
   border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   padding: 0 8px;
-  background: #fff;
-  color: #222;
+  background: var(--input-bg);
+  color: var(--input-text);
 }
 
 .checkbox-row {
@@ -56,23 +82,53 @@ select {
 
 .hint {
   font-size: 11px;
-  color: #555;
+  color: var(--hint);
   margin-top: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #1e1e1e;
-    color: #f1f1f1;
-  }
+.footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
 
-  select {
-    background: #2a2a2a;
-    color: #f1f1f1;
-    border-color: #3a3a3a;
-  }
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
 
-  .hint {
-    color: #bdbdbd;
-  }
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+.github-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+}
+
+.github-icon-dark {
+  display: none;
+}
+
+[data-theme='dark'] {
+  --bg: #1e1e1e;
+  --text: #f1f1f1;
+  --border: #3a3a3a;
+  --input-bg: #2a2a2a;
+  --input-text: #f1f1f1;
+  --hint: #bdbdbd;
+}
+
+[data-theme='dark'] .github-icon-light {
+  display: none;
+}
+
+[data-theme='dark'] .github-icon-dark {
+  display: inline-block;
 }

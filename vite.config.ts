@@ -21,6 +21,12 @@ const icon48Path = fileURLToPath(new URL('public/icons/icon48.png', rootUrl));
 const closeIconPath = fileURLToPath(new URL('public/icons/close.svg', rootUrl));
 const sunIconPath = fileURLToPath(new URL('public/icons/sun.svg', rootUrl));
 const moonIconPath = fileURLToPath(new URL('public/icons/moon.svg', rootUrl));
+const githubIconPath = fileURLToPath(
+  new URL('public/icons/github-mark.svg', rootUrl)
+);
+const githubIconDarkPath = fileURLToPath(
+  new URL('public/icons/github-mark-white.svg', rootUrl)
+);
 const licensePath = fileURLToPath(new URL('LICENSE', rootUrl));
 const thirdPartyLicensesPath = fileURLToPath(
   new URL('THIRD_PARTY_LICENSES.md', rootUrl)
@@ -71,6 +77,14 @@ function copyStaticFiles() {
       await copyFile(
         moonIconPath,
         fileURLToPath(new URL('dist/icons/moon.svg', rootUrl))
+      );
+      await copyFile(
+        githubIconPath,
+        fileURLToPath(new URL('dist/icons/github-mark.svg', rootUrl))
+      );
+      await copyFile(
+        githubIconDarkPath,
+        fileURLToPath(new URL('dist/icons/github-mark-white.svg', rootUrl))
       );
       await copyFile(
         licensePath,
