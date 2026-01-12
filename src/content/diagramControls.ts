@@ -16,6 +16,12 @@ type PanState = {
   startPanY: number;
 };
 
+/**
+ * UI control handlers for panning, zooming, and copy actions in the popup.
+ *
+ * @remarks
+ * The controller keeps internal state and must be cleaned up when the popup is dismissed.
+ */
 export type DiagramControls = {
   setElements: (elements: DiagramControlsElements | null) => void;
   setEditModeEnabled: (enabled: boolean) => void;
@@ -42,6 +48,11 @@ function clampValue(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+/**
+ * Create an isolated control state for diagram interactions.
+ *
+ * @returns Diagram control API for the active popup instance.
+ */
 export function createDiagramControls(): DiagramControls {
   let elements: DiagramControlsElements | null = null;
   let panX = 0;

@@ -481,6 +481,9 @@ export const popupStyle = `
 
 const styleMarker = 'data-mermaid-popup-style';
 
+/**
+ * Ensure popup styles are injected once per shadow root.
+ */
 export function ensurePopupStyle(shadowRoot: ShadowRoot): void {
   try {
     if (shadowRoot.querySelector(`style[${styleMarker}]`)) {

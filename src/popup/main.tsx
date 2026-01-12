@@ -15,6 +15,20 @@ const defaultSettings: Settings = {
   openInEditMode: false,
 };
 
+function resolveMermaidTheme(value: unknown): Settings['mermaidTheme'] {
+  if (typeof value === 'string' && isMermaidThemePreference(value)) {
+    return value;
+  }
+  return defaultSettings.mermaidTheme;
+}
+
+function resolvePopupTheme(value: unknown): Settings['popupTheme'] {
+  if (typeof value === 'string' && isPopupThemePreference(value)) {
+    return value;
+  }
+  return defaultSettings.popupTheme;
+}
+
 function loadSettings(): Promise<Settings> {
   return new Promise((resolve) => {
     try {
@@ -33,12 +47,8 @@ function loadSettings(): Promise<Settings> {
           const popupRaw = raw[settingsStorageKeys.popupTheme];
           const editRaw = raw[settingsStorageKeys.openInEditMode];
 
-          const mermaidTheme = isMermaidThemePreference(String(mermaidRaw))
-            ? String(mermaidRaw)
-            : defaultSettings.mermaidTheme;
-          const popupTheme = isPopupThemePreference(String(popupRaw))
-            ? String(popupRaw)
-            : defaultSettings.popupTheme;
+          const mermaidTheme = resolveMermaidTheme(mermaidRaw);
+          const popupTheme = resolvePopupTheme(popupRaw);
           const openInEditMode =
             typeof editRaw === 'boolean'
               ? editRaw

@@ -8,6 +8,16 @@ let lastTheme: MermaidTheme | null = null;
 const isDebug =
   import.meta.env.DEV || import.meta.env.VITE_ENABLE_LOGGING === 'true';
 
+/**
+ * Render Mermaid source into the provided container and return the SVG element.
+ *
+ * @param code - Mermaid source text to render.
+ * @param container - Target element where the SVG is inserted.
+ * @param theme - Mermaid theme name used for rendering.
+ * @returns Rendered SVG element, or null when rendering fails.
+ * @remarks
+ * This function loads Mermaid lazily on first use and sanitizes SVG output.
+ */
 export async function renderMermaid(
   code: string,
   container: HTMLElement,

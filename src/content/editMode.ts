@@ -31,6 +31,13 @@ type EditModeController = {
   getActiveTab: () => 'view' | 'editor';
 };
 
+/**
+ * Create a controller for edit mode layout, tabs, and theme updates.
+ *
+ * @param config - Layout and sizing defaults for edit mode.
+ * @param onViewRequested - Callback fired when switching back to View.
+ * @returns Edit mode controller bound to a popup instance.
+ */
 export function createEditModeController(
   config: EditModeConfig,
   onViewRequested: () => void
@@ -119,7 +126,7 @@ export function createEditModeController(
       if (!elements) {
         return;
       }
-      elements.root.dataset.theme = theme;
+      elements.root.dataset['theme'] = theme;
     },
     updateLayout() {
       if (!elements) {

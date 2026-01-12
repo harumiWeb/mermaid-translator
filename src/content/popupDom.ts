@@ -1,5 +1,11 @@
 import type { ButtonPosition } from './selection';
 
+/**
+ * DOM elements created for the main popup UI.
+ *
+ * @remarks
+ * Elements are created inside a shadow root and must be removed on teardown.
+ */
 export type PopupElements = {
   root: HTMLElement;
   arrow: HTMLElement;
@@ -52,6 +58,13 @@ type PopupDomOptions = {
   onZoomIn: () => void;
 };
 
+/**
+ * Build the popup DOM structure inside the provided shadow root.
+ *
+ * @param shadowRoot - Shadow root that owns the popup elements.
+ * @param options - Event handlers, sizing, and icon URLs for the popup.
+ * @returns Popup element references for lifecycle management.
+ */
 export function createPopupDom(
   shadowRoot: ShadowRoot,
   options: PopupDomOptions
@@ -280,17 +293,33 @@ export function createPopupDom(
   };
 }
 
+/**
+ * Remove all popup elements from the document.
+ *
+ * @param elements - Popup element references created by createPopupDom.
+ */
 export function destroyPopupDom(elements: PopupElements): void {
   elements.root.remove();
 }
 
+/**
+ * Apply light or dark theme to the popup root.
+ *
+ * @param elements - Popup element references created by createPopupDom.
+ * @param theme - Resolved popup theme to apply.
+ */
 export function applyPopupTheme(
   elements: PopupElements,
   theme: 'light' | 'dark'
 ): void {
-  elements.root.dataset.theme = theme;
+  elements.root.dataset['theme'] = theme;
 }
 
+/**
+ * Clamp the popup position so it stays inside the viewport.
+ *
+ * @param elements - Popup element references created by createPopupDom.
+ */
 export function clampPopupToViewport(elements: PopupElements): void {
   const popupRect = elements.root.getBoundingClientRect();
   const maxTop = window.innerHeight - popupRect.height - 4;

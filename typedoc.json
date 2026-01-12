@@ -1,0 +1,19 @@
+{
+  "out": "./typedocs",
+  "name": "Mermaid Translator Library",
+  "entryPoints": [
+    "src/content/main.tsx",
+    "src/content/diagramControls.ts",
+    "src/content/editMode.ts",
+    "src/content/mermaidRenderer.ts",
+    "src/content/popupDom.ts",
+    "src/content/popupStyle.ts",
+    "src/content/selection.ts",
+    "src/content/theme.ts",
+    "src/content/ui.tsx"
+  ],
+  "tsconfig": "tsconfig.json",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "gitRevision": "main"
+}

@@ -173,6 +173,11 @@ host.attachShadow({ mode: "open" });
   - oxfmt
 - Do not disable rules without explanation
 
+## Documentation (TypeDoc)
+
+- Public types and exported functions should include TSDoc comments
+- Use tags such as `@remarks`, `@param`, and `@returns` where applicable
+
 ---
 
 ## Forbidden Patterns

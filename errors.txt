@@ -1,0 +1,532 @@
+src/content/editMode.ts:129:29 - error TS4111: Property 'theme' comes from an index signature, so it must be accessed with ['theme'].
+
+129       elements.root.dataset.theme = theme;
+                                ~~~~~
+
+src/content/main.tsx:32:8 - error TS2724: '"./theme"' has no exported member named 'PopupThemePreference'. Did you mean 'loadPopupThemePreference'?
+
+32   type PopupThemePreference,
+          ~~~~~~~~~~~~~~~~~~~~
+
+  src/content/theme.ts:78:17
+    78 export function loadPopupThemePreference(): PopupThemePreference {
+                       ~~~~~~~~~~~~~~~~~~~~~~~~
+    'loadPopupThemePreference' is declared here.
+
+src/content/main.tsx:60:22 - error TS2339: Property 'onMessage' does not exist on type 'ChromeRuntime'.
+
+60 if (chrome?.runtime?.onMessage) {
+                        ~~~~~~~~~
+
+src/content/main.tsx:61:18 - error TS2339: Property 'onMessage' does not exist on type 'ChromeRuntime'.
+
+61   chrome.runtime.onMessage.addListener((message) => {
+                    ~~~~~~~~~
+
+src/content/main.tsx:61:41 - error TS7006: Parameter 'message' implicitly has an 'any' type.
+
+61   chrome.runtime.onMessage.addListener((message) => {
+                                           ~~~~~~~
+
+src/content/main.tsx:65:13 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+65 if (chrome?.storage?.onChanged) {
+               ~~~~~~~
+
+src/content/main.tsx:66:10 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+66   chrome.storage.onChanged.addListener((changes, areaName) => {
+            ~~~~~~~
+
+src/content/main.tsx:66:41 - error TS7006: Parameter 'changes' implicitly has an 'any' type.
+
+66   chrome.storage.onChanged.addListener((changes, areaName) => {
+                                           ~~~~~~~
+
+src/content/main.tsx:66:50 - error TS7006: Parameter 'areaName' implicitly has an 'any' type.
+
+66   chrome.storage.onChanged.addListener((changes, areaName) => {
+                                                    ~~~~~~~~
+
+src/content/main.tsx:79:7 - error TS2322: Type 'string' is not assignable to type '"dark" | "base" | "default" | "forest" | "neutral" | "system"'.
+
+79       next.mermaidTheme = String(mermaidChange.newValue);
+         ~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:84:7 - error TS2322: Type 'string' is not assignable to type '"light" | "dark" | "system"'.
+
+84       next.popupTheme = String(popupChange.newValue);
+         ~~~~~~~~~~~~~~~
+
+src/content/main.tsx:434:7 - error TS2322: Type 'string' is not assignable to type '"dark" | "base" | "default" | "forest" | "neutral" | "system"'.
+
+434       mermaidTheme,
+          ~~~~~~~~~~~~
+
+  src/shared/settings.ts:13:3
+    13   mermaidTheme: MermaidThemePreference;
+         ~~~~~~~~~~~~
+    The expected type comes from property 'mermaidTheme' which is declared here on type 'Settings'
+
+src/content/main.tsx:435:7 - error TS2322: Type 'string' is not assignable to type '"light" | "dark" | "system"'.
+
+435       popupTheme,
+          ~~~~~~~~~~
+
+  src/shared/settings.ts:14:3
+    14   popupTheme: PopupThemePreference;
+         ~~~~~~~~~~
+    The expected type comes from property 'popupTheme' which is declared here on type 'Settings'
+
+src/content/main.tsx:470:18 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+470     if (!chrome?.storage?.local) {
+                     ~~~~~~~
+
+src/content/main.tsx:473:12 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+473     chrome.storage.local.set({
+               ~~~~~~~
+
+src/content/main.tsx:485:18 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+485     if (!chrome?.storage?.local) {
+                     ~~~~~~~
+
+src/content/main.tsx:488:12 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+488     chrome.storage.local.get(
+               ~~~~~~~
+
+src/content/main.tsx:494:8 - error TS7006: Parameter 'raw' implicitly has an 'any' type.
+
+494       (raw) => {
+           ~~~
+
+src/content/main.tsx:519:5 - error TS2322: Type 'string' is not assignable to type '"dark" | "base" | "default" | "forest" | "neutral" | "system"'.
+
+519     mermaidTheme: isThemePreference(String(raw.mermaidTheme))
+        ~~~~~~~~~~~~
+
+  src/shared/settings.ts:13:3
+    13   mermaidTheme: MermaidThemePreference;
+         ~~~~~~~~~~~~
+    The expected type comes from property 'mermaidTheme' which is declared here on type 'Settings'
+
+src/content/main.tsx:519:48 - error TS4111: Property 'mermaidTheme' comes from an index signature, so it must be accessed with ['mermaidTheme'].
+
+519     mermaidTheme: isThemePreference(String(raw.mermaidTheme))
+                                                   ~~~~~~~~~~~~
+
+src/content/main.tsx:520:20 - error TS4111: Property 'mermaidTheme' comes from an index signature, so it must be accessed with ['mermaidTheme'].
+
+520       ? String(raw.mermaidTheme)
+                       ~~~~~~~~~~~~
+
+src/content/main.tsx:522:51 - error TS4111: Property 'popupTheme' comes from an index signature, so it must be accessed with ['popupTheme'].
+
+522     popupTheme: isPopupThemePreference(String(raw.popupTheme))
+                                                      ~~~~~~~~~~
+
+src/content/main.tsx:523:20 - error TS4111: Property 'popupTheme' comes from an index signature, so it must be accessed with ['popupTheme'].
+
+523       ? String(raw.popupTheme)
+                       ~~~~~~~~~~
+
+src/content/main.tsx:526:18 - error TS4111: Property 'openInEditMode' comes from an index signature, so it must be accessed with ['openInEditMode'].
+
+526       typeof raw.openInEditMode === 'boolean'
+                     ~~~~~~~~~~~~~~
+
+src/content/main.tsx:527:15 - error TS4111: Property 'openInEditMode' comes from an index signature, so it must be accessed with ['openInEditMode'].
+
+527         ? raw.openInEditMode
+                  ~~~~~~~~~~~~~~
+
+src/content/main.tsx:694:54 - error TS2345: Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+
+694       const svgElement = await renderMermaid(source, popupDiagram, theme);
+                                                         ~~~~~~~~~~~~
+
+src/content/main.tsx:1144:27 - error TS4111: Property 'theme' comes from an index signature, so it must be accessed with ['theme'].
+
+1144   editorPopupRoot.dataset.theme = theme;
+                               ~~~~~
+
+src/content/main.tsx:1254:28 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1254   if (!editorPanel.dataset.originalPaddingTop) {
+                                ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1255:25 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1255     editorPanel.dataset.originalPaddingTop = editorPanel.style.paddingTop;
+                             ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1306:41 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1306   if (popupElements.editorPanel.dataset.originalPaddingTop !== undefined) {
+                                             ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1308:41 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1308       popupElements.editorPanel.dataset.originalPaddingTop;
+                                             ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1309:46 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1309     delete popupElements.editorPanel.dataset.originalPaddingTop;
+                                                  ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1365:52 - error TS2345: Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+
+1365       const svgElement = await renderMermaid(code, popupDiagram, theme);
+                                                        ~~~~~~~~~~~~
+
+src/content/main.tsx:1448:9 - error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+
+1448         resolvedWidth = parts[2];
+             ~~~~~~~~~~~~~
+
+src/content/main.tsx:1449:9 - error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+
+1449         resolvedHeight = parts[3];
+             ~~~~~~~~~~~~~~
+
+src/content/popupDom.ts:315:25 - error TS4111: Property 'theme' comes from an index signature, so it must be accessed with ['theme'].
+
+315   elements.root.dataset.theme = theme;
+                            ~~~~~
+
+src/popup/main.tsx:21:20 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+21       if (!chrome?.storage?.local) {
+                      ~~~~~~~
+
+src/popup/main.tsx:25:14 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+25       chrome.storage.local.get(
+                ~~~~~~~
+
+src/popup/main.tsx:31:10 - error TS7006: Parameter 'raw' implicitly has an 'any' type.
+
+31         (raw) => {
+            ~~~
+
+src/popup/main.tsx:48:13 - error TS2322: Type 'string' is not assignable to type '"dark" | "base" | "default" | "forest" | "neutral" | "system"'.
+
+48             mermaidTheme,
+               ~~~~~~~~~~~~
+
+src/popup/main.tsx:49:13 - error TS2322: Type 'string' is not assignable to type '"light" | "dark" | "system"'.
+
+49             popupTheme,
+               ~~~~~~~~~~
+
+src/popup/main.tsx:62:18 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+62     if (!chrome?.storage?.local) {
+                    ~~~~~~~
+
+src/popup/main.tsx:65:12 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+65     chrome.storage.local.set({
+              ~~~~~~~
+
+src/popup/main.tsx:77:27 - error TS2339: Property 'sendMessage' does not exist on type 'ChromeRuntime'.
+
+77     if (!chrome?.runtime?.sendMessage) {
+                             ~~~~~~~~~~~
+
+src/popup/main.tsx:80:20 - error TS2339: Property 'sendMessage' does not exist on type 'ChromeRuntime'.
+
+80     chrome.runtime.sendMessage(
+                      ~~~~~~~~~~~
+
+src/popup/main.tsx:86:29 - error TS2339: Property 'lastError' does not exist on type 'ChromeRuntime'.
+
+86         void chrome.runtime.lastError;
+                               ~~~~~~~~~
+
+src/popup/main.tsx:149:20 - error TS2339: Property 'i18n' does not exist on type 'ChromeApi'.
+
+149           {chrome?.i18n?.getMessage('extensionName') ?? 'Mermaid Translator'}
+                       ~~~~
+
+src/shared/detectMermaid.ts:32:23 - error TS2532: Object is possibly 'undefined'.
+
+32     const lineLower = lines[i].toLowerCase();
+                         ~~~~~~~~
+
+[error] Found 48 errors and 0 warnings
+PS C:\dev\chrome-extension\mermaid-translator> 
+PS C:\dev\chrome-extension\mermaid-translator> npx typedoc > errors.txt
+src/content/editMode.ts:129:29 - error TS4111: Property 'theme' comes from an index signature, so it must be accessed with ['theme'].
+
+129       elements.root.dataset.theme = theme;
+                                ~~~~~
+
+src/content/main.tsx:32:8 - error TS2724: '"./theme"' has no exported member named 'PopupThemePreference'. Did you mean 'loadPopupThemePreference'?
+
+32   type PopupThemePreference,
+          ~~~~~~~~~~~~~~~~~~~~
+
+  src/content/theme.ts:78:17
+    78 export function loadPopupThemePreference(): PopupThemePreference {
+                       ~~~~~~~~~~~~~~~~~~~~~~~~
+    'loadPopupThemePreference' is declared here.
+
+src/content/main.tsx:60:22 - error TS2339: Property 'onMessage' does not exist on type 'ChromeRuntime'.
+
+60 if (chrome?.runtime?.onMessage) {
+                        ~~~~~~~~~
+
+src/content/main.tsx:61:18 - error TS2339: Property 'onMessage' does not exist on type 'ChromeRuntime'.
+
+61   chrome.runtime.onMessage.addListener((message) => {
+                    ~~~~~~~~~
+
+src/content/main.tsx:61:41 - error TS7006: Parameter 'message' implicitly has an 'any' type.
+
+61   chrome.runtime.onMessage.addListener((message) => {
+                                           ~~~~~~~
+
+src/content/main.tsx:65:13 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+65 if (chrome?.storage?.onChanged) {
+               ~~~~~~~
+
+src/content/main.tsx:66:10 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+66   chrome.storage.onChanged.addListener((changes, areaName) => {
+            ~~~~~~~
+
+src/content/main.tsx:66:41 - error TS7006: Parameter 'changes' implicitly has an 'any' type.
+
+66   chrome.storage.onChanged.addListener((changes, areaName) => {
+                                           ~~~~~~~
+
+src/content/main.tsx:66:50 - error TS7006: Parameter 'areaName' implicitly has an 'any' type.
+
+66   chrome.storage.onChanged.addListener((changes, areaName) => {
+                                                    ~~~~~~~~
+
+src/content/main.tsx:79:7 - error TS2322: Type 'string' is not assignable to type '"dark" | "base" | "default" | "forest" | "neutral" | "system"'.
+
+79       next.mermaidTheme = String(mermaidChange.newValue);
+         ~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:84:7 - error TS2322: Type 'string' is not assignable to type '"light" | "dark" | "system"'.
+
+84       next.popupTheme = String(popupChange.newValue);
+         ~~~~~~~~~~~~~~~
+
+src/content/main.tsx:434:7 - error TS2322: Type 'string' is not assignable to type '"dark" | "base" | "default" | "forest" | "neutral" | "system"'.
+
+434       mermaidTheme,
+          ~~~~~~~~~~~~
+
+  src/shared/settings.ts:13:3
+    13   mermaidTheme: MermaidThemePreference;
+         ~~~~~~~~~~~~
+    The expected type comes from property 'mermaidTheme' which is declared here on type 'Settings'
+
+src/content/main.tsx:435:7 - error TS2322: Type 'string' is not assignable to type '"light" | "dark" | "system"'.
+
+435       popupTheme,
+          ~~~~~~~~~~
+
+  src/shared/settings.ts:14:3
+    14   popupTheme: PopupThemePreference;
+         ~~~~~~~~~~
+    The expected type comes from property 'popupTheme' which is declared here on type 'Settings'
+
+src/content/main.tsx:470:18 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+470     if (!chrome?.storage?.local) {
+                     ~~~~~~~
+
+src/content/main.tsx:473:12 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+473     chrome.storage.local.set({
+               ~~~~~~~
+
+src/content/main.tsx:485:18 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+485     if (!chrome?.storage?.local) {
+                     ~~~~~~~
+
+src/content/main.tsx:488:12 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+488     chrome.storage.local.get(
+               ~~~~~~~
+
+src/content/main.tsx:494:8 - error TS7006: Parameter 'raw' implicitly has an 'any' type.
+
+494       (raw) => {
+           ~~~
+
+src/content/main.tsx:519:5 - error TS2322: Type 'string' is not assignable to type '"dark" | "base" | "default" | "forest" | "neutral" | "system"'.
+
+519     mermaidTheme: isThemePreference(String(raw.mermaidTheme))
+        ~~~~~~~~~~~~
+
+  src/shared/settings.ts:13:3
+    13   mermaidTheme: MermaidThemePreference;
+         ~~~~~~~~~~~~
+    The expected type comes from property 'mermaidTheme' which is declared here on type 'Settings'
+
+src/content/main.tsx:519:48 - error TS4111: Property 'mermaidTheme' comes from an index signature, so it must be accessed with ['mermaidTheme'].
+
+519     mermaidTheme: isThemePreference(String(raw.mermaidTheme))
+                                                   ~~~~~~~~~~~~
+
+src/content/main.tsx:520:20 - error TS4111: Property 'mermaidTheme' comes from an index signature, so it must be accessed with ['mermaidTheme'].
+
+520       ? String(raw.mermaidTheme)
+                       ~~~~~~~~~~~~
+
+src/content/main.tsx:522:51 - error TS4111: Property 'popupTheme' comes from an index signature, so it must be accessed with ['popupTheme'].
+
+522     popupTheme: isPopupThemePreference(String(raw.popupTheme))
+                                                      ~~~~~~~~~~
+
+src/content/main.tsx:523:20 - error TS4111: Property 'popupTheme' comes from an index signature, so it must be accessed with ['popupTheme'].
+
+523       ? String(raw.popupTheme)
+                       ~~~~~~~~~~
+
+src/content/main.tsx:526:18 - error TS4111: Property 'openInEditMode' comes from an index signature, so it must be accessed with ['openInEditMode'].
+
+526       typeof raw.openInEditMode === 'boolean'
+                     ~~~~~~~~~~~~~~
+
+src/content/main.tsx:527:15 - error TS4111: Property 'openInEditMode' comes from an index signature, so it must be accessed with ['openInEditMode'].
+
+527         ? raw.openInEditMode
+                  ~~~~~~~~~~~~~~
+
+src/content/main.tsx:694:54 - error TS2345: Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+
+694       const svgElement = await renderMermaid(source, popupDiagram, theme);
+                                                         ~~~~~~~~~~~~
+
+src/content/main.tsx:1144:27 - error TS4111: Property 'theme' comes from an index signature, so it must be accessed with ['theme'].
+
+1144   editorPopupRoot.dataset.theme = theme;
+                               ~~~~~
+
+src/content/main.tsx:1254:28 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1254   if (!editorPanel.dataset.originalPaddingTop) {
+                                ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1255:25 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1255     editorPanel.dataset.originalPaddingTop = editorPanel.style.paddingTop;
+                             ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1306:41 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1306   if (popupElements.editorPanel.dataset.originalPaddingTop !== undefined) {
+                                             ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1308:41 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1308       popupElements.editorPanel.dataset.originalPaddingTop;
+                                             ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1309:46 - error TS4111: Property 'originalPaddingTop' comes from an index signature, so it must be accessed with ['originalPaddingTop'].
+
+1309     delete popupElements.editorPanel.dataset.originalPaddingTop;
+                                                  ~~~~~~~~~~~~~~~~~~
+
+src/content/main.tsx:1365:52 - error TS2345: Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+
+1365       const svgElement = await renderMermaid(code, popupDiagram, theme);
+                                                        ~~~~~~~~~~~~
+
+src/content/main.tsx:1448:9 - error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+
+1448         resolvedWidth = parts[2];
+             ~~~~~~~~~~~~~
+
+src/content/main.tsx:1449:9 - error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+
+1449         resolvedHeight = parts[3];
+             ~~~~~~~~~~~~~~
+
+src/content/popupDom.ts:315:25 - error TS4111: Property 'theme' comes from an index signature, so it must be accessed with ['theme'].
+
+315   elements.root.dataset.theme = theme;
+                            ~~~~~
+
+src/popup/main.tsx:21:20 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+21       if (!chrome?.storage?.local) {
+                      ~~~~~~~
+
+src/popup/main.tsx:25:14 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+25       chrome.storage.local.get(
+                ~~~~~~~
+
+src/popup/main.tsx:31:10 - error TS7006: Parameter 'raw' implicitly has an 'any' type.
+
+31         (raw) => {
+            ~~~
+
+src/popup/main.tsx:48:13 - error TS2322: Type 'string' is not assignable to type '"dark" | "base" | "default" | "forest" | "neutral" | "system"'.
+
+48             mermaidTheme,
+               ~~~~~~~~~~~~
+
+src/popup/main.tsx:49:13 - error TS2322: Type 'string' is not assignable to type '"light" | "dark" | "system"'.
+
+49             popupTheme,
+               ~~~~~~~~~~
+
+src/popup/main.tsx:62:18 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+62     if (!chrome?.storage?.local) {
+                    ~~~~~~~
+
+src/popup/main.tsx:65:12 - error TS2339: Property 'storage' does not exist on type 'ChromeApi'.
+
+65     chrome.storage.local.set({
+              ~~~~~~~
+
+src/popup/main.tsx:77:27 - error TS2339: Property 'sendMessage' does not exist on type 'ChromeRuntime'.
+
+77     if (!chrome?.runtime?.sendMessage) {
+                             ~~~~~~~~~~~
+
+src/popup/main.tsx:80:20 - error TS2339: Property 'sendMessage' does not exist on type 'ChromeRuntime'.
+
+80     chrome.runtime.sendMessage(
+                      ~~~~~~~~~~~
+
+src/popup/main.tsx:86:29 - error TS2339: Property 'lastError' does not exist on type 'ChromeRuntime'.
+
+86         void chrome.runtime.lastError;
+                               ~~~~~~~~~
+
+src/popup/main.tsx:149:20 - error TS2339: Property 'i18n' does not exist on type 'ChromeApi'.
+
+149           {chrome?.i18n?.getMessage('extensionName') ?? 'Mermaid Translator'}
+                       ~~~~
+
+src/shared/detectMermaid.ts:32:23 - error TS2532: Object is possibly 'undefined'.
+
+32     const lineLower = lines[i].toLowerCase();
+                         ~~~~~~~~
+
+[error] Found 48 errors and 0 warnings

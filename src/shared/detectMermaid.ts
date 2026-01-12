@@ -29,7 +29,8 @@ export function extractMermaidCode(text: string): string {
 
   const lines = text.split(/\r?\n/);
   for (let i = 0; i < lines.length; i += 1) {
-    const lineLower = lines[i].toLowerCase();
+    const line = lines[i] ?? '';
+    const lineLower = line.toLowerCase();
     if (mermaidKeywords.some((keyword) => lineLower.includes(keyword))) {
       return lines.slice(i).join('\n').trim();
     }

@@ -2,7 +2,10 @@ import { render } from 'preact';
 import { extractMermaidCode, isMermaidLike } from '../shared/detectMermaid';
 import { isRenderCacheHit } from '../shared/renderCache';
 import { settingsStorageKeys, type Settings } from '../shared/settings';
-import { isPopupThemePreference } from '../shared/themeOptions';
+import {
+  isPopupThemePreference,
+  type PopupThemePreference,
+} from '../shared/themeOptions';
 import { createDiagramControls } from './diagramControls';
 import { createEditModeController } from './editMode';
 import {
@@ -29,7 +32,6 @@ import {
   savePopupThemePreference,
   saveThemePreference,
   themeOptions,
-  type PopupThemePreference,
   type ThemeName,
   type ThemePreference,
 } from './theme';
@@ -75,13 +77,19 @@ if (chrome?.storage?.onChanged) {
     };
 
     const mermaidChange = changes[settingsStorageKeys.mermaidTheme];
-    if (mermaidChange && isThemePreference(String(mermaidChange.newValue))) {
-      next.mermaidTheme = String(mermaidChange.newValue);
+    if (mermaidChange) {
+      next.mermaidTheme = resolveMermaidPreference(
+        mermaidChange.newValue,
+        next.mermaidTheme
+      );
     }
 
     const popupChange = changes[settingsStorageKeys.popupTheme];
-    if (popupChange && isPopupThemePreference(String(popupChange.newValue))) {
-      next.popupTheme = String(popupChange.newValue);
+    if (popupChange) {
+      next.popupTheme = resolvePopupPreference(
+        popupChange.newValue,
+        next.popupTheme
+      );
     }
 
     const editChange = changes[settingsStorageKeys.openInEditMode];
@@ -408,6 +416,26 @@ function clampValue(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+function resolveMermaidPreference(
+  value: unknown,
+  fallback: ThemePreference
+): ThemePreference {
+  if (typeof value === 'string' && isThemePreference(value)) {
+    return value;
+  }
+  return fallback;
+}
+
+function resolvePopupPreference(
+  value: unknown,
+  fallback: PopupThemePreference
+): PopupThemePreference {
+  if (typeof value === 'string' && isPopupThemePreference(value)) {
+    return value;
+  }
+  return fallback;
+}
+
 function normalizeSettings(raw: Record<string, unknown>): {
   settings: Settings;
   shouldPersist: boolean;
@@ -416,17 +444,21 @@ function normalizeSettings(raw: Record<string, unknown>): {
   const popupRaw = raw[settingsStorageKeys.popupTheme];
   const editRaw = raw[settingsStorageKeys.openInEditMode];
 
-  const mermaidTheme = isThemePreference(String(mermaidRaw))
-    ? String(mermaidRaw)
-    : loadThemePreference();
-  const popupTheme = isPopupThemePreference(String(popupRaw))
-    ? String(popupRaw)
-    : loadPopupThemePreference();
+  const mermaidTheme = resolveMermaidPreference(
+    mermaidRaw,
+    loadThemePreference()
+  );
+  const popupTheme = resolvePopupPreference(
+    popupRaw,
+    loadPopupThemePreference()
+  );
   const openInEditMode = typeof editRaw === 'boolean' ? editRaw : false;
 
   const shouldPersist =
-    !isThemePreference(String(mermaidRaw)) ||
-    !isPopupThemePreference(String(popupRaw)) ||
+    typeof mermaidRaw !== 'string' ||
+    !isThemePreference(mermaidRaw) ||
+    typeof popupRaw !== 'string' ||
+    !isPopupThemePreference(popupRaw) ||
     typeof editRaw !== 'boolean';
 
   return {
@@ -516,15 +548,17 @@ function handleSettingsMessage(message: unknown): void {
 
   const raw = payload as Record<string, unknown>;
   const next: Settings = {
-    mermaidTheme: isThemePreference(String(raw.mermaidTheme))
-      ? String(raw.mermaidTheme)
-      : (themePreference ?? loadThemePreference()),
-    popupTheme: isPopupThemePreference(String(raw.popupTheme))
-      ? String(raw.popupTheme)
-      : (popupThemePreference ?? loadPopupThemePreference()),
+    mermaidTheme: resolveMermaidPreference(
+      raw['mermaidTheme'],
+      themePreference ?? loadThemePreference()
+    ),
+    popupTheme: resolvePopupPreference(
+      raw['popupTheme'],
+      popupThemePreference ?? loadPopupThemePreference()
+    ),
     openInEditMode:
-      typeof raw.openInEditMode === 'boolean'
-        ? raw.openInEditMode
+      typeof raw['openInEditMode'] === 'boolean'
+        ? raw['openInEditMode']
         : openInEditModeDefault,
   };
 
@@ -690,8 +724,15 @@ function handleEditModeViewRender(): void {
   setActionsEnabled(false);
   setLoadingVisible(true);
   scheduleRender(() => {
+    const diagram = popupDiagram;
+    if (!diagram) {
+      setPopupMessage(renderErrorMessage);
+      setActionsEnabled(false);
+      setLoadingVisible(false);
+      return;
+    }
     void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-      const svgElement = await renderMermaid(source, popupDiagram, theme);
+      const svgElement = await renderMermaid(source, diagram, theme);
       if (!svgElement) {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
@@ -1141,7 +1182,7 @@ function applyEditorPopupTheme(theme: 'light' | 'dark'): void {
     return;
   }
 
-  editorPopupRoot.dataset.theme = theme;
+  editorPopupRoot.dataset['theme'] = theme;
 }
 
 function bringPopupToFront(target: 'main' | 'editor'): void {
@@ -1251,8 +1292,8 @@ function createEditorPopup(): void {
     }
   });
 
-  if (!editorPanel.dataset.originalPaddingTop) {
-    editorPanel.dataset.originalPaddingTop = editorPanel.style.paddingTop;
+  if (!editorPanel.dataset['originalPaddingTop']) {
+    editorPanel.dataset['originalPaddingTop'] = editorPanel.style.paddingTop;
   }
   editorPanel.style.paddingTop = '0';
 
@@ -1303,10 +1344,10 @@ function closeEditorPopup(): void {
   editorPopupDragState = null;
   editorPopupResizeState = null;
 
-  if (popupElements.editorPanel.dataset.originalPaddingTop !== undefined) {
+  if (popupElements.editorPanel.dataset['originalPaddingTop'] !== undefined) {
     popupElements.editorPanel.style.paddingTop =
-      popupElements.editorPanel.dataset.originalPaddingTop;
-    delete popupElements.editorPanel.dataset.originalPaddingTop;
+      popupElements.editorPanel.dataset['originalPaddingTop'];
+    delete popupElements.editorPanel.dataset['originalPaddingTop'];
   }
 
   popupElements.tabBar.style.display = editMode.isEnabled() ? 'flex' : 'none';
@@ -1361,8 +1402,15 @@ function rerenderPopup(theme: ThemeName): void {
   setLoadingVisible(true);
 
   scheduleRender(() => {
+    const diagram = popupDiagram;
+    if (!diagram) {
+      setPopupMessage(renderErrorMessage);
+      setActionsEnabled(false);
+      setLoadingVisible(false);
+      return;
+    }
     void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-      const svgElement = await renderMermaid(code, popupDiagram, theme);
+      const svgElement = await renderMermaid(code, diagram, theme);
       if (!svgElement) {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
@@ -1445,8 +1493,12 @@ function normalizeSvg(svgText: string): {
     if (viewBox) {
       const parts = viewBox.split(/\s+/).map((part) => Number.parseFloat(part));
       if (parts.length === 4 && parts.every((value) => !Number.isNaN(value))) {
-        resolvedWidth = parts[2];
-        resolvedHeight = parts[3];
+        const viewBoxWidth = parts[2];
+        const viewBoxHeight = parts[3];
+        if (viewBoxWidth !== undefined && viewBoxHeight !== undefined) {
+          resolvedWidth = viewBoxWidth;
+          resolvedHeight = viewBoxHeight;
+        }
       }
     }
   }
