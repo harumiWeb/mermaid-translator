@@ -1908,7 +1908,7 @@ function handleActionClick(): void {
     diagramControls.setSourceText(code);
     diagramControls.setEditorText(code);
     if (openInEditModeDefault) {
-      openEditMode('editor');
+      openEditMode('view');
     }
     return;
   }
@@ -1941,7 +1941,7 @@ function handleActionClick(): void {
       setEditEnabled(true);
       setLoadingVisible(false);
       if (openInEditModeDefault) {
-        openEditMode('editor');
+        openEditMode('view');
       }
       if (popupElements) {
         clampPopupToViewport(popupElements);
