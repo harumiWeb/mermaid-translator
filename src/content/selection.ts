@@ -121,7 +121,9 @@ function getSelectionRect(selection: Selection): DOMRect | null {
   const range = selection.getRangeAt(0);
   const rects = range.getClientRects();
   const rect =
-    rects.length > 0 ? rects[rects.length - 1] : range.getBoundingClientRect();
+    rects.length > 0
+      ? (rects.item(rects.length - 1) ?? range.getBoundingClientRect())
+      : range.getBoundingClientRect();
 
   if (rect.width === 0 && rect.height === 0) {
     return null;

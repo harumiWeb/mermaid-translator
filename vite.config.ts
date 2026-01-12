@@ -35,8 +35,11 @@ function copyStaticFiles() {
   return {
     name: 'copy-static-files',
     async closeBundle() {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
       await mkdir('dist', { recursive: true });
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
       await mkdir('dist/content', { recursive: true });
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
       await mkdir('dist/icons', { recursive: true });
 
       await copyFile(
@@ -92,11 +95,13 @@ function copyStaticFiles() {
         fileURLToPath(new URL('dist/NOTICE.md', rootUrl))
       );
 
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
       const raw = await readFile('dist/content/main.js');
       let text = raw.toString('utf8');
       if (text.charCodeAt(0) === 0xfeff) {
         text = text.slice(1);
       }
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
       await writeFile('dist/content/main.js', text, 'utf8');
     },
   };

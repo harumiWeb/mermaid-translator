@@ -16,7 +16,7 @@ interface ChromeStorage {
   onChanged: {
     addListener: (
       callback: (
-        changes: Record<string, ChromeStorageChange>,
+        changes: Partial<Record<string, ChromeStorageChange>>,
         areaName: 'local' | 'sync' | 'managed' | 'session'
       ) => void
     ) => void;

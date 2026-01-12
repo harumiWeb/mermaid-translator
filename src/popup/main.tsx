@@ -32,10 +32,6 @@ function resolvePopupTheme(value: unknown): Settings['popupTheme'] {
 const loadSettings = async (): Promise<Settings> => {
   return new Promise<Settings>((resolve) => {
     try {
-      if (!chrome?.storage?.local) {
-        resolve(defaultSettings);
-        return;
-      }
       chrome.storage.local.get(
         [
           settingsStorageKeys.mermaidTheme,
@@ -69,9 +65,6 @@ const loadSettings = async (): Promise<Settings> => {
 
 function saveSettings(settings: Settings): void {
   try {
-    if (!chrome?.storage?.local) {
-      return;
-    }
     chrome.storage.local.set({
       [settingsStorageKeys.mermaidTheme]: settings.mermaidTheme,
       [settingsStorageKeys.popupTheme]: settings.popupTheme,
@@ -84,9 +77,6 @@ function saveSettings(settings: Settings): void {
 
 function notifySettings(settings: Settings): void {
   try {
-    if (!chrome?.runtime?.sendMessage) {
-      return;
-    }
     chrome.runtime.sendMessage(
       {
         type: 'settings:update',
@@ -156,7 +146,7 @@ function SettingsApp() {
       <div className="header">
         <img className="logo" src="../icons/icon48.png" alt="" />
         <div className="header-text">
-          {chrome?.i18n?.getMessage('extensionName') ?? 'Mermaid Translator'}
+          {chrome.i18n.getMessage('extensionName') || 'Mermaid Translator'}
         </div>
       </div>
 

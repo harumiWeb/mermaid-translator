@@ -59,12 +59,10 @@ function suppressKaTeXQuirksWarning(): void {
 
 suppressKaTeXQuirksWarning();
 loadSettingsFromStorage();
-if (chrome?.runtime?.onMessage) {
+try {
   chrome.runtime.onMessage.addListener((message) => {
     handleSettingsMessage(message);
   });
-}
-if (chrome?.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'local') {
       return;
@@ -100,6 +98,8 @@ if (chrome?.storage?.onChanged) {
     applySettings(next);
     applySettingsToActivePopup();
   });
+} catch {
+  // ignore
 }
 
 let lastSelectionText: string | null = null;
@@ -436,6 +436,10 @@ function resolvePopupPreference(
   return fallback;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 function normalizeSettings(raw: Record<string, unknown>): {
   settings: Settings;
   shouldPersist: boolean;
@@ -499,9 +503,6 @@ function applySettingsToActivePopup(): void {
 
 function saveSettingsToStorage(settings: Settings): void {
   try {
-    if (!chrome?.storage?.local) {
-      return;
-    }
     chrome.storage.local.set({
       [settingsStorageKeys.mermaidTheme]: settings.mermaidTheme,
       [settingsStorageKeys.popupTheme]: settings.popupTheme,
@@ -514,9 +515,6 @@ function saveSettingsToStorage(settings: Settings): void {
 
 function loadSettingsFromStorage(): void {
   try {
-    if (!chrome?.storage?.local) {
-      return;
-    }
     chrome.storage.local.get(
       [
         settingsStorageKeys.mermaidTheme,
@@ -542,11 +540,11 @@ function handleSettingsMessage(message: unknown): void {
   }
   const payload = (message as { type?: string; payload?: unknown }).payload;
   const type = (message as { type?: string }).type;
-  if (type !== 'settings:update' || !payload || typeof payload !== 'object') {
+  if (type !== 'settings:update' || !isRecord(payload)) {
     return;
   }
 
-  const raw = typeof payload === 'object' && payload !== null ? payload : {};
+  const raw = payload;
   const next: Settings = {
     mermaidTheme: resolveMermaidPreference(
       'mermaidTheme' in raw ? raw['mermaidTheme'] : undefined,
@@ -1460,19 +1458,27 @@ function downloadBlob(blob: Blob, filename: string): void {
 }
 
 function openSvgInNewTab(svgText: string): void {
-  const htmlMarkup = `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Mermaid Diagram</title>
-    <style>
-      html, body { margin: 0; padding: 0; background: #fff; }
-      svg { display: block; max-width: 100%; height: auto; }
-    </style>
-  </head>
-  <body>${svgText}</body>
-</html>`;
+  const doc = document.implementation.createHTMLDocument('Mermaid Diagram');
+  const meta = doc.createElement('meta');
+  meta.setAttribute('charset', 'utf-8');
+  doc.head.appendChild(meta);
+
+  const style = doc.createElement('style');
+  style.textContent =
+    'html, body { margin: 0; padding: 0; background: #fff; }' +
+    'svg { display: block; max-width: 100%; height: auto; }';
+  doc.head.appendChild(style);
+
+  const svgDoc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+  const svgElement = svgDoc.documentElement;
+  if (svgElement instanceof SVGElement) {
+    doc.body.appendChild(doc.importNode(svgElement, true));
+  }
+
+  const htmlMarkup = '<!doctype html>' + doc.documentElement.outerHTML;
+  // eslint-disable-next-line xss/no-mixed-html -- HTML is generated from sanitized SVG content.
   const htmlBlob = new Blob([htmlMarkup], { type: 'text/html' });
+  // eslint-disable-next-line xss/no-mixed-html -- URL is created from sanitized HTML blob.
   const url = URL.createObjectURL(htmlBlob);
   const link = document.createElement('a');
   link.href = url;
@@ -1507,12 +1513,8 @@ function normalizeSvg(svgText: string): {
     if (viewBox) {
       const parts = viewBox.split(/\s+/).map((part) => Number.parseFloat(part));
       if (parts.length === 4 && parts.every((value) => !Number.isNaN(value))) {
-        const viewBoxWidth = parts[2];
-        const viewBoxHeight = parts[3];
-        if (viewBoxWidth !== undefined && viewBoxHeight !== undefined) {
-          resolvedWidth = viewBoxWidth;
-          resolvedHeight = viewBoxHeight;
-        }
+        resolvedWidth = parts[2] ?? resolvedWidth;
+        resolvedHeight = parts[3] ?? resolvedHeight;
       }
     }
   }

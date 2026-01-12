@@ -44,6 +44,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- fileUrl is constrained to typedocs and validated.
     const data = await readFile(fileUrl);
     res.writeHead(200, { 'Content-Type': getContentType(fileUrl) });
     res.end(data);
