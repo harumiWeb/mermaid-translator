@@ -16,11 +16,13 @@ const mimeTypes = new Map([
 ]);
 
 function getContentType(fileUrl) {
-  const ext = fileUrl.pathname.split('.').pop();
-  if (!ext) {
+  const pathname = fileUrl.pathname;
+  const lastDot = pathname.lastIndexOf('.');
+  if (lastDot === -1 || lastDot < pathname.lastIndexOf('/')) {
     return 'application/octet-stream';
   }
-  return mimeTypes.get(`.${ext}`) || 'application/octet-stream';
+  const ext = pathname.slice(lastDot);
+  return mimeTypes.get(ext) || 'application/octet-stream';
 }
 
 function resolvePath(urlPath) {

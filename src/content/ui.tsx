@@ -42,7 +42,7 @@ type TooltipProps = {
  * Tooltip element used for hover hints within the popup UI.
  *
  * @param props - Tooltip display props.
- * @returns Tooltip element or null when hidden.
+ * @returns Tooltip element (visibility controlled via CSS class).
  */
 export function Tooltip(props: TooltipProps) {
   const tooltipClass = props.visible ? 'mr-tooltip is-visible' : 'mr-tooltip';
