@@ -99,6 +99,7 @@ let editorPopupResizeState: {
   startHeight: number;
   startTop: number;
   startLeft: number;
+  direction: ResizeDirection;
 } | null = null;
 let editorRenderTimeout: number | null = null;
 let popupDragState: {
@@ -118,12 +119,15 @@ let popupResizeState: {
   startHeight: number;
   startTop: number;
   startLeft: number;
+  direction: ResizeDirection;
 } | null = null;
 let themePreference: ThemePreference | null = null;
 let popupThemePreference: PopupThemePreference | null = null;
 let outsidePointerHandler: ((event: PointerEvent) => void) | null = null;
 let resizeHandler: (() => void) | null = null;
 let beforeUnloadBound = false;
+
+type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 function resolveIconUrl(): string {
   try {
@@ -155,6 +159,7 @@ const popupEditMaxHeight = '80vh';
 const popupEditContentMaxHeight = '55vh';
 const popupEditMinHeight = 320;
 const popupInitialContentHeight = Math.round(popupEditMinHeight * 1.5);
+const resizeEdgeSize = 8;
 const zoomStep = 0.1;
 const popupZIndexBase = 2147483646;
 const popupZIndexTop = 2147483647;
@@ -361,6 +366,79 @@ function clampValue(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      'button, select, option, textarea, input, a, [data-pan-ignore], [data-zoom-control]'
+    )
+  );
+}
+
+function getResizeDirection(
+  rect: DOMRect,
+  event: PointerEvent,
+  edgeSize: number
+): ResizeDirection | null {
+  const offsetX = event.clientX - rect.left;
+  const offsetY = event.clientY - rect.top;
+
+  const onLeft = offsetX >= 0 && offsetX <= edgeSize;
+  const onRight = offsetX >= rect.width - edgeSize && offsetX <= rect.width;
+  const onTop = offsetY >= 0 && offsetY <= edgeSize;
+  const onBottom = offsetY >= rect.height - edgeSize && offsetY <= rect.height;
+
+  if ((onLeft && onRight) || (onTop && onBottom)) {
+    return null;
+  }
+
+  if (onTop && onLeft) {
+    return 'nw';
+  }
+  if (onTop && onRight) {
+    return 'ne';
+  }
+  if (onBottom && onLeft) {
+    return 'sw';
+  }
+  if (onBottom && onRight) {
+    return 'se';
+  }
+  if (onTop) {
+    return 'n';
+  }
+  if (onBottom) {
+    return 's';
+  }
+  if (onLeft) {
+    return 'w';
+  }
+  if (onRight) {
+    return 'e';
+  }
+
+  return null;
+}
+
+function getResizeCursor(direction: ResizeDirection | null): string {
+  if (!direction) {
+    return '';
+  }
+  if (direction === 'n' || direction === 's') {
+    return 'ns-resize';
+  }
+  if (direction === 'e' || direction === 'w') {
+    return 'ew-resize';
+  }
+  if (direction === 'ne' || direction === 'sw') {
+    return 'nesw-resize';
+  }
+  return 'nwse-resize';
+}
+
 function handleWindowResize(): void {
   if (!popupRoot) {
     return;
@@ -493,8 +571,12 @@ function startDrag(event: PointerEvent): void {
     return;
   }
 
-  event.preventDefault();
   const rect = popupRoot.getBoundingClientRect();
+  if (getResizeDirection(rect, event, resizeEdgeSize)) {
+    return;
+  }
+
+  event.preventDefault();
   popupDragState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -535,25 +617,66 @@ function handleResizeMove(event: PointerEvent): void {
   const deltaX = event.clientX - popupResizeState.startX;
   const deltaY = event.clientY - popupResizeState.startY;
 
-  const maxWidth = window.innerWidth - popupResizeState.startLeft - 8;
-  const maxHeight = Math.min(
+  const direction = popupResizeState.direction;
+  const startLeft = popupResizeState.startLeft;
+  const startTop = popupResizeState.startTop;
+  const startWidth = popupResizeState.startWidth;
+  const startHeight = popupResizeState.startHeight;
+  const right = startLeft + startWidth;
+  const bottom = startTop + startHeight;
+  const minLeft = 8;
+  const minTop = 8;
+  const maxRight = window.innerWidth - 8;
+  const maxBottom = window.innerHeight - 8;
+  const maxHeightLimit = Math.min(
     Math.floor(window.innerHeight * popupEditMaxHeightRatio),
-    window.innerHeight - popupResizeState.startTop - 8
+    maxBottom - minTop
   );
 
-  const nextWidth = clampValue(
-    popupResizeState.startWidth + deltaX,
-    popupMinWidth,
-    Math.max(popupMinWidth, maxWidth)
-  );
-  const nextHeight = clampValue(
-    popupResizeState.startHeight + deltaY,
-    popupEditMinHeight,
-    Math.max(popupEditMinHeight, maxHeight)
-  );
+  let nextLeft = startLeft;
+  let nextTop = startTop;
+  let nextWidth = startWidth;
+  let nextHeight = startHeight;
+
+  if (direction.includes('e')) {
+    const maxWidth = Math.max(popupMinWidth, maxRight - startLeft);
+    nextWidth = clampValue(startWidth + deltaX, popupMinWidth, maxWidth);
+  }
+  if (direction.includes('w')) {
+    const maxWidth = Math.max(popupMinWidth, right - minLeft);
+    const rawWidth = clampValue(startWidth - deltaX, popupMinWidth, maxWidth);
+    nextWidth = rawWidth;
+    nextLeft = right - rawWidth;
+  }
+  if (direction.includes('s')) {
+    const maxHeight = Math.max(
+      popupEditMinHeight,
+      Math.min(maxHeightLimit, maxBottom - startTop)
+    );
+    nextHeight = clampValue(
+      startHeight + deltaY,
+      popupEditMinHeight,
+      maxHeight
+    );
+  }
+  if (direction.includes('n')) {
+    const maxHeight = Math.max(
+      popupEditMinHeight,
+      Math.min(maxHeightLimit, bottom - minTop)
+    );
+    const rawHeight = clampValue(
+      startHeight - deltaY,
+      popupEditMinHeight,
+      maxHeight
+    );
+    nextHeight = rawHeight;
+    nextTop = bottom - rawHeight;
+  }
 
   popupRoot.style.width = `${Math.floor(nextWidth)}px`;
   popupRoot.style.height = `${Math.floor(nextHeight)}px`;
+  popupRoot.style.left = `${Math.floor(nextLeft)}px`;
+  popupRoot.style.top = `${Math.floor(nextTop)}px`;
   editMode.updateLayout();
   if (popupElements) {
     clampPopupToViewport(popupElements);
@@ -565,8 +688,14 @@ function startResize(event: PointerEvent): void {
     return;
   }
 
-  event.preventDefault();
   const rect = popupRoot.getBoundingClientRect();
+  const direction = getResizeDirection(rect, event, resizeEdgeSize);
+  if (!direction || isInteractiveTarget(event.target)) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
   popupResizeState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -575,6 +704,7 @@ function startResize(event: PointerEvent): void {
     startHeight: rect.height,
     startTop: rect.top,
     startLeft: rect.left,
+    direction,
   };
   window.addEventListener('pointermove', handleResizeMove);
   window.addEventListener(
@@ -584,6 +714,24 @@ function startResize(event: PointerEvent): void {
     },
     { once: true }
   );
+}
+
+function updatePopupResizeCursor(event: PointerEvent): void {
+  if (!popupRoot) {
+    return;
+  }
+  if (!editMode.isEnabled()) {
+    popupRoot.style.cursor = '';
+    return;
+  }
+
+  const rect = popupRoot.getBoundingClientRect();
+  const direction = getResizeDirection(rect, event, resizeEdgeSize);
+  const nextCursor =
+    direction && !isInteractiveTarget(event.target)
+      ? getResizeCursor(direction)
+      : '';
+  popupRoot.style.cursor = nextCursor;
 }
 
 function stopEditorDrag(): void {
@@ -634,8 +782,12 @@ function startEditorDrag(event: PointerEvent): void {
     return;
   }
 
-  event.preventDefault();
   const rect = editorPopupRoot.getBoundingClientRect();
+  if (getResizeDirection(rect, event, resizeEdgeSize)) {
+    return;
+  }
+
+  event.preventDefault();
   editorPopupDragState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -676,22 +828,56 @@ function handleEditorResizeMove(event: PointerEvent): void {
   const deltaX = event.clientX - editorPopupResizeState.startX;
   const deltaY = event.clientY - editorPopupResizeState.startY;
 
-  const maxWidth = window.innerWidth - editorPopupResizeState.startLeft - 8;
-  const maxHeight = window.innerHeight - editorPopupResizeState.startTop - 8;
+  const direction = editorPopupResizeState.direction;
+  const startLeft = editorPopupResizeState.startLeft;
+  const startTop = editorPopupResizeState.startTop;
+  const startWidth = editorPopupResizeState.startWidth;
+  const startHeight = editorPopupResizeState.startHeight;
+  const right = startLeft + startWidth;
+  const bottom = startTop + startHeight;
+  const minLeft = 8;
+  const minTop = 8;
+  const maxRight = window.innerWidth - 8;
+  const maxBottom = window.innerHeight - 8;
 
-  const nextWidth = clampValue(
-    editorPopupResizeState.startWidth + deltaX,
-    popupMinWidth,
-    Math.max(popupMinWidth, maxWidth)
-  );
-  const nextHeight = clampValue(
-    editorPopupResizeState.startHeight + deltaY,
-    popupEditMinHeight,
-    Math.max(popupEditMinHeight, maxHeight)
-  );
+  let nextLeft = startLeft;
+  let nextTop = startTop;
+  let nextWidth = startWidth;
+  let nextHeight = startHeight;
+
+  if (direction.includes('e')) {
+    const maxWidth = Math.max(popupMinWidth, maxRight - startLeft);
+    nextWidth = clampValue(startWidth + deltaX, popupMinWidth, maxWidth);
+  }
+  if (direction.includes('w')) {
+    const maxWidth = Math.max(popupMinWidth, right - minLeft);
+    const rawWidth = clampValue(startWidth - deltaX, popupMinWidth, maxWidth);
+    nextWidth = rawWidth;
+    nextLeft = right - rawWidth;
+  }
+  if (direction.includes('s')) {
+    const maxHeight = Math.max(popupEditMinHeight, maxBottom - startTop);
+    nextHeight = clampValue(
+      startHeight + deltaY,
+      popupEditMinHeight,
+      maxHeight
+    );
+  }
+  if (direction.includes('n')) {
+    const maxHeight = Math.max(popupEditMinHeight, bottom - minTop);
+    const rawHeight = clampValue(
+      startHeight - deltaY,
+      popupEditMinHeight,
+      maxHeight
+    );
+    nextHeight = rawHeight;
+    nextTop = bottom - rawHeight;
+  }
 
   editorPopupRoot.style.width = `${Math.floor(nextWidth)}px`;
   editorPopupRoot.style.height = `${Math.floor(nextHeight)}px`;
+  editorPopupRoot.style.left = `${Math.floor(nextLeft)}px`;
+  editorPopupRoot.style.top = `${Math.floor(nextTop)}px`;
   updateEditorPopupLayout();
   clampEditorPopupToViewport();
 }
@@ -701,8 +887,14 @@ function startEditorResize(event: PointerEvent): void {
     return;
   }
 
-  event.preventDefault();
   const rect = editorPopupRoot.getBoundingClientRect();
+  const direction = getResizeDirection(rect, event, resizeEdgeSize);
+  if (!direction || isInteractiveTarget(event.target)) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
   editorPopupResizeState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -711,6 +903,7 @@ function startEditorResize(event: PointerEvent): void {
     startHeight: rect.height,
     startTop: rect.top,
     startLeft: rect.left,
+    direction,
   };
   window.addEventListener('pointermove', handleEditorResizeMove);
   window.addEventListener(
@@ -720,6 +913,20 @@ function startEditorResize(event: PointerEvent): void {
     },
     { once: true }
   );
+}
+
+function updateEditorResizeCursor(event: PointerEvent): void {
+  if (!editorPopupRoot) {
+    return;
+  }
+
+  const rect = editorPopupRoot.getBoundingClientRect();
+  const direction = getResizeDirection(rect, event, resizeEdgeSize);
+  const nextCursor =
+    direction && !isInteractiveTarget(event.target)
+      ? getResizeCursor(direction)
+      : '';
+  editorPopupRoot.style.cursor = nextCursor;
 }
 
 function applyEditorPopupTheme(theme: 'light' | 'dark'): void {
@@ -824,8 +1031,17 @@ function createEditorPopup(): void {
   content.appendChild(editorPanel);
   editorPopupContent = content;
 
-  root.addEventListener('pointerdown', () => {
+  root.addEventListener('pointerdown', (event) => {
     bringPopupToFront('editor');
+    startEditorResize(event);
+  });
+  root.addEventListener('pointermove', (event) => {
+    updateEditorResizeCursor(event);
+  });
+  root.addEventListener('pointerleave', () => {
+    if (editorPopupRoot) {
+      editorPopupRoot.style.cursor = '';
+    }
   });
 
   if (!editorPanel.dataset.originalPaddingTop) {
@@ -1277,9 +1493,18 @@ function showPopup(
     editEnabled: false,
   };
 
-  popupRoot.addEventListener('pointerdown', () => {
+  popupRoot.addEventListener('pointerdown', (event) => {
     if (editorPopupRoot) {
       bringPopupToFront('main');
+    }
+    startResize(event);
+  });
+  popupRoot.addEventListener('pointermove', (event) => {
+    updatePopupResizeCursor(event);
+  });
+  popupRoot.addEventListener('pointerleave', () => {
+    if (popupRoot) {
+      popupRoot.style.cursor = '';
     }
   });
   diagramControls.setElements({

@@ -164,3 +164,8 @@
 - [x] codacy-issues で Buffer を明示的に定義する。`spec: 029-codacy-issues-buffer`
 
 - [x] codacy-issues のセキュリティ指摘（SSRF/obj injection）に対応する。`spec: 029-codacy-issues-security-findings`
+
+- [x] 編集モードパネルを全周の縁ドラッグでリサイズできるようにする（角含む）。`spec: 030-edge-resize`
+- [x] split エディタポップアップを全周の縁ドラッグでリサイズできるようにする（角含む）。`spec: 030-edge-resize`
+- [x] 縁/角に応じたリサイズカーソルを表示する。`spec: 030-edge-resize`
+- [x] リサイズ領域以外の操作（タブ切替・編集・コピー等）が阻害されないことを保証する。`spec: 030-edge-resize`

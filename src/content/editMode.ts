@@ -92,6 +92,7 @@ export function createEditModeController(
         elements.content.style.maxHeight = `${config.popupDefaultMaxHeight}px`;
         elements.arrow.style.display = '';
         elements.header.style.cursor = 'default';
+        elements.root.style.cursor = '';
         elements.resizeHandle.style.display = 'none';
       }
 
