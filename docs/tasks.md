@@ -169,3 +169,14 @@
 - [x] split エディタポップアップを全周の縁ドラッグでリサイズできるようにする（角含む）。`spec: 030-edge-resize`
 - [x] 縁/角に応じたリサイズカーソルを表示する。`spec: 030-edge-resize`
 - [x] リサイズ領域以外の操作（タブ切替・編集・コピー等）が阻害されないことを保証する。`spec: 030-edge-resize`
+
+- [x] 初期表示ポップアップをヘッダー領域のドラッグで移動できるようにする。`spec: 031-popup-drag-resize`
+- [x] 初期表示ポップアップを全周の縁/角ドラッグでリサイズできるようにする。`spec: 031-popup-drag-resize`
+- [x] 縁/角に応じたリサイズカーソルを表示する。`spec: 031-popup-drag-resize`
+- [x] 編集/分離ポップアップ等の既存挙動に影響がないことを確認する。`spec: 031-popup-drag-resize`
+
+- [x] ポップアップを移動またはリサイズしたら矢印を非表示にする。`spec: 032-hide-arrow-on-move`
+- [x] 矢印の非表示状態がポップアップ破棄まで維持されることを確認する。`spec: 032-hide-arrow-on-move`
+
+- [x] ユーザーのリサイズ開始時に初期ポップアップの max-width 制約を解除する。`spec: 033-disable-maxwidth-on-resize`
+- [x] ポップアップ破棄で max-width 制約が初期化されることを確認する。`spec: 033-disable-maxwidth-on-resize`

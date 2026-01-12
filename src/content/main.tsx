@@ -72,6 +72,8 @@ let popupActionsState = {
   openEnabled: false,
   editEnabled: false,
 };
+let isPopupArrowHidden = false;
+let isPopupMaxWidthDisabled = false;
 let popupDiagram: HTMLElement | null = null;
 let popupEditorTextarea: HTMLTextAreaElement | null = null;
 let popupSourceText: string | null = null;
@@ -366,6 +368,15 @@ function clampValue(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+function hidePopupArrow(): void {
+  if (isPopupArrowHidden || !popupElements) {
+    return;
+  }
+
+  popupElements.arrow.style.display = 'none';
+  isPopupArrowHidden = true;
+}
+
 function isInteractiveTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
     return false;
@@ -559,7 +570,7 @@ function handleDragMove(event: PointerEvent): void {
 }
 
 function startDrag(event: PointerEvent): void {
-  if (!editMode.isEnabled() || !popupRoot) {
+  if (!popupRoot) {
     return;
   }
 
@@ -577,6 +588,7 @@ function startDrag(event: PointerEvent): void {
   }
 
   event.preventDefault();
+  hidePopupArrow();
   popupDragState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -628,10 +640,21 @@ function handleResizeMove(event: PointerEvent): void {
   const minTop = 8;
   const maxRight = window.innerWidth - 8;
   const maxBottom = window.innerHeight - 8;
-  const maxHeightLimit = Math.min(
-    Math.floor(window.innerHeight * popupEditMaxHeightRatio),
-    maxBottom - minTop
-  );
+  const isEditMode = editMode.isEnabled();
+  const allowFullWidth = isEditMode || isPopupMaxWidthDisabled;
+  const maxWidthLimitDefault = Math.floor(window.innerWidth * 0.5);
+  const maxWidthLimitEast = allowFullWidth
+    ? maxRight - startLeft
+    : Math.min(maxRight - startLeft, maxWidthLimitDefault);
+  const maxWidthLimitWest = allowFullWidth
+    ? right - minLeft
+    : Math.min(right - minLeft, maxWidthLimitDefault);
+  const maxHeightLimit = isEditMode
+    ? Math.min(
+        Math.floor(window.innerHeight * popupEditMaxHeightRatio),
+        maxBottom - minTop
+      )
+    : maxBottom - minTop;
 
   let nextLeft = startLeft;
   let nextTop = startTop;
@@ -639,11 +662,11 @@ function handleResizeMove(event: PointerEvent): void {
   let nextHeight = startHeight;
 
   if (direction.includes('e')) {
-    const maxWidth = Math.max(popupMinWidth, maxRight - startLeft);
+    const maxWidth = Math.max(popupMinWidth, maxWidthLimitEast);
     nextWidth = clampValue(startWidth + deltaX, popupMinWidth, maxWidth);
   }
   if (direction.includes('w')) {
-    const maxWidth = Math.max(popupMinWidth, right - minLeft);
+    const maxWidth = Math.max(popupMinWidth, maxWidthLimitWest);
     const rawWidth = clampValue(startWidth - deltaX, popupMinWidth, maxWidth);
     nextWidth = rawWidth;
     nextLeft = right - rawWidth;
@@ -684,7 +707,7 @@ function handleResizeMove(event: PointerEvent): void {
 }
 
 function startResize(event: PointerEvent): void {
-  if (!editMode.isEnabled() || !popupRoot) {
+  if (!popupRoot) {
     return;
   }
 
@@ -696,6 +719,9 @@ function startResize(event: PointerEvent): void {
 
   event.preventDefault();
   event.stopPropagation();
+  hidePopupArrow();
+  popupRoot.style.maxWidth = 'none';
+  isPopupMaxWidthDisabled = true;
   popupResizeState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -718,10 +744,6 @@ function startResize(event: PointerEvent): void {
 
 function updatePopupResizeCursor(event: PointerEvent): void {
   if (!popupRoot) {
-    return;
-  }
-  if (!editMode.isEnabled()) {
-    popupRoot.style.cursor = '';
     return;
   }
 
@@ -1458,6 +1480,8 @@ function showPopup(
   popupElements = elements;
   popupRoot = elements.root;
   popupSelectionText = selectionText;
+  isPopupArrowHidden = false;
+  isPopupMaxWidthDisabled = false;
   popupMessage = elements.message;
   setLoadingVisible(false);
   setSplitEnabled(false);
@@ -1481,6 +1505,7 @@ function showPopup(
   });
   editMode.setActiveTab('view');
   editMode.setEnabled(false);
+  elements.arrow.style.display = '';
   if (!popupThemePreference) {
     popupThemePreference = loadPopupThemePreference();
   }
