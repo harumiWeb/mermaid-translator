@@ -546,18 +546,18 @@ function handleSettingsMessage(message: unknown): void {
     return;
   }
 
-  const raw = payload as Record<string, unknown>;
+  const raw = typeof payload === 'object' && payload !== null ? payload : {};
   const next: Settings = {
     mermaidTheme: resolveMermaidPreference(
-      raw['mermaidTheme'],
+      'mermaidTheme' in raw ? raw['mermaidTheme'] : undefined,
       themePreference ?? loadThemePreference()
     ),
     popupTheme: resolvePopupPreference(
-      raw['popupTheme'],
+      'popupTheme' in raw ? raw['popupTheme'] : undefined,
       popupThemePreference ?? loadPopupThemePreference()
     ),
     openInEditMode:
-      typeof raw['openInEditMode'] === 'boolean'
+      'openInEditMode' in raw && typeof raw['openInEditMode'] === 'boolean'
         ? raw['openInEditMode']
         : openInEditModeDefault,
   };

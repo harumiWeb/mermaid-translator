@@ -29,8 +29,8 @@ function resolvePopupTheme(value: unknown): Settings['popupTheme'] {
   return defaultSettings.popupTheme;
 }
 
-function loadSettings(): Promise<Settings> {
-  return new Promise((resolve) => {
+const loadSettings = async (): Promise<Settings> => {
+  return new Promise<Settings>((resolve) => {
     try {
       if (!chrome?.storage?.local) {
         resolve(defaultSettings);
@@ -65,7 +65,7 @@ function loadSettings(): Promise<Settings> {
       resolve(defaultSettings);
     }
   });
-}
+};
 
 function saveSettings(settings: Settings): void {
   try {
