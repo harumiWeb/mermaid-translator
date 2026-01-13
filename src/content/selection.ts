@@ -1,8 +1,20 @@
+/**
+ * Screen coordinates used to position UI elements near selections.
+ *
+ * @remarks
+ * Coordinates are clamped to stay within the visible viewport.
+ */
 export type ButtonPosition = {
   top: number;
   left: number;
 };
 
+/**
+ * Selection text plus a bounding rectangle when available.
+ *
+ * @remarks
+ * The rect may be null when the selection is not visually measurable.
+ */
 export type SelectionInfo = {
   text: string;
   rect: DOMRect | null;
@@ -78,7 +90,7 @@ function getInputSelectionRect(
   const valueBefore = element.value.slice(0, selectionEnd);
   const lines = valueBefore.split(/\r?\n/);
   const lineIndex = Math.max(0, lines.length - 1);
-  const lineText = lines[lineIndex] ?? '';
+  const lineText = lines.at(lineIndex) ?? '';
 
   const rect = element.getBoundingClientRect();
   const style = getComputedStyle(element);
@@ -109,15 +121,22 @@ function getSelectionRect(selection: Selection): DOMRect | null {
   const range = selection.getRangeAt(0);
   const rects = range.getClientRects();
   const rect =
-    rects.length > 0 ? rects[rects.length - 1] : range.getBoundingClientRect();
+    rects.length > 0
+      ? (rects.item(rects.length - 1) ?? range.getBoundingClientRect())
+      : range.getBoundingClientRect();
 
-  if (!rect || (rect.width === 0 && rect.height === 0)) {
+  if (rect.width === 0 && rect.height === 0) {
     return null;
   }
 
   return rect;
 }
 
+/**
+ * Return the current selection text and its bounding rect if available.
+ *
+ * @returns Selection information or null when no usable selection exists.
+ */
 export function getSelectionInfo(): SelectionInfo | null {
   const active = document.activeElement;
   if (active instanceof HTMLTextAreaElement) {
@@ -147,6 +166,12 @@ export function getSelectionInfo(): SelectionInfo | null {
   return { text, rect: getSelectionRect(selection) };
 }
 
+/**
+ * Compute the action button position based on the selection rect.
+ *
+ * @param rect - Bounding rect for the current selection.
+ * @returns Button position, or null when no rect is available.
+ */
 export function getButtonPosition(rect: DOMRect | null): ButtonPosition | null {
   if (!rect) {
     return null;
@@ -173,6 +198,12 @@ export function getButtonPosition(rect: DOMRect | null): ButtonPosition | null {
   };
 }
 
+/**
+ * Compute the popup position based on the selection rect.
+ *
+ * @param rect - Bounding rect for the current selection.
+ * @returns Popup position anchored to the selection.
+ */
 export function getPopupPosition(rect: DOMRect): ButtonPosition {
   const offset = 8;
   const minWidth = 550;

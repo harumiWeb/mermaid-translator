@@ -164,3 +164,25 @@
 - [x] codacy-issues で Buffer を明示的に定義する。`spec: 029-codacy-issues-buffer`
 
 - [x] codacy-issues のセキュリティ指摘（SSRF/obj injection）に対応する。`spec: 029-codacy-issues-security-findings`
+
+- [x] 編集モードパネルを全周の縁ドラッグでリサイズできるようにする（角含む）。`spec: 030-edge-resize`
+- [x] split エディタポップアップを全周の縁ドラッグでリサイズできるようにする（角含む）。`spec: 030-edge-resize`
+- [x] 縁/角に応じたリサイズカーソルを表示する。`spec: 030-edge-resize`
+- [x] リサイズ領域以外の操作（タブ切替・編集・コピー等）が阻害されないことを保証する。`spec: 030-edge-resize`
+
+- [x] 初期表示ポップアップをヘッダー領域のドラッグで移動できるようにする。`spec: 031-popup-drag-resize`
+- [x] 初期表示ポップアップを全周の縁/角ドラッグでリサイズできるようにする。`spec: 031-popup-drag-resize`
+- [x] 縁/角に応じたリサイズカーソルを表示する。`spec: 031-popup-drag-resize`
+- [x] 編集/分離ポップアップ等の既存挙動に影響がないことを確認する。`spec: 031-popup-drag-resize`
+
+- [x] ポップアップを移動またはリサイズしたら矢印を非表示にする。`spec: 032-hide-arrow-on-move`
+- [x] 矢印の非表示状態がポップアップ破棄まで維持されることを確認する。`spec: 032-hide-arrow-on-move`
+
+- [x] ユーザーのリサイズ開始時に初期ポップアップの max-width 制約を解除する。`spec: 033-disable-maxwidth-on-resize`
+- [x] ポップアップ破棄で max-width 制約が初期化されることを確認する。`spec: 033-disable-maxwidth-on-resize`
+
+- [x] ツールバーの拡張アクションに設定ポップアップUIを追加する。`spec: 034-toolbar-settings-popup`
+- [x] 設定ポップアップでUIテーマ/Mermaidテーマ/編集モード初期化の設定項目を用意する。`spec: 034-toolbar-settings-popup`
+- [x] 設定値を `chrome.storage.local` に保存・復元する。`spec: 034-toolbar-settings-popup`
+- [x] content script が保存済み設定を読み取り、テーマと編集モード初期表示に反映する。`spec: 034-toolbar-settings-popup`
+- [x] 設定変更を content script へ反映できるようにする（メッセージング）。`spec: 034-toolbar-settings-popup`

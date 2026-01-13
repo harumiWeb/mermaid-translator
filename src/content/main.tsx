@@ -1,6 +1,11 @@
 import { render } from 'preact';
 import { extractMermaidCode, isMermaidLike } from '../shared/detectMermaid';
 import { isRenderCacheHit } from '../shared/renderCache';
+import { settingsStorageKeys, type Settings } from '../shared/settings';
+import {
+  isPopupThemePreference,
+  type PopupThemePreference,
+} from '../shared/themeOptions';
 import { createDiagramControls } from './diagramControls';
 import { createEditModeController } from './editMode';
 import {
@@ -27,7 +32,6 @@ import {
   savePopupThemePreference,
   saveThemePreference,
   themeOptions,
-  type PopupThemePreference,
   type ThemeName,
   type ThemePreference,
 } from './theme';
@@ -54,6 +58,49 @@ function suppressKaTeXQuirksWarning(): void {
 }
 
 suppressKaTeXQuirksWarning();
+loadSettingsFromStorage();
+try {
+  chrome.runtime.onMessage.addListener((message) => {
+    handleSettingsMessage(message);
+  });
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'local') {
+      return;
+    }
+
+    const next: Settings = {
+      mermaidTheme: themePreference ?? loadThemePreference(),
+      popupTheme: popupThemePreference ?? loadPopupThemePreference(),
+      openInEditMode: openInEditModeDefault,
+    };
+
+    const mermaidChange = changes[settingsStorageKeys.mermaidTheme];
+    if (mermaidChange) {
+      next.mermaidTheme = resolveMermaidPreference(
+        mermaidChange.newValue,
+        next.mermaidTheme
+      );
+    }
+
+    const popupChange = changes[settingsStorageKeys.popupTheme];
+    if (popupChange) {
+      next.popupTheme = resolvePopupPreference(
+        popupChange.newValue,
+        next.popupTheme
+      );
+    }
+
+    const editChange = changes[settingsStorageKeys.openInEditMode];
+    if (editChange && typeof editChange.newValue === 'boolean') {
+      next.openInEditMode = editChange.newValue;
+    }
+
+    applySettings(next);
+    applySettingsToActivePopup();
+  });
+} catch {
+  // ignore
+}
 
 let lastSelectionText: string | null = null;
 let mountNode: HTMLElement | null = null;
@@ -72,6 +119,9 @@ let popupActionsState = {
   openEnabled: false,
   editEnabled: false,
 };
+let isPopupArrowHidden = false;
+let isPopupMaxWidthDisabled = false;
+let openInEditModeDefault = false;
 let popupDiagram: HTMLElement | null = null;
 let popupEditorTextarea: HTMLTextAreaElement | null = null;
 let popupSourceText: string | null = null;
@@ -99,6 +149,7 @@ let editorPopupResizeState: {
   startHeight: number;
   startTop: number;
   startLeft: number;
+  direction: ResizeDirection;
 } | null = null;
 let editorRenderTimeout: number | null = null;
 let popupDragState: {
@@ -118,12 +169,15 @@ let popupResizeState: {
   startHeight: number;
   startTop: number;
   startLeft: number;
+  direction: ResizeDirection;
 } | null = null;
 let themePreference: ThemePreference | null = null;
 let popupThemePreference: PopupThemePreference | null = null;
 let outsidePointerHandler: ((event: PointerEvent) => void) | null = null;
 let resizeHandler: (() => void) | null = null;
 let beforeUnloadBound = false;
+
+type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 function resolveIconUrl(): string {
   try {
@@ -155,6 +209,7 @@ const popupEditMaxHeight = '80vh';
 const popupEditContentMaxHeight = '55vh';
 const popupEditMinHeight = 320;
 const popupInitialContentHeight = Math.round(popupEditMinHeight * 1.5);
+const resizeEdgeSize = 8;
 const zoomStep = 0.1;
 const popupZIndexBase = 2147483646;
 const popupZIndexTop = 2147483647;
@@ -361,6 +416,257 @@ function clampValue(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+function resolveMermaidPreference(
+  value: unknown,
+  fallback: ThemePreference
+): ThemePreference {
+  if (typeof value === 'string' && isThemePreference(value)) {
+    return value;
+  }
+  return fallback;
+}
+
+function resolvePopupPreference(
+  value: unknown,
+  fallback: PopupThemePreference
+): PopupThemePreference {
+  if (typeof value === 'string' && isPopupThemePreference(value)) {
+    return value;
+  }
+  return fallback;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function normalizeSettings(raw: Record<string, unknown>): {
+  settings: Settings;
+  shouldPersist: boolean;
+} {
+  const mermaidRaw = raw[settingsStorageKeys.mermaidTheme];
+  const popupRaw = raw[settingsStorageKeys.popupTheme];
+  const editRaw = raw[settingsStorageKeys.openInEditMode];
+
+  const mermaidTheme = resolveMermaidPreference(
+    mermaidRaw,
+    loadThemePreference()
+  );
+  const popupTheme = resolvePopupPreference(
+    popupRaw,
+    loadPopupThemePreference()
+  );
+  const openInEditMode = typeof editRaw === 'boolean' ? editRaw : false;
+
+  const shouldPersist =
+    typeof mermaidRaw !== 'string' ||
+    !isThemePreference(mermaidRaw) ||
+    typeof popupRaw !== 'string' ||
+    !isPopupThemePreference(popupRaw) ||
+    typeof editRaw !== 'boolean';
+
+  return {
+    settings: {
+      mermaidTheme,
+      popupTheme,
+      openInEditMode,
+    },
+    shouldPersist,
+  };
+}
+
+function applySettings(settings: Settings): void {
+  themePreference = settings.mermaidTheme;
+  popupThemePreference = settings.popupTheme;
+  openInEditModeDefault = settings.openInEditMode;
+  saveThemePreference(settings.mermaidTheme);
+  savePopupThemePreference(settings.popupTheme);
+}
+
+function applySettingsToActivePopup(): void {
+  if (!popupRoot || !popupElements) {
+    return;
+  }
+
+  const popupTheme = resolvePopupTheme(popupThemePreference ?? 'system');
+  applyPopupTheme(popupElements, popupTheme);
+  diagramControls.updateZoomTheme(popupTheme);
+  diagramControls.updateCopyTheme(popupTheme);
+  editMode.updateTheme(popupTheme);
+  updateSplitTheme(popupTheme);
+  if (editorPopupRoot) {
+    applyEditorPopupTheme(popupTheme);
+  }
+  renderPopupActions();
+  rerenderPopup(resolveTheme(themePreference ?? 'system'));
+}
+
+function saveSettingsToStorage(settings: Settings): void {
+  try {
+    chrome.storage.local.set({
+      [settingsStorageKeys.mermaidTheme]: settings.mermaidTheme,
+      [settingsStorageKeys.popupTheme]: settings.popupTheme,
+      [settingsStorageKeys.openInEditMode]: settings.openInEditMode,
+    });
+  } catch {
+    // ignore
+  }
+}
+
+function loadSettingsFromStorage(): void {
+  try {
+    chrome.storage.local.get(
+      [
+        settingsStorageKeys.mermaidTheme,
+        settingsStorageKeys.popupTheme,
+        settingsStorageKeys.openInEditMode,
+      ],
+      (raw) => {
+        const { settings, shouldPersist } = normalizeSettings(raw);
+        applySettings(settings);
+        if (shouldPersist) {
+          saveSettingsToStorage(settings);
+        }
+      }
+    );
+  } catch {
+    // ignore
+  }
+}
+
+function handleSettingsMessage(message: unknown): void {
+  if (!message || typeof message !== 'object') {
+    return;
+  }
+  const payload = (message as { type?: string; payload?: unknown }).payload;
+  const type = (message as { type?: string }).type;
+  if (type !== 'settings:update' || !isRecord(payload)) {
+    return;
+  }
+
+  const raw = payload;
+  const next: Settings = {
+    mermaidTheme: resolveMermaidPreference(
+      'mermaidTheme' in raw ? raw['mermaidTheme'] : undefined,
+      themePreference ?? loadThemePreference()
+    ),
+    popupTheme: resolvePopupPreference(
+      'popupTheme' in raw ? raw['popupTheme'] : undefined,
+      popupThemePreference ?? loadPopupThemePreference()
+    ),
+    openInEditMode:
+      'openInEditMode' in raw && typeof raw['openInEditMode'] === 'boolean'
+        ? raw['openInEditMode']
+        : openInEditModeDefault,
+  };
+
+  applySettings(next);
+  applySettingsToActivePopup();
+}
+
+function openEditMode(tab: 'view' | 'editor'): void {
+  if (!popupSourceText) {
+    return;
+  }
+
+  popupEditorText = popupEditorText ?? popupSourceText;
+  diagramControls.setEditorText(popupEditorText);
+  if (popupEditorTextarea) {
+    popupEditorTextarea.value = popupEditorText;
+  }
+  editMode.setActiveTab(tab);
+  diagramControls.setActiveTab(tab);
+  editMode.setEnabled(true);
+  diagramControls.setEditModeEnabled(true);
+  diagramControls.updateCopyLayout();
+  setSplitEnabled(true);
+  updateSplitLayout();
+  updateSplitTheme(resolvePopupTheme(popupThemePreference ?? 'system'));
+  editMode.updateTheme(resolvePopupTheme(popupThemePreference ?? 'system'));
+}
+
+function hidePopupArrow(): void {
+  if (isPopupArrowHidden || !popupElements) {
+    return;
+  }
+
+  popupElements.arrow.style.display = 'none';
+  isPopupArrowHidden = true;
+}
+
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      'button, select, option, textarea, input, a, [data-pan-ignore], [data-zoom-control]'
+    )
+  );
+}
+
+function getResizeDirection(
+  rect: DOMRect,
+  event: PointerEvent,
+  edgeSize: number
+): ResizeDirection | null {
+  const offsetX = event.clientX - rect.left;
+  const offsetY = event.clientY - rect.top;
+
+  const onLeft = offsetX >= 0 && offsetX <= edgeSize;
+  const onRight = offsetX >= rect.width - edgeSize && offsetX <= rect.width;
+  const onTop = offsetY >= 0 && offsetY <= edgeSize;
+  const onBottom = offsetY >= rect.height - edgeSize && offsetY <= rect.height;
+
+  if ((onLeft && onRight) || (onTop && onBottom)) {
+    return null;
+  }
+
+  if (onTop && onLeft) {
+    return 'nw';
+  }
+  if (onTop && onRight) {
+    return 'ne';
+  }
+  if (onBottom && onLeft) {
+    return 'sw';
+  }
+  if (onBottom && onRight) {
+    return 'se';
+  }
+  if (onTop) {
+    return 'n';
+  }
+  if (onBottom) {
+    return 's';
+  }
+  if (onLeft) {
+    return 'w';
+  }
+  if (onRight) {
+    return 'e';
+  }
+
+  return null;
+}
+
+function getResizeCursor(direction: ResizeDirection | null): string {
+  if (!direction) {
+    return '';
+  }
+  if (direction === 'n' || direction === 's') {
+    return 'ns-resize';
+  }
+  if (direction === 'e' || direction === 'w') {
+    return 'ew-resize';
+  }
+  if (direction === 'ne' || direction === 'sw') {
+    return 'nesw-resize';
+  }
+  return 'nwse-resize';
+}
+
 function handleWindowResize(): void {
   if (!popupRoot) {
     return;
@@ -416,29 +722,43 @@ function handleEditModeViewRender(): void {
   setActionsEnabled(false);
   setLoadingVisible(true);
   scheduleRender(() => {
-    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-      const svgElement = await renderMermaid(source, popupDiagram, theme);
-      if (!svgElement) {
+    const diagram = popupDiagram;
+    if (!diagram) {
+      setPopupMessage(renderErrorMessage);
+      setActionsEnabled(false);
+      setLoadingVisible(false);
+      return;
+    }
+    void import('./mermaidRenderer')
+      .then(({ renderMermaid }) => renderMermaid(source, diagram, theme))
+      .then((svgElement) => {
+        if (!svgElement) {
+          popupSvg = null;
+          setPopupMessage(renderErrorMessage);
+          setActionsEnabled(false);
+          setLoadingVisible(false);
+          return;
+        }
+
+        popupSvg = svgSerializer.serializeToString(svgElement);
+        lastRenderedSource = source;
+        lastRenderedTheme = theme;
+        popupSourceText = source;
+        diagramControls.setSourceText(source);
+        setPopupMessage(null);
+        setActionsEnabled(true);
+        setEditEnabled(!editMode.isEnabled());
+        setLoadingVisible(false);
+        if (popupElements) {
+          clampPopupToViewport(popupElements);
+        }
+      })
+      .catch(() => {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
         setActionsEnabled(false);
         setLoadingVisible(false);
-        return;
-      }
-
-      popupSvg = svgSerializer.serializeToString(svgElement);
-      lastRenderedSource = source;
-      lastRenderedTheme = theme;
-      popupSourceText = source;
-      diagramControls.setSourceText(source);
-      setPopupMessage(null);
-      setActionsEnabled(true);
-      setEditEnabled(!editMode.isEnabled());
-      setLoadingVisible(false);
-      if (popupElements) {
-        clampPopupToViewport(popupElements);
-      }
-    });
+      });
   });
 }
 
@@ -481,7 +801,7 @@ function handleDragMove(event: PointerEvent): void {
 }
 
 function startDrag(event: PointerEvent): void {
-  if (!editMode.isEnabled() || !popupRoot) {
+  if (!popupRoot) {
     return;
   }
 
@@ -493,8 +813,13 @@ function startDrag(event: PointerEvent): void {
     return;
   }
 
-  event.preventDefault();
   const rect = popupRoot.getBoundingClientRect();
+  if (getResizeDirection(rect, event, resizeEdgeSize)) {
+    return;
+  }
+
+  event.preventDefault();
+  hidePopupArrow();
   popupDragState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -535,25 +860,77 @@ function handleResizeMove(event: PointerEvent): void {
   const deltaX = event.clientX - popupResizeState.startX;
   const deltaY = event.clientY - popupResizeState.startY;
 
-  const maxWidth = window.innerWidth - popupResizeState.startLeft - 8;
-  const maxHeight = Math.min(
-    Math.floor(window.innerHeight * popupEditMaxHeightRatio),
-    window.innerHeight - popupResizeState.startTop - 8
-  );
+  const direction = popupResizeState.direction;
+  const startLeft = popupResizeState.startLeft;
+  const startTop = popupResizeState.startTop;
+  const startWidth = popupResizeState.startWidth;
+  const startHeight = popupResizeState.startHeight;
+  const right = startLeft + startWidth;
+  const bottom = startTop + startHeight;
+  const minLeft = 8;
+  const minTop = 8;
+  const maxRight = window.innerWidth - 8;
+  const maxBottom = window.innerHeight - 8;
+  const isEditMode = editMode.isEnabled();
+  const allowFullWidth = isEditMode || isPopupMaxWidthDisabled;
+  const maxWidthLimitDefault = Math.floor(window.innerWidth * 0.5);
+  const maxWidthLimitEast = allowFullWidth
+    ? maxRight - startLeft
+    : Math.min(maxRight - startLeft, maxWidthLimitDefault);
+  const maxWidthLimitWest = allowFullWidth
+    ? right - minLeft
+    : Math.min(right - minLeft, maxWidthLimitDefault);
+  const maxHeightLimit = isEditMode
+    ? Math.min(
+        Math.floor(window.innerHeight * popupEditMaxHeightRatio),
+        maxBottom - minTop
+      )
+    : maxBottom - minTop;
 
-  const nextWidth = clampValue(
-    popupResizeState.startWidth + deltaX,
-    popupMinWidth,
-    Math.max(popupMinWidth, maxWidth)
-  );
-  const nextHeight = clampValue(
-    popupResizeState.startHeight + deltaY,
-    popupEditMinHeight,
-    Math.max(popupEditMinHeight, maxHeight)
-  );
+  let nextLeft = startLeft;
+  let nextTop = startTop;
+  let nextWidth = startWidth;
+  let nextHeight = startHeight;
+
+  if (direction.includes('e')) {
+    const maxWidth = Math.max(popupMinWidth, maxWidthLimitEast);
+    nextWidth = clampValue(startWidth + deltaX, popupMinWidth, maxWidth);
+  }
+  if (direction.includes('w')) {
+    const maxWidth = Math.max(popupMinWidth, maxWidthLimitWest);
+    const rawWidth = clampValue(startWidth - deltaX, popupMinWidth, maxWidth);
+    nextWidth = rawWidth;
+    nextLeft = right - rawWidth;
+  }
+  if (direction.includes('s')) {
+    const maxHeight = Math.max(
+      popupEditMinHeight,
+      Math.min(maxHeightLimit, maxBottom - startTop)
+    );
+    nextHeight = clampValue(
+      startHeight + deltaY,
+      popupEditMinHeight,
+      maxHeight
+    );
+  }
+  if (direction.includes('n')) {
+    const maxHeight = Math.max(
+      popupEditMinHeight,
+      Math.min(maxHeightLimit, bottom - minTop)
+    );
+    const rawHeight = clampValue(
+      startHeight - deltaY,
+      popupEditMinHeight,
+      maxHeight
+    );
+    nextHeight = rawHeight;
+    nextTop = bottom - rawHeight;
+  }
 
   popupRoot.style.width = `${Math.floor(nextWidth)}px`;
   popupRoot.style.height = `${Math.floor(nextHeight)}px`;
+  popupRoot.style.left = `${Math.floor(nextLeft)}px`;
+  popupRoot.style.top = `${Math.floor(nextTop)}px`;
   editMode.updateLayout();
   if (popupElements) {
     clampPopupToViewport(popupElements);
@@ -561,12 +938,21 @@ function handleResizeMove(event: PointerEvent): void {
 }
 
 function startResize(event: PointerEvent): void {
-  if (!editMode.isEnabled() || !popupRoot) {
+  if (!popupRoot) {
+    return;
+  }
+
+  const rect = popupRoot.getBoundingClientRect();
+  const direction = getResizeDirection(rect, event, resizeEdgeSize);
+  if (!direction || isInteractiveTarget(event.target)) {
     return;
   }
 
   event.preventDefault();
-  const rect = popupRoot.getBoundingClientRect();
+  event.stopPropagation();
+  hidePopupArrow();
+  popupRoot.style.maxWidth = 'none';
+  isPopupMaxWidthDisabled = true;
   popupResizeState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -575,6 +961,7 @@ function startResize(event: PointerEvent): void {
     startHeight: rect.height,
     startTop: rect.top,
     startLeft: rect.left,
+    direction,
   };
   window.addEventListener('pointermove', handleResizeMove);
   window.addEventListener(
@@ -584,6 +971,20 @@ function startResize(event: PointerEvent): void {
     },
     { once: true }
   );
+}
+
+function updatePopupResizeCursor(event: PointerEvent): void {
+  if (!popupRoot) {
+    return;
+  }
+
+  const rect = popupRoot.getBoundingClientRect();
+  const direction = getResizeDirection(rect, event, resizeEdgeSize);
+  const nextCursor =
+    direction && !isInteractiveTarget(event.target)
+      ? getResizeCursor(direction)
+      : '';
+  popupRoot.style.cursor = nextCursor;
 }
 
 function stopEditorDrag(): void {
@@ -634,8 +1035,12 @@ function startEditorDrag(event: PointerEvent): void {
     return;
   }
 
-  event.preventDefault();
   const rect = editorPopupRoot.getBoundingClientRect();
+  if (getResizeDirection(rect, event, resizeEdgeSize)) {
+    return;
+  }
+
+  event.preventDefault();
   editorPopupDragState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -676,22 +1081,56 @@ function handleEditorResizeMove(event: PointerEvent): void {
   const deltaX = event.clientX - editorPopupResizeState.startX;
   const deltaY = event.clientY - editorPopupResizeState.startY;
 
-  const maxWidth = window.innerWidth - editorPopupResizeState.startLeft - 8;
-  const maxHeight = window.innerHeight - editorPopupResizeState.startTop - 8;
+  const direction = editorPopupResizeState.direction;
+  const startLeft = editorPopupResizeState.startLeft;
+  const startTop = editorPopupResizeState.startTop;
+  const startWidth = editorPopupResizeState.startWidth;
+  const startHeight = editorPopupResizeState.startHeight;
+  const right = startLeft + startWidth;
+  const bottom = startTop + startHeight;
+  const minLeft = 8;
+  const minTop = 8;
+  const maxRight = window.innerWidth - 8;
+  const maxBottom = window.innerHeight - 8;
 
-  const nextWidth = clampValue(
-    editorPopupResizeState.startWidth + deltaX,
-    popupMinWidth,
-    Math.max(popupMinWidth, maxWidth)
-  );
-  const nextHeight = clampValue(
-    editorPopupResizeState.startHeight + deltaY,
-    popupEditMinHeight,
-    Math.max(popupEditMinHeight, maxHeight)
-  );
+  let nextLeft = startLeft;
+  let nextTop = startTop;
+  let nextWidth = startWidth;
+  let nextHeight = startHeight;
+
+  if (direction.includes('e')) {
+    const maxWidth = Math.max(popupMinWidth, maxRight - startLeft);
+    nextWidth = clampValue(startWidth + deltaX, popupMinWidth, maxWidth);
+  }
+  if (direction.includes('w')) {
+    const maxWidth = Math.max(popupMinWidth, right - minLeft);
+    const rawWidth = clampValue(startWidth - deltaX, popupMinWidth, maxWidth);
+    nextWidth = rawWidth;
+    nextLeft = right - rawWidth;
+  }
+  if (direction.includes('s')) {
+    const maxHeight = Math.max(popupEditMinHeight, maxBottom - startTop);
+    nextHeight = clampValue(
+      startHeight + deltaY,
+      popupEditMinHeight,
+      maxHeight
+    );
+  }
+  if (direction.includes('n')) {
+    const maxHeight = Math.max(popupEditMinHeight, bottom - minTop);
+    const rawHeight = clampValue(
+      startHeight - deltaY,
+      popupEditMinHeight,
+      maxHeight
+    );
+    nextHeight = rawHeight;
+    nextTop = bottom - rawHeight;
+  }
 
   editorPopupRoot.style.width = `${Math.floor(nextWidth)}px`;
   editorPopupRoot.style.height = `${Math.floor(nextHeight)}px`;
+  editorPopupRoot.style.left = `${Math.floor(nextLeft)}px`;
+  editorPopupRoot.style.top = `${Math.floor(nextTop)}px`;
   updateEditorPopupLayout();
   clampEditorPopupToViewport();
 }
@@ -701,8 +1140,14 @@ function startEditorResize(event: PointerEvent): void {
     return;
   }
 
-  event.preventDefault();
   const rect = editorPopupRoot.getBoundingClientRect();
+  const direction = getResizeDirection(rect, event, resizeEdgeSize);
+  if (!direction || isInteractiveTarget(event.target)) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
   editorPopupResizeState = {
     pointerId: event.pointerId,
     startX: event.clientX,
@@ -711,6 +1156,7 @@ function startEditorResize(event: PointerEvent): void {
     startHeight: rect.height,
     startTop: rect.top,
     startLeft: rect.left,
+    direction,
   };
   window.addEventListener('pointermove', handleEditorResizeMove);
   window.addEventListener(
@@ -722,12 +1168,26 @@ function startEditorResize(event: PointerEvent): void {
   );
 }
 
+function updateEditorResizeCursor(event: PointerEvent): void {
+  if (!editorPopupRoot) {
+    return;
+  }
+
+  const rect = editorPopupRoot.getBoundingClientRect();
+  const direction = getResizeDirection(rect, event, resizeEdgeSize);
+  const nextCursor =
+    direction && !isInteractiveTarget(event.target)
+      ? getResizeCursor(direction)
+      : '';
+  editorPopupRoot.style.cursor = nextCursor;
+}
+
 function applyEditorPopupTheme(theme: 'light' | 'dark'): void {
   if (!editorPopupRoot || !editorPopupCloseButton) {
     return;
   }
 
-  editorPopupRoot.dataset.theme = theme;
+  editorPopupRoot.dataset['theme'] = theme;
 }
 
 function bringPopupToFront(target: 'main' | 'editor'): void {
@@ -824,12 +1284,21 @@ function createEditorPopup(): void {
   content.appendChild(editorPanel);
   editorPopupContent = content;
 
-  root.addEventListener('pointerdown', () => {
+  root.addEventListener('pointerdown', (event) => {
     bringPopupToFront('editor');
+    startEditorResize(event);
+  });
+  root.addEventListener('pointermove', (event) => {
+    updateEditorResizeCursor(event);
+  });
+  root.addEventListener('pointerleave', () => {
+    if (editorPopupRoot) {
+      editorPopupRoot.style.cursor = '';
+    }
   });
 
-  if (!editorPanel.dataset.originalPaddingTop) {
-    editorPanel.dataset.originalPaddingTop = editorPanel.style.paddingTop;
+  if (!editorPanel.dataset['originalPaddingTop']) {
+    editorPanel.dataset['originalPaddingTop'] = editorPanel.style.paddingTop;
   }
   editorPanel.style.paddingTop = '0';
 
@@ -880,10 +1349,10 @@ function closeEditorPopup(): void {
   editorPopupDragState = null;
   editorPopupResizeState = null;
 
-  if (popupElements.editorPanel.dataset.originalPaddingTop !== undefined) {
+  if (popupElements.editorPanel.dataset['originalPaddingTop'] !== undefined) {
     popupElements.editorPanel.style.paddingTop =
-      popupElements.editorPanel.dataset.originalPaddingTop;
-    delete popupElements.editorPanel.dataset.originalPaddingTop;
+      popupElements.editorPanel.dataset['originalPaddingTop'];
+    delete popupElements.editorPanel.dataset['originalPaddingTop'];
   }
 
   popupElements.tabBar.style.display = editMode.isEnabled() ? 'flex' : 'none';
@@ -938,30 +1407,44 @@ function rerenderPopup(theme: ThemeName): void {
   setLoadingVisible(true);
 
   scheduleRender(() => {
-    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-      const svgElement = await renderMermaid(code, popupDiagram, theme);
-      if (!svgElement) {
+    const diagram = popupDiagram;
+    if (!diagram) {
+      setPopupMessage(renderErrorMessage);
+      setActionsEnabled(false);
+      setLoadingVisible(false);
+      return;
+    }
+    void import('./mermaidRenderer')
+      .then(({ renderMermaid }) => renderMermaid(code, diagram, theme))
+      .then((svgElement) => {
+        if (!svgElement) {
+          popupSvg = null;
+          setPopupMessage(renderErrorMessage);
+          setActionsEnabled(false);
+          setLoadingVisible(false);
+          return;
+        }
+
+        popupSvg = svgSerializer.serializeToString(svgElement);
+        lastRenderedSource = code;
+        lastRenderedTheme = theme;
+        popupSourceText = code;
+        diagramControls.setSourceText(code);
+        setPopupMessage(null);
+        setActionsEnabled(true);
+        setLoadingVisible(false);
+        if (popupRoot) {
+          if (popupElements) {
+            clampPopupToViewport(popupElements);
+          }
+        }
+      })
+      .catch(() => {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
         setActionsEnabled(false);
         setLoadingVisible(false);
-        return;
-      }
-
-      popupSvg = svgSerializer.serializeToString(svgElement);
-      lastRenderedSource = code;
-      lastRenderedTheme = theme;
-      popupSourceText = code;
-      diagramControls.setSourceText(code);
-      setPopupMessage(null);
-      setActionsEnabled(true);
-      setLoadingVisible(false);
-      if (popupRoot) {
-        if (popupElements) {
-          clampPopupToViewport(popupElements);
-        }
-      }
-    });
+      });
   });
 }
 
@@ -975,20 +1458,28 @@ function downloadBlob(blob: Blob, filename: string): void {
 }
 
 function openSvgInNewTab(svgText: string): void {
-  const html = `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Mermaid Diagram</title>
-    <style>
-      html, body { margin: 0; padding: 0; background: #fff; }
-      svg { display: block; max-width: 100%; height: auto; }
-    </style>
-  </head>
-  <body>${svgText}</body>
-</html>`;
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
+  const doc = document.implementation.createHTMLDocument('Mermaid Diagram');
+  const meta = doc.createElement('meta');
+  meta.setAttribute('charset', 'utf-8');
+  doc.head.appendChild(meta);
+
+  const style = doc.createElement('style');
+  style.textContent =
+    'html, body { margin: 0; padding: 0; background: #fff; }' +
+    'svg { display: block; max-width: 100%; height: auto; }';
+  doc.head.appendChild(style);
+
+  const svgDoc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+  const svgElement = svgDoc.documentElement;
+  if (svgElement instanceof SVGElement) {
+    doc.body.appendChild(doc.importNode(svgElement, true));
+  }
+
+  const htmlMarkup = '<!doctype html>' + doc.documentElement.outerHTML;
+  // eslint-disable-next-line xss/no-mixed-html -- HTML is generated from sanitized SVG content.
+  const htmlBlob = new Blob([htmlMarkup], { type: 'text/html' });
+  // eslint-disable-next-line xss/no-mixed-html -- URL is created from sanitized HTML blob.
+  const url = URL.createObjectURL(htmlBlob);
   const link = document.createElement('a');
   link.href = url;
   link.target = '_blank';
@@ -1022,8 +1513,8 @@ function normalizeSvg(svgText: string): {
     if (viewBox) {
       const parts = viewBox.split(/\s+/).map((part) => Number.parseFloat(part));
       if (parts.length === 4 && parts.every((value) => !Number.isNaN(value))) {
-        resolvedWidth = parts[2];
-        resolvedHeight = parts[3];
+        resolvedWidth = parts[2] ?? resolvedWidth;
+        resolvedHeight = parts[3] ?? resolvedHeight;
       }
     }
   }
@@ -1242,6 +1733,8 @@ function showPopup(
   popupElements = elements;
   popupRoot = elements.root;
   popupSelectionText = selectionText;
+  isPopupArrowHidden = false;
+  isPopupMaxWidthDisabled = false;
   popupMessage = elements.message;
   setLoadingVisible(false);
   setSplitEnabled(false);
@@ -1265,6 +1758,7 @@ function showPopup(
   });
   editMode.setActiveTab('view');
   editMode.setEnabled(false);
+  elements.arrow.style.display = '';
   if (!popupThemePreference) {
     popupThemePreference = loadPopupThemePreference();
   }
@@ -1277,9 +1771,18 @@ function showPopup(
     editEnabled: false,
   };
 
-  popupRoot.addEventListener('pointerdown', () => {
+  popupRoot.addEventListener('pointerdown', (event) => {
     if (editorPopupRoot) {
       bringPopupToFront('main');
+    }
+    startResize(event);
+  });
+  popupRoot.addEventListener('pointermove', (event) => {
+    updatePopupResizeCursor(event);
+  });
+  popupRoot.addEventListener('pointerleave', () => {
+    if (popupRoot) {
+      popupRoot.style.cursor = '';
     }
   });
   diagramControls.setElements({
@@ -1391,26 +1894,7 @@ function renderPopupActions(): void {
         openSvgInNewTab(popupSvg);
       }}
       onEdit={() => {
-        if (!popupSourceText) {
-          return;
-        }
-
-        popupEditorText = popupEditorText ?? popupSourceText;
-        diagramControls.setEditorText(popupEditorText);
-        if (popupEditorTextarea) {
-          popupEditorTextarea.value = popupEditorText;
-        }
-        editMode.setActiveTab('view');
-        diagramControls.setActiveTab('view');
-        editMode.setEnabled(true);
-        diagramControls.setEditModeEnabled(true);
-        diagramControls.updateCopyLayout();
-        setSplitEnabled(true);
-        updateSplitLayout();
-        updateSplitTheme(resolvePopupTheme(popupThemePreference ?? 'system'));
-        editMode.updateTheme(
-          resolvePopupTheme(popupThemePreference ?? 'system')
-        );
+        openEditMode('view');
       }}
       onThemeChange={(value) => {
         if (!isThemePreference(value)) {
@@ -1418,6 +1902,11 @@ function renderPopupActions(): void {
         }
         themePreference = value;
         saveThemePreference(value);
+        saveSettingsToStorage({
+          mermaidTheme: value,
+          popupTheme: popupThemePreference ?? loadPopupThemePreference(),
+          openInEditMode: openInEditModeDefault,
+        });
         renderPopupActions();
         rerenderPopup(resolveTheme(value));
       }}
@@ -1425,6 +1914,11 @@ function renderPopupActions(): void {
         const next = getNextPopupTheme(popupThemePreference ?? 'system');
         popupThemePreference = next;
         savePopupThemePreference(next);
+        saveSettingsToStorage({
+          mermaidTheme: themePreference ?? loadThemePreference(),
+          popupTheme: next,
+          openInEditMode: openInEditModeDefault,
+        });
         if (popupElements) {
           applyPopupTheme(popupElements, resolvePopupTheme(next));
         }
@@ -1477,40 +1971,58 @@ function handleActionClick(): void {
     setActionsEnabled(true);
     setEditEnabled(true);
     setLoadingVisible(false);
+    popupSourceText = code;
+    popupEditorText = code;
+    diagramControls.setSourceText(code);
+    diagramControls.setEditorText(code);
+    if (openInEditModeDefault) {
+      openEditMode('view');
+    }
     return;
   }
 
   setLoadingVisible(true);
   scheduleRender(() => {
-    void import('./mermaidRenderer').then(async ({ renderMermaid }) => {
-      const svgElement = await renderMermaid(code, diagram, theme);
-      if (!svgElement) {
+    void import('./mermaidRenderer')
+      .then(({ renderMermaid }) => renderMermaid(code, diagram, theme))
+      .then((svgElement) => {
+        if (!svgElement) {
+          popupSvg = null;
+          setPopupMessage(renderErrorMessage);
+          setActionsEnabled(false);
+          setEditEnabled(false);
+          setLoadingVisible(false);
+          if (popupElements) {
+            clampPopupToViewport(popupElements);
+          }
+          return;
+        }
+
+        popupSvg = svgSerializer.serializeToString(svgElement);
+        lastRenderedSource = code;
+        lastRenderedTheme = theme;
+        popupSourceText = code;
+        popupEditorText = code;
+        diagramControls.setSourceText(code);
+        diagramControls.setEditorText(code);
+        setPopupMessage(null);
+        setActionsEnabled(true);
+        setEditEnabled(true);
+        setLoadingVisible(false);
+        if (openInEditModeDefault) {
+          openEditMode('view');
+        }
+        if (popupElements) {
+          clampPopupToViewport(popupElements);
+        }
+      })
+      .catch(() => {
         popupSvg = null;
         setPopupMessage(renderErrorMessage);
         setActionsEnabled(false);
         setEditEnabled(false);
         setLoadingVisible(false);
-        if (popupElements) {
-          clampPopupToViewport(popupElements);
-        }
-        return;
-      }
-
-      popupSvg = svgSerializer.serializeToString(svgElement);
-      lastRenderedSource = code;
-      lastRenderedTheme = theme;
-      popupSourceText = code;
-      popupEditorText = code;
-      diagramControls.setSourceText(code);
-      diagramControls.setEditorText(code);
-      setPopupMessage(null);
-      setActionsEnabled(true);
-      setEditEnabled(true);
-      setLoadingVisible(false);
-      if (popupElements) {
-        clampPopupToViewport(popupElements);
-      }
-    });
+      });
   });
 }
 

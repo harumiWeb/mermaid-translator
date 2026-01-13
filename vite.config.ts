@@ -4,8 +4,6 @@ import { mkdir, copyFile, readFile, writeFile } from 'fs/promises';
 import { defineConfig } from 'vite';
 
 const rootUrl = new URL('./', import.meta.url);
-const distDir = fileURLToPath(new URL('dist', rootUrl));
-const distContentDir = fileURLToPath(new URL('dist/content', rootUrl));
 const contentEntry = fileURLToPath(new URL('src/content/main.tsx', rootUrl));
 const manifestPath = fileURLToPath(new URL('manifest.json', rootUrl));
 const iconPath = fileURLToPath(
@@ -21,24 +19,28 @@ const icon48Path = fileURLToPath(new URL('public/icons/icon48.png', rootUrl));
 const closeIconPath = fileURLToPath(new URL('public/icons/close.svg', rootUrl));
 const sunIconPath = fileURLToPath(new URL('public/icons/sun.svg', rootUrl));
 const moonIconPath = fileURLToPath(new URL('public/icons/moon.svg', rootUrl));
+const githubIconPath = fileURLToPath(
+  new URL('public/icons/github-mark.svg', rootUrl)
+);
+const githubIconDarkPath = fileURLToPath(
+  new URL('public/icons/github-mark-white.svg', rootUrl)
+);
 const licensePath = fileURLToPath(new URL('LICENSE', rootUrl));
 const thirdPartyLicensesPath = fileURLToPath(
   new URL('THIRD_PARTY_LICENSES.md', rootUrl)
 );
 const noticePath = fileURLToPath(new URL('NOTICE.md', rootUrl));
-const contentScriptPath = fileURLToPath(
-  new URL('dist/content/main.js', rootUrl)
-);
 
 function copyStaticFiles() {
   return {
     name: 'copy-static-files',
     async closeBundle() {
-      await mkdir(distDir, { recursive: true });
-      await mkdir(distContentDir, { recursive: true });
-      await mkdir(fileURLToPath(new URL('dist/icons', rootUrl)), {
-        recursive: true,
-      });
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
+      await mkdir('dist', { recursive: true });
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
+      await mkdir('dist/content', { recursive: true });
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
+      await mkdir('dist/icons', { recursive: true });
 
       await copyFile(
         manifestPath,
@@ -73,6 +75,14 @@ function copyStaticFiles() {
         fileURLToPath(new URL('dist/icons/moon.svg', rootUrl))
       );
       await copyFile(
+        githubIconPath,
+        fileURLToPath(new URL('dist/icons/github-mark.svg', rootUrl))
+      );
+      await copyFile(
+        githubIconDarkPath,
+        fileURLToPath(new URL('dist/icons/github-mark-white.svg', rootUrl))
+      );
+      await copyFile(
         licensePath,
         fileURLToPath(new URL('dist/LICENSE', rootUrl))
       );
@@ -85,12 +95,14 @@ function copyStaticFiles() {
         fileURLToPath(new URL('dist/NOTICE.md', rootUrl))
       );
 
-      const raw = await readFile(contentScriptPath);
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
+      const raw = await readFile('dist/content/main.js');
       let text = raw.toString('utf8');
       if (text.charCodeAt(0) === 0xfeff) {
         text = text.slice(1);
       }
-      await writeFile(contentScriptPath, text, 'utf8');
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- build output paths are fixed.
+      await writeFile('dist/content/main.js', text, 'utf8');
     },
   };
 }
@@ -108,6 +120,7 @@ export default defineConfig({
       output: {
         entryFileNames: '[name].js',
         format: 'iife',
+        inlineDynamicImports: true,
       },
     },
     outDir: 'dist',

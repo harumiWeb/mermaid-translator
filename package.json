@@ -1,6 +1,6 @@
 {
   "name": "mermaid-translator",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "",
   "keywords": [],
   "license": "ISC",
@@ -15,10 +15,11 @@
     "test": "vitest",
     "e2e": "cross-env PLAYWRIGHT_TS_CONFIG=tsconfig.playwright.json playwright test",
     "dev": "vite",
-    "build": "vite build",
-    "build:dev": "cross-env VITE_ENABLE_LOGGING=true vite build",
+    "build": "vite build --config vite.config.ts && vite build --config vite.config.popup.ts",
+    "build:dev": "cross-env VITE_ENABLE_LOGGING=true vite build --config vite.config.ts && vite build --config vite.config.popup.ts",
     "prepare": "husky",
-    "codacy:issues": "node ./scripts/codacy-issues.js"
+    "codacy:issues": "node ./scripts/codacy-issues.js",
+    "docs": "typedoc && node ./scripts/serve-typedocs.js"
   },
   "dependencies": {
     "dompurify": "^3.3.1",
@@ -35,6 +36,7 @@
     "oxfmt": "^0.20.0",
     "oxlint": "^1.35.0",
     "oxlint-tsgolint": "^0.1.3",
+    "typedoc": "^0.28.16",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
     "vitest": "^4.0.16"

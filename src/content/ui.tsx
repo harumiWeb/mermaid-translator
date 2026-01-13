@@ -38,6 +38,12 @@ type TooltipProps = {
   visible: boolean;
 };
 
+/**
+ * Tooltip element used for hover hints within the popup UI.
+ *
+ * @param props - Tooltip display props.
+ * @returns Tooltip element (visibility controlled via CSS class).
+ */
 export function Tooltip(props: TooltipProps) {
   const tooltipClass = props.visible ? 'mr-tooltip is-visible' : 'mr-tooltip';
 
@@ -100,6 +106,12 @@ function TooltipButton(props: TooltipButtonProps) {
   );
 }
 
+/**
+ * Selection action button shown near the user's text selection.
+ *
+ * @param props - Action button display props.
+ * @returns Action button element or null when not visible.
+ */
 export function ActionButton(props: ActionButtonProps) {
   const [isHover, setIsHover] = useState(false);
 
@@ -143,6 +155,12 @@ export function ActionButton(props: ActionButtonProps) {
   );
 }
 
+/**
+ * Popup action bar containing export, theme, and edit controls.
+ *
+ * @param props - Action handlers and UI state for the popup toolbar.
+ * @returns Action bar element.
+ */
 export function PopupActions(props: PopupActionsProps) {
   const [isThemeHover, setIsThemeHover] = useState(false);
 
