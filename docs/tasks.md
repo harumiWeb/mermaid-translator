@@ -186,3 +186,6 @@
 - [x] 設定値を `chrome.storage.local` に保存・復元する。`spec: 034-toolbar-settings-popup`
 - [x] content script が保存済み設定を読み取り、テーマと編集モード初期表示に反映する。`spec: 034-toolbar-settings-popup`
 - [x] 設定変更を content script へ反映できるようにする（メッセージング）。`spec: 034-toolbar-settings-popup`
+
+- [x] typedoc-pages の upload-pages-artifact を推奨の固定SHAに更新する。`spec: 035-typedoc-pages-sha`
+- [x] typedoc-pages の deploy-pages を推奨の固定SHAに更新する。`spec: 036-typedoc-deploy-pages-sha`
