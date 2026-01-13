@@ -38,7 +38,7 @@ jobs:
         run: npx typedoc
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@56afc609e5c1a4b1b06c1b2d7d3b6f7a1f1a8c5d
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:
           path: typedocs
 
