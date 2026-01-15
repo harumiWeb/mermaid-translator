@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.0 - 2024-01-13
+## v1.1.0 - 2026-01-13
 
 ### New Features
 
@@ -14,7 +14,7 @@
 
 - Added formal specifications for edge resize, popup drag/resize, arrow hiding on move, max-width disable on resize, and toolbar settings popup behavior.
 
-## v1.0.2 - 2024-01-03
+## v1.0.2 - 2026-01-03
 
 ### New Features
 
@@ -40,7 +40,7 @@
 
 - No changes to user flow or UI behavior.
 
-## v1.0.0 - 2023-12-30
+## v1.0.0 - 2025-12-30
 
 Initial release of Mermaid Translator.
 
