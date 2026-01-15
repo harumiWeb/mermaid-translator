@@ -189,3 +189,5 @@
 
 - [x] typedoc-pages の upload-pages-artifact を推奨の固定SHAに更新する。`spec: 035-typedoc-pages-sha`
 - [x] typedoc-pages の deploy-pages を推奨の固定SHAに更新する。`spec: 036-typedoc-deploy-pages-sha`
+
+- [x] Git タグを区切りにした CHANGELOG.md を作成する。`spec: 037-changelog`
