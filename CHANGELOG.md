@@ -14,7 +14,7 @@
 
 - Added formal specifications for edge resize, popup drag/resize, arrow hiding on move, max-width disable on resize, and toolbar settings popup behavior.
 
-## v1.0.2 - 2025-01-03
+## v1.0.2 - 2026-01-03
 
 ### New Features
 
