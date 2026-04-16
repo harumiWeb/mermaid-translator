@@ -175,3 +175,4 @@ pnpm format
 - 仕様: `docs/specs/`
 - アーキテクチャ: `docs/ARCHITECTURE.md`
 - コーディングガイド: `docs/CODING_GUIDELINES.md`
+ 
