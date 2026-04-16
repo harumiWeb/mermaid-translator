@@ -22,7 +22,7 @@
     "docs": "typedoc && node ./scripts/serve-typedocs.js"
   },
   "dependencies": {
-    "dompurify": "^3.3.1",
+    "dompurify": "^3.4.0",
     "mermaid": "^11.12.2",
     "preact": "^10.28.2"
   },
